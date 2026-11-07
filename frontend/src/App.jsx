@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
 import Week from './pages/Week';
 import Subjects from './pages/Subjects';
+import ClassSchedules from './pages/ClassSchedules';
+import Laboratories from './pages/Laboratories';
 import Calendar from './pages/Calendar';
 import Evaluations from './pages/Evaluations';
 import Tasks from './pages/Tasks';
+import Projects from './pages/Projects';
 import Reports from './pages/Reports';
 import Assistant from './pages/Assistant';
 import Settings from './pages/Settings';
@@ -57,9 +60,12 @@ const App = () => {
         <Route path="/semana" element={<Week />} />
         <Route path="/materias" element={<Subjects />} />
         <Route path="/materias/nueva" element={<Subjects />} />
+        <Route path="/clases" element={<ClassSchedules />} />
+        <Route path="/laboratorios" element={<Laboratories />} />
         <Route path="/calendario" element={<Calendar />} />
         <Route path="/evaluaciones" element={<Evaluations />} />
         <Route path="/tareas" element={<Tasks />} />
+        <Route path="/proyectos" element={<Projects />} />
         <Route path="/informes" element={<Reports />} />
         <Route path="/asistente-ia" element={<Assistant />} />
         <Route path="/configuracion" element={<Settings />} />

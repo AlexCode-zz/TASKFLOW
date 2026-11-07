@@ -1,14 +1,124 @@
-import { useState } from 'react';
-import { WEEK_EVENTS } from '../data/mockData';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 import EventCard from '../components/common/EventCard';
 
-const VIEWS = ['month', 'week', 'day'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS_SHORT = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+
+const typeColors = {
+  class: '#3b82f6',
+  laboratory: '#06b6d4',
+  evaluation: '#8b5cf6',
+  task: '#10b981',
+  project: '#f59e0b',
+};
+
+const typeLabels = {
+  class: 'Clase',
+  laboratory: 'Laboratorio',
+  evaluation: 'Evaluación',
+  task: 'Tarea',
+  project: 'Proyecto',
+};
 
 const Calendar = () => {
   const [view, setView] = useState('month');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      const [classes, labs, evals, tasks, projects] = await Promise.allSettled([
+        api.get('/class-schedules/'),
+        api.get('/laboratories/'),
+        api.get('/evaluations/'),
+        api.get('/tasks/'),
+        api.get('/projects/'),
+      ]);
+
+      const allEvents = [];
+
+      if (classes.status === 'fulfilled') {
+        classes.data.forEach((c) => {
+          allEvents.push({
+            id: `class-${c.id}`,
+            title: c.subject_name || 'Clase',
+            type: 'class',
+            day_of_week: c.day_of_week,
+            start_time: c.start_time,
+            end_time: c.end_time,
+            room: c.room,
+            color: typeColors.class,
+          });
+        });
+      }
+
+      if (labs.status === 'fulfilled') {
+        labs.data.forEach((l) => {
+          allEvents.push({
+            id: `lab-${l.id}`,
+            title: l.title,
+            type: 'laboratory',
+            date: l.date,
+            start_time: l.start_time,
+            end_time: l.end_time,
+            location: l.location,
+            color: typeColors.laboratory,
+          });
+        });
+      }
+
+      if (evals.status === 'fulfilled') {
+        evals.data.forEach((e) => {
+          allEvents.push({
+            id: `eval-${e.id}`,
+            title: e.title,
+            type: 'evaluation',
+            date: e.date,
+            start_time: e.start_time,
+            end_time: e.end_time,
+            color: typeColors.evaluation,
+          });
+        });
+      }
+
+      if (tasks.status === 'fulfilled') {
+        tasks.data.forEach((t) => {
+          allEvents.push({
+            id: `task-${t.id}`,
+            title: t.title,
+            type: 'task',
+            date: t.due_date,
+            start_time: t.due_time,
+            color: typeColors.task,
+          });
+        });
+      }
+
+      if (projects.status === 'fulfilled') {
+        projects.data.forEach((p) => {
+          allEvents.push({
+            id: `project-${p.id}`,
+            title: p.name,
+            type: 'project',
+            date: p.due_date,
+            color: typeColors.project,
+          });
+        });
+      }
+
+      setEvents(allEvents);
+    } catch (err) {
+      console.error('Error loading calendar events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -27,11 +137,21 @@ const Calendar = () => {
     d.getFullYear() === today.getFullYear();
 
   const eventsForDay = (day) => {
-    const eventDay = ((day - 1) % daysInMonth) + 1;
-    return WEEK_EVENTS.filter((e) => e.id % daysInMonth === eventDay || e.id % daysInMonth === 0);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return events.filter((e) => e.date === dateStr);
   };
 
   const monthLabel = `${MONTHS[month]} ${year}`;
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">
@@ -57,7 +177,7 @@ const Calendar = () => {
             </button>
           </div>
           <div className="btn-group btn-group-outline" role="group">
-            {VIEWS.map((v) => (
+            {['month', 'week', 'day'].map((v) => (
               <button
                 key={v}
                 type="button"
@@ -88,7 +208,7 @@ const Calendar = () => {
               ))}
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
-                const events = eventsForDay(day);
+                const dayEvents = eventsForDay(day);
                 return (
                   <div
                     key={day}
@@ -96,18 +216,18 @@ const Calendar = () => {
                     style={{ minHeight: '90px' }}
                   >
                     <div className="d-flex justify-content-between align-items-start mb-1">
-                      <span className={`fw-medium ${isToday(new Date(year, month, day)) ? 'text-white' : 'text-white'}`}>{day}</span>
-                      {events.length > 0 && (
+                      <span className="fw-medium">{day}</span>
+                      {dayEvents.length > 0 && (
                         <span className="badge bg-dark text-white border border-secondary" style={{ fontSize: '0.65rem' }}>
-                          {events.length}
+                          {dayEvents.length}
                         </span>
                       )}
                     </div>
-                    {events.slice(0, 3).map((e) => (
+                    {dayEvents.slice(0, 3).map((e) => (
                       <EventCard key={e.id} event={e} compact />
                     ))}
-                    {events.length > 3 && (
-                      <div className="text-muted-tf small opacity-80">+{events.length - 3} más</div>
+                    {dayEvents.length > 3 && (
+                      <div className="text-muted-tf small opacity-80">+{dayEvents.length - 3} más</div>
                     )}
                   </div>
                 );
@@ -120,7 +240,7 @@ const Calendar = () => {
           <div className="card-body p-4 text-center py-5">
             <div className="text-muted-tf mb-3">Vista {view === 'week' ? 'semanal' : 'diaria'}</div>
             <div className="empty-icon mb-3">🗓️</div>
-            <h5 className="fw-semibold text-white">Vista {view === 'week' ? 'semanal' : 'diaria'} en desarrollo</h5>
+            <h5 className="fw-semibold text-white">Vista {view === 'week' ? 'semanal' : 'diaria'}</h5>
             <p className="text-muted-tf small">Selecciona "Mensual" para ver el calendario completo.</p>
           </div>
         </div>

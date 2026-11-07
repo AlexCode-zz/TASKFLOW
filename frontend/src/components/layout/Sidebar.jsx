@@ -5,9 +5,12 @@ const modules = [
   { to: '/', label: 'Inicio', icon: '🏠' },
   { to: '/semana', label: 'Mi semana', icon: '📅' },
   { to: '/materias', label: 'Materias', icon: '📚' },
+  { to: '/clases', label: 'Horarios', icon: '🕒' },
+  { to: '/laboratorios', label: 'Laboratorios', icon: '🔬' },
   { to: '/calendario', label: 'Calendario', icon: '🗓️' },
   { to: '/evaluaciones', label: 'Evaluaciones', icon: '📝' },
   { to: '/tareas', label: 'Tareas y proyectos', icon: '✅' },
+  { to: '/proyectos', label: 'Proyectos', icon: '🗂️' },
   { to: '/informes', label: 'Informes', icon: '📊' },
   { to: '/asistente-ia', label: 'Asistente IA', icon: '🤖' },
   { to: '/configuracion', label: 'Configuración', icon: '⚙️' },
@@ -57,7 +60,7 @@ const Sidebar = () => {
 
       <div className="mt-auto pt-4 border-top border-secondary">
         <div className="text-muted-tf small text-center">TaskFlow v1.0.0</div>
-        <div className="text-muted-tf small text-center">Fase 2 - Diseño</div>
+        <div className="text-muted-tf small text-center">Fase 4 - Gestión académica</div>
       </div>
     </aside>
   );
