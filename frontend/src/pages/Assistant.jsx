@@ -1,34 +1,141 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
+import ConversationList from '../components/ai/ConversationList';
+import MessageList from '../components/ai/MessageList';
+import MessageInput from '../components/ai/MessageInput';
+import ProviderConfig from '../components/ai/ProviderConfig';
 
 const Assistant = () => {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'assistant',
-      text: 'Hola. Soy tu asistente académico de TaskFlow. Puedo ayudarte a organizar tus materias, planificar tu semana y responder dudas de estudio. ¿En qué te apoyo hoy?',
-      time: '09:00',
-    },
-  ]);
+  const [conversations, setConversations] = useState([]);
+  const [currentConversation, setCurrentConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  [sending, setSending] = useState(false);
+  [error, setError] = useState('');
+  [providerConfig, setProviderConfig] = useState(null);
+  [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'config'
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const userMsg = { id: Date.now(), sender: 'user', text: input, time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput('');
-    setLoading(true);
+  useEffect(() => {
+    loadConversations();
+    checkProvider();
+  }, []);
 
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        sender: 'assistant',
-        text: 'Esta es una respuesta de ejemplo. La integración real con el asistente de IA se implementará en una fase posterior.',
-        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+  const loadConversations = async () => {
+    try {
+      const response = await api.get('/ai/conversations/');
+      setConversations(response.data);
+      if (response.data.length > 0 && !currentConversation) {
+        selectConversation(response.data[0]);
+      }
+    } catch (err) {
+      console.error('Error cargando conversaciones:', err.message);
+    }
+  };
+
+  const checkProvider = async () => {
+    try {
+      const response = await api.get('/ai/providers/');
+      const configured = response.data.filter((p) => p.is_configured);
+      if (configured.length > 0) {
+        const active = configured.find((p) => p.is_active) || configured[0];
+        setProviderConfig(active);
+      }
+    } catch (err) {
+      console.error('Error verificando proveedor:', err.message);
+    }
+  };
+
+  const selectConversation = async (conv) => {
+    setCurrentConversation(conv);
+    setMessages([]);
+    try {
+      const response = await api.get(`/ai/conversations/${conv.id}/messages/`);
+      setMessages(response.data);
+    } catch (err) {
+      console.error('Error cargando mensajes:', err.message);
+    }
+  };
+
+  const createNewConversation = async () => {
+    try {
+      const response = await api.post('/ai/conversations/', {
+        title: 'Nueva conversación',
+        provider_name: providerConfig?.provider_name || null,
+        model: providerConfig?.model || null,
+      });
+      const newConv = {
+        id: response.data.id,
+        title: response.data.title,
+        provider_name: response.data.provider_name,
+        model: response.data.model,
       };
-      setMessages((prev) => [...prev, reply]);
-      setLoading(false);
-    }, 1200);
+      setConversations([newConv, ...conversations]);
+      setCurrentConversation(newConv);
+      setMessages([]);
+    } catch (err) {
+      console.error('Error creando conversación:', err.message);
+    }
+  };
+
+  const handleSend = async (text) => {
+    if (!currentConversation) {
+      await createNewConversation();
+    }
+
+    const userMsg = {
+      id: Date.now(),
+      role: 'user',
+      content: text,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setSending(true);
+    setError('');
+
+    try {
+      const response = await api.post('/ai/chat/', {
+        message: text,
+        conversation_id: currentConversation?.id || null,
+        provider_name: providerConfig?.provider_name || undefined,
+        model: providerConfig?.model || undefined,
+        use_academic_context: true,
+      });
+
+      const assistantMsg = {
+        id: response.data.message_id,
+        role: 'assistant',
+        content: response.data.message,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+
+      // Actualizar la conversación si era nueva
+      if (!currentConversation) {
+        setCurrentConversation({
+          id: response.data.conversation_id,
+          title: 'Nueva conversación',
+          provider_name: response.data.provider_name,
+          model: response.data.model,
+        });
+        setConversations([
+          {
+            id: response.data.conversation_id,
+            title: 'Nueva conversación',
+            provider_name: response.data.provider_name,
+            model: response.data.model,
+          },
+          ...conversations.filter((c) => c.id !== response.data.conversation_id),
+        ]);
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Error al enviar mensaje');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleConfigChange = (config) => {
+    setProviderConfig(config);
   };
 
   return (
@@ -40,62 +147,74 @@ const Assistant = () => {
         </p>
       </header>
 
-      <div className="card border-secondary shadow-sm h-100 d-flex flex-column">
-        <div className="card-header bg-transparent border-secondary pb-2">
-          <h5 className="fw-semibold mb-0">Conversación</h5>
+      {error && (
+        <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
+          {error}
         </div>
-        <div className="chat-body p-3 overflow-auto flex-grow-1" style={{ maxHeight: '500px' }}>
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`d-flex mb-3 ${msg.sender === 'user' ? 'justify-content-end' : 'justify-content-start'}`}
-            >
-              <div
-                className={`p-3 rounded-3 ${msg.sender === 'user' ? 'bg-primary text-white' : 'bg-surface text-white border border-secondary'}`}
-                style={{ maxWidth: '80%' }}
-              >
-                <div className="text-muted-tf small mb-1">
-                  {msg.sender === 'user' ? 'Tú' : 'Asistente'} · {msg.time}
-                </div>
-                <div className="small">{msg.text}</div>
-              </div>
-            </div>
-          ))}
-          {loading && (
-            <div className="d-flex justify-content-start mb-3">
-              <div className="p-3 rounded-3 bg-surface text-white border border-secondary" style={{ maxWidth: '80%' }}>
-                <div className="d-flex align-items-center gap-2 small text-muted-tf">
-                  <div className="typing-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                  Escribiendo...
-                </div>
-              </div>
-            </div>
-          )}
+      )}
+
+      {!providerConfig && (
+        <div className="alert alert-warning text-white border-secondary mb-3" role="alert">
+          <strong>Configura un proveedor de IA</strong> en la pestaña de configuración para comenzar a chatear.
         </div>
-        <div className="card-footer bg-transparent border-secondary pt-2 pb-2">
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control bg-surface border-secondary text-white"
-              placeholder="Escribe tu mensaje..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              disabled={loading}
+      )}
+
+      <div className="row">
+        {/* Panel lateral: conversaciones y configuración */}
+        <div className="col-12 col-lg-3">
+          <div className="d-flex flex-column h-100">
+            <ConversationList
+              conversations={conversations}
+              onSelect={selectConversation}
+              onDelete={(id) => {
+                setConversations(conversations.filter((c) => c.id !== id));
+                if (currentConversation?.id === id) {
+                  setCurrentConversation(null);
+                  setMessages([]);
+                }
+              }}
+              onNew={createNewConversation}
             />
-            <button
-              className="btn btn-primary"
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-            >
-              Enviar
-            </button>
+            <div className="mt-4">
+              <ProviderConfig onConfigChange={handleConfigChange} />
+            </div>
           </div>
-          <p className="text-muted-tf small mt-2 mb-0">
-            El asistente de IA se conectará en una fase posterior. Por ahora funciona con respuestas de ejemplo.
-          </p>
+        </div>
+
+        {/* Área principal de chat */}
+        <div className="col-12 col-lg-9">
+          <div className="d-flex flex-column h-100 border-start border-secondary">
+            <div className="p-3 border-bottom border-secondary">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 className="fw-semibold mb-0">
+                    {currentConversation ? currentConversation.title : 'Selecciona una conversación'}
+                  </h5>
+                  <p className="text-muted-tf small mb-0">
+                    {providerConfig ? `${providerConfig.provider_name} · ${providerConfig.model || 'modelo predeterminado'}` : 'Sin proveedor configurado'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={createNewConversation}
+                  disabled={!providerConfig}
+                >
+                  Nueva conversación
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-grow-1 overflow-hidden d-flex flex-column">
+              <MessageList messages={messages} />
+            </div>
+
+            <MessageInput
+              onSend={handleSend}
+              disabled={sending || !providerConfig || !currentConversation}
+              placeholder={providerConfig ? 'Escribe tu pregunta académica...' : 'Configura un proveedor para comenzar'}
+            />
+          </div>
         </div>
       </div>
     </div>

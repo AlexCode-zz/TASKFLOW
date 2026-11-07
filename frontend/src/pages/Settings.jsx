@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
+import ProviderConfig from '../components/ai/ProviderConfig';
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState('perfil');
@@ -364,46 +366,17 @@ const Settings = () => {
               {activeSection === 'ia' && (
                 <div className="row g-3">
                   <div className="col-12">
-                    <div className="card border-secondary p-3 mb-4">
-                      <div className="d-flex align-items-center gap-2 mb-3">
-                        <span className="text-primary fw-medium">🤖</span>
-                        <h6 className="fw-semibold mb-0">Configuración del asistente IA</h6>
+                    <div className="card border-secondary shadow-sm">
+                      <div className="card-header bg-transparent border-secondary">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="text-primary fw-medium">🤖</span>
+                          <h6 className="fw-semibold mb-0">Configuración del asistente IA</h6>
+                        </div>
                       </div>
-                      <p className="text-muted-tf small mb-3">
-                        Configura el proveedor y modelo de IA que usará el asistente académico. Cada usuario aporta su propia API key.
-                      </p>
+                      <div className="card-body p-0">
+                        <ProviderConfig onConfigChange={() => {}} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Proveedor</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>OpenRouter</option>
-                    </select>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Modelo</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>Seleccionar modelo...</option>
-                    </select>
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label text-muted-tf small">API key</label>
-                    <div className="input-group">
-                      <input
-                        type="password"
-                        className="form-control bg-surface border-secondary text-white"
-                        placeholder="sk-or-..."
-                      />
-                      <button className="btn btn-outline-primary" type="button">
-                        👁️
-                      </button>
-                    </div>
-                    <p className="text-muted-tf small mt-2">
-                      La API key se almacena localmente en tu dispositivo.
-                    </p>
-                  </div>
-                  <div className="col-12">
-                    <button className="btn btn-primary">Guardar configuración de IA</button>
                   </div>
                 </div>
               )}
