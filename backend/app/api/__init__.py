@@ -12,6 +12,7 @@ from app.api import (  # noqa: E402
     evaluations,
     tasks,
     projects,
+    planning,
 )
 
 api_router.include_router(students.router)
@@ -23,6 +24,7 @@ api_router.include_router(laboratories.router)
 api_router.include_router(evaluations.router)
 api_router.include_router(tasks.router)
 api_router.include_router(projects.router)
+api_router.include_router(planning.router)
 
 
 @api_router.get("/events", tags=["Eventos"])
