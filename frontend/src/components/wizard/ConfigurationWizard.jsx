@@ -42,6 +42,7 @@ const ConfigurationWizard = () => {
   const [availability, setAvailability] = useState(INITIAL_AVAILABILITY);
   const [loading, setLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const cleanValue = (v) => {
     if (v === '' || v === null || v === undefined) return null;
