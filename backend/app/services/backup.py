@@ -16,7 +16,7 @@ from app.crud import planning as planning_crud
 from app.crud.class_schedule import get_class_schedules_by_student
 from app.crud.evaluation import get_evaluations_by_student
 from app.crud.laboratory import get_laboratories_by_student
-from app.crud.student import get_student_by_id
+from app.crud.student import get_student
 from app.crud.student_preference import get_preference_by_student
 from app.crud.subject import get_subjects_by_student
 from app.crud.task import get_tasks_by_student
@@ -35,7 +35,7 @@ def _serialize_value(value: Any) -> Any:
 
 def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
     """Exporta todos los datos académicos de un estudiante a un diccionario."""
-    student = get_student_by_id(db, student_id)
+    student = get_student(db, student_id)
     if not student:
         raise ValueError(f"Estudiante con id {student_id} no encontrado.")
 

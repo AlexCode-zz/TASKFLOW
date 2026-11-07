@@ -107,7 +107,7 @@ def import_backup(
         )
 
 
-@router.get("/validate")
+@router.post("/validate")
 def validate_backup(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
