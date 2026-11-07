@@ -23,6 +23,23 @@ BACKEND_DIR="$(cd "$(dirname "$0")" && pwd)/backend"
 FRONTEND_DIR="$(cd "$(dirname "$0")" && pwd)/frontend"
 
 # ============================================
+# Matar procesos previos en los puertos
+# ============================================
+echo ""
+echo "Liberando puertos anteriores..."
+
+# Matar procesos en puerto 8000 (backend)
+if command -v fuser &> /dev/null; then
+    fuser -k 8000/tcp 2>/dev/null || true
+    fuser -k 5173/tcp 2>/dev/null || true
+elif command -v lsof &> /dev/null; then
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+fi
+
+sleep 1
+
+# ============================================
 # Backend (FastAPI + SQLite)
 # ============================================
 echo ""
@@ -57,7 +74,6 @@ else
 fi
 
 # Iniciar backend en segundo plano
-# Si hay venv activado, uvicorn estará disponible; de lo contrario, usar python3 -m
 if [ "$VENV_CREATED" = true ]; then
     uvicorn app.main:app --reload &
 else
@@ -67,13 +83,19 @@ BACKEND_PID=$!
 
 # Esperar a que el backend esté listo
 echo "Esperando a que el backend esté disponible..."
+BACKEND_READY=false
 for i in $(seq 1 30); do
     if curl -s http://127.0.0.1:8000/api/health > /dev/null 2>&1; then
         echo "Backend listo en http://127.0.0.1:8000"
+        BACKEND_READY=true
         break
     fi
     sleep 1
 done
+
+if [ "$BACKEND_READY" = false ]; then
+    echo "Advertencia: El backend no respondió en el tiempo esperado."
+fi
 
 # ============================================
 # Frontend (React + Vite)
@@ -95,12 +117,38 @@ fi
 npm run dev &
 FRONTEND_PID=$!
 
+# Esperar a que el frontend esté listo
+echo "Esperando a que el frontend esté disponible..."
+FRONTEND_READY=false
+for i in $(seq 1 30); do
+    if curl -s http://localhost:5173 > /dev/null 2>&1 || curl -s http://localhost:5174 > /dev/null 2>&1 || curl -s http://localhost:5175 > /dev/null 2>&1 || curl -s http://localhost:5176 > /dev/null 2>&1 || curl -s http://localhost:5177 > /dev/null 2>&1 || curl -s http://localhost:5178 > /dev/null 2>&1 || curl -s http://localhost:5179 > /dev/null 2>&1 || curl -s http://localhost:5180 > /dev/null 2>&1; then
+        # Detectar en qué puerto está escuchando
+        for p in 5173 5174 5175 5176 5177 5178 5179 5180; do
+            if curl -s http://localhost:$p > /dev/null 2>&1; then
+                echo "Frontend listo en http://localhost:$p"
+                FRONTEND_PORT=$p
+                FRONTEND_READY=true
+                break 2
+            fi
+        done
+    fi
+    sleep 1
+done
+
+if [ "$FRONTEND_READY" = false ]; then
+    echo "Advertencia: El frontend no respondió en el tiempo esperado."
+fi
+
 echo ""
 echo "========================================"
 echo "  TaskFlow iniciado correctamente"
 echo "========================================"
 echo "Backend:  http://127.0.0.1:8000"
-echo "Frontend: http://localhost:5173"
+if [ -n "$FRONTEND_PORT" ]; then
+    echo "Frontend: http://localhost:$FRONTEND_PORT"
+else
+    echo "Frontend: http://localhost:5173 (o puerto asignado por Vite)"
+fi
 echo ""
 echo "Presiona Ctrl+C para detener ambos servicios"
 echo "========================================"
