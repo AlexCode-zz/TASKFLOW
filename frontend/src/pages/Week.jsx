@@ -11,33 +11,34 @@ const typeColors = {
   evaluation: '#8b5cf6',
   task: '#10b981',
   project: '#f59e0b',
-};
-
-const typeLabels = {
-  class: 'Clase',
-  laboratory: 'Laboratorio',
-  evaluation: 'Evaluación',
-  task: 'Tarea',
-  project: 'Proyecto',
+  study: '#6366f1',
 };
 
 const Week = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [events, setEvents] = useState([]);
+  const [planningSessions, setPlanningSessions] = useState([]);
+  const [unscheduledTasks, setUnscheduledTasks] = useState([]);
+  const [warnings, setWarnings] = useState([]);
+  const [explanations, setExplanations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
 
   useEffect(() => {
-    loadEvents();
-  }, []);
+    loadData();
+  }, [currentWeek]);
 
-  const loadEvents = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const [classes, labs, evals, tasks, projects] = await Promise.allSettled([
+      const [classes, labs, evals, tasks, projects, planRes] = await Promise.allSettled([
         api.get('/class-schedules/'),
         api.get('/laboratories/'),
         api.get('/evaluations/'),
         api.get('/tasks/'),
         api.get('/projects/'),
+        api.get('/planning/sessions'),
       ]);
 
       const allEvents = [];
@@ -54,6 +55,7 @@ const Week = () => {
             room: c.room,
             color: typeColors.class,
             subject: c.subject_name,
+            origin: 'academic',
           });
         });
       }
@@ -62,17 +64,17 @@ const Week = () => {
         labs.data.forEach((l) => {
           const d = new Date(l.date);
           const dayIndex = d.getDay() || 7;
-          dayIndex - 1; // ajustar a 0-6 donde 0=lunes
           allEvents.push({
             id: `lab-${l.id}`,
             title: l.title,
             type: 'laboratory',
-            day: ((dayIndex + 5) % 7), // convertir domingo=0 a domingo=6
+            day: ((dayIndex + 5) % 7),
             start: parseInt(l.start_time.split(':')[0]),
             end: parseInt(l.end_time.split(':')[0]),
             room: l.location,
             color: typeColors.laboratory,
             date: l.date,
+            origin: 'academic',
           });
         });
       }
@@ -90,6 +92,7 @@ const Week = () => {
             end: e.end_time ? parseInt(e.end_time.split(':')[0]) : 11,
             color: typeColors.evaluation,
             date: e.date,
+            origin: 'academic',
           });
         });
       }
@@ -107,6 +110,7 @@ const Week = () => {
             end: t.due_time ? parseInt(t.due_time.split(':')[0]) + 1 : 10,
             color: typeColors.task,
             date: t.due_date,
+            origin: 'academic',
           });
         });
       }
@@ -124,13 +128,37 @@ const Week = () => {
             end: 10,
             color: typeColors.project,
             date: p.due_date,
+            origin: 'academic',
+          });
+        });
+      }
+
+      // Sesiones de planificación (estudio)
+      if (planRes.status === 'fulfilled') {
+        setPlanningSessions(planRes.data || []);
+        planRes.data.forEach((s) => {
+          const d = new Date(s.scheduled_date);
+          const dayIndex = d.getDay() || 7;
+          allEvents.push({
+            id: `plan-${s.id}`,
+            title: `Estudio: ${s.title}`,
+            type: 'study',
+            day: ((dayIndex + 5) % 7),
+            start: parseInt(s.start_time.split(':')[0]),
+            end: parseInt(s.end_time.split(':')[0]),
+            room: s.subject_id ? 'Materia' : '',
+            color: typeColors.study,
+            date: s.scheduled_date,
+            origin: s.origin || 'automatic',
+            isManual: s.is_manually_modified || false,
+            status: s.status,
           });
         });
       }
 
       setEvents(allEvents);
     } catch (err) {
-      console.error('Error loading week events:', err);
+      console.error('Error loading week data:', err);
     } finally {
       setLoading(false);
     }
@@ -155,16 +183,35 @@ const Week = () => {
     setCurrentWeek(d);
   };
 
-  const eventsByDay = {};
-  events.forEach((e) => {
-    if (!eventsByDay[e.day]) eventsByDay[e.day] = [];
-    eventsByDay[e.day].push(e);
-  });
-
   const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const weekLabel = `${weekDays[0].getDate()} ${monthNames[weekDays[0].getMonth()]} - ${weekDays[6].getDate()} ${monthNames[weekDays[6].getMonth()]}`;
 
   const canGoBack = weekDays[0].getDate() > 7;
+
+  const weekStartISO = weekDays[0].toISOString().split('T')[0];
+
+  const handleGeneratePlan = async () => {
+    setGenerating(true);
+    setGenerateError('');
+    try {
+      const response = await api.post('/planning/generate', {
+        week_start_date: weekStartISO,
+      });
+      if (response.data.success) {
+        setPlanningSessions(response.data.sessions || []);
+        setUnscheduledTasks(response.data.unscheduled_tasks || []);
+        setWarnings(response.data.warnings || []);
+        setExplanations(response.data.explanations || []);
+        await loadData();
+      } else {
+        setGenerateError(response.data.error || 'Error al generar la planificación.');
+      }
+    } catch (err) {
+      setGenerateError('Error al conectar con el servidor.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -197,8 +244,57 @@ const Week = () => {
           >
             Semana siguiente
           </button>
+          <button
+            className="btn btn-primary"
+            onClick={handleGeneratePlan}
+            disabled={generating}
+          >
+            {generating ? 'Generando...' : 'Generar planificación'}
+          </button>
         </div>
       </header>
+
+      {generateError && (
+        <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
+          {generateError}
+        </div>
+      )}
+
+      {warnings.length > 0 && (
+        <div className="alert alert-warning text-white border-secondary mb-3" role="alert">
+          <h6 className="fw-semibold mb-2">⚠️ Advertencias de planificación</h6>
+          <ul className="mb-0 small">
+            {warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {unscheduledTasks.length > 0 && (
+        <div className="card border-secondary shadow-sm mb-4">
+          <div className="card-header bg-transparent border-secondary">
+            <h6 className="fw-semibold mb-0">Tareas no programadas ({unscheduledTasks.length})</h6>
+          </div>
+          <div className="card-body p-3">
+            <div className="list-group list-group-flush">
+              {unscheduledTasks.map((t) => (
+                <div key={t.id} className="list-group-item bg-surface border-secondary p-2">
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <div className="fw-medium text-white">{t.title}</div>
+                      <div className="text-muted-tf small">{t.reason || 'Tiempo insuficiente'}</div>
+                    </div>
+                    <span className="text-muted-tf small">
+                      {t.remaining_minutes} min restantes
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="card border-secondary shadow-sm">
         <div className="table-responsive">
@@ -231,10 +327,11 @@ const Week = () => {
                       style={{ height: '68px', minHeight: '68px' }}
                     >
                       <div className="position-absolute top-0 bottom-0 w-100 d-flex flex-column justify-content-start p-1">
-                        {eventsByDay[dayIndex]
-                          ?.filter((e) => e.start <= hour && e.end > hour)
+                        {events
+                          .filter((e) => e.day === dayIndex && e.start <= hour && e.end > hour)
                           .map((e) => {
                             const height = ((e.end - e.start) / 15) * 100;
+                            const isManual = e.origin === 'manual' || e.isManual;
                             return (
                               <div
                                 key={e.id}
@@ -248,10 +345,14 @@ const Week = () => {
                                   fontSize: '0.78rem',
                                   lineHeight: '1.2',
                                   overflow: 'hidden',
+                                  border: isManual ? '2px solid #ffffff' : 'none',
                                 }}
                               >
                                 <div className="fw-semibold text-white">{e.title}</div>
-                                <div className="text-white opacity-90 small">{e.room || e.date || ''}</div>
+                                <div className="text-white opacity-90 small">
+                                  {e.room || e.date || ''}
+                                  {isManual ? ' · Manual' : ''}
+                                </div>
                               </div>
                             );
                           })}
@@ -268,9 +369,17 @@ const Week = () => {
       <div className="mt-4">
         <h6 className="fw-semibold text-white mb-3">Bloques de la semana</h6>
         <div className="row g-3">
-          {['class', 'laboratory', 'evaluation', 'task', 'project'].map((type) => {
+          {['class', 'laboratory', 'evaluation', 'task', 'project', 'study'].map((type) => {
             const typeEvents = events.filter((e) => e.type === type);
             const color = typeColors[type];
+            const labels = {
+              class: 'Clases',
+              laboratory: 'Laboratorios',
+              evaluation: 'Evaluaciones',
+              task: 'Tareas',
+              project: 'Proyectos',
+              study: 'Sesiones de estudio',
+            };
             return (
               <div key={type} className="col-12 col-md-6 col-lg-4">
                 <div className="d-flex align-items-center p-3 border-secondary rounded-3 bg-surface">
@@ -279,7 +388,7 @@ const Week = () => {
                     style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: color }}
                   />
                   <div className="flex-grow-1">
-                    <div className="fw-medium text-white">{typeLabels[type]}</div>
+                    <div className="fw-medium text-white">{labels[type]}</div>
                     <div className="text-muted-tf small">{typeEvents.length} bloque(s)</div>
                   </div>
                   <span className="badge bg-dark text-white border border-secondary">{typeEvents.length}</span>
@@ -290,30 +399,47 @@ const Week = () => {
         </div>
       </div>
 
+      {explanations.length > 0 && (
+        <div className="mt-4">
+          <h6 className="fw-semibold text-white mb-3">Explicaciones del motor</h6>
+          <div className="card border-secondary shadow-sm">
+            <div className="card-body p-3">
+              <ul className="list-unstyled mb-0 small">
+                {explanations.map((exp, i) => (
+                  <li key={i} className="mb-2 text-muted-tf">
+                    • {exp}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4">
         <h6 className="fw-semibold text-white mb-3">Accesos rápidos</h6>
         <div className="row g-2">
-          <div className="col-12 col-md-3 col-lg-2">
+          <div className="col-12 col-md-2">
             <Link to="/clases" className="btn btn-outline-primary w-100 text-white">
               Horarios
             </Link>
           </div>
-          <div className="col-12 col-md-3 col-lg-2">
+          <div className="col-12 col-md-2">
             <Link to="/laboratorios" className="btn btn-outline-primary w-100 text-white">
               Laboratorios
             </Link>
           </div>
-          <div className="col-12 col-md-3 col-lg-2">
+          <div className="col-12 col-md-2">
             <Link to="/evaluaciones" className="btn btn-outline-primary w-100 text-white">
               Evaluaciones
             </Link>
           </div>
-          <div className="col-12 col-md-3 col-lg-2">
+          <div className="col-12 col-md-2">
             <Link to="/tareas" className="btn btn-outline-primary w-100 text-white">
               Tareas
             </Link>
           </div>
-          <div className="col-12 col-md-3 col-lg-2">
+          <div className="col-12 col-md-2">
             <Link to="/proyectos" className="btn btn-outline-primary w-100 text-white">
               Proyectos
             </Link>
