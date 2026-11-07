@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState('perfil');
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState('');
 
   const sections = [
     { id: 'perfil', label: 'Perfil académico', icon: '👤' },
@@ -12,8 +16,61 @@ const Settings = () => {
     { id: 'ia', label: 'Asistente IA', icon: '🤖' },
   ];
 
+  useEffect(() => {
+    loadStudent();
+  }, []);
+
+  const loadStudent = async () => {
+    try {
+      const response = await api.get('/students/me');
+      setStudent(response.data);
+    } catch (err) {
+      console.error('No se pudo cargar el perfil:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put('/students/me', student);
+      setSaveMessage('Cambios guardados correctamente.');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } catch (err) {
+      setSaveMessage('Error al guardar los cambios.');
+      setTimeout(() => setSaveMessage(''), 3000);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!student) {
+    return (
+      <div className="text-center py-5">
+        <div className="text-muted-tf mb-3">No hay configuración de estudiante.</div>
+        <a href="/configuracion" className="btn btn-primary">
+          Ir a configuración
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in">
+      {saveMessage && (
+        <div className="alert alert-success text-white border-secondary mb-3" role="alert">
+          {saveMessage}
+        </div>
+      )}
       <header className="mb-4">
         <h1 className="fw-bold mb-1">Configuración</h1>
         <p className="text-muted-tf mb-0">Ajustes de TaskFlow.</p>
@@ -45,73 +102,157 @@ const Settings = () => {
             </div>
             <div className="card-body p-4">
               {activeSection === 'perfil' && (
-                <div className="row g-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Nombre completo</label>
-                    <input type="text" className="form-control bg-surface border-secondary text-white" placeholder="Juan Pérez" />
+                <form onSubmit={handleSave}>
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Nombre completo</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="Juan Pérez"
+                        value={student.name || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, name: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Correo institucional</label>
+                      <input
+                        type="email"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="juan@universidad.edu"
+                        value={student.institution || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, institution: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Código de estudiante</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="20240001"
+                        value={student.career || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, career: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Teléfono</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="+52 1 000 000 0000"
+                        value={student.faculty || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, faculty: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12">
+                      <button className="btn btn-primary mt-3" type="submit">
+                        Guardar cambios
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Correo institucional</label>
-                    <input type="email" className="form-control bg-surface border-secondary text-white" placeholder="juan@universidad.edu" />
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Código de estudiante</label>
-                    <input type="text" className="form-control bg-surface border-secondary text-white" placeholder="20240001" />
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Teléfono</label>
-                    <input type="text" className="form-control bg-surface border-secondary text-white" placeholder="+52 1 000 000 0000" />
-                  </div>
-                  <button className="btn btn-primary mt-3">Guardar cambios</button>
-                </div>
+                </form>
               )}
 
               {activeSection === 'carrera' && (
-                <div className="row g-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Carrera</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>Ingeniería en Sistemas Computacionales</option>
-                      <option>Licenciatura en Matemáticas</option>
-                      <option>Licenciatura en Física</option>
-                      <option>Ingeniería Industrial</option>
-                    </select>
+                <form onSubmit={handleSave}>
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Carrera</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="Ingeniería en Sistemas"
+                        value={student.career || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, career: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Semestre</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="3º Semestre"
+                        value={student.semester || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, semester: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Facultad</label>
+                      <input
+                        type="text"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="Facultad de Ingeniería"
+                        value={student.faculty || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, faculty: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Año académico</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="3"
+                        value={student.academic_year || ''}
+                        onChange={(e) =>
+                          setStudent({ ...student, academic_year: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="col-12">
+                      <button className="btn btn-primary mt-3" type="submit">
+                        Guardar cambios
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Semestre</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>1º Semestre</option>
-                      <option>2º Semestre</option>
-                      <option>3º Semestre</option>
-                      <option>4º Semestre</option>
-                      <option>5º Semestre</option>
-                      <option>6º Semestre</option>
-                    </select>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Modalidad</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>Presencial</option>
-                      <option>Híbrida</option>
-                      <option>En línea</option>
-                    </select>
-                  </div>
-                  <button className="btn btn-primary mt-3">Guardar cambios</button>
-                </div>
+                </form>
               )}
 
               {activeSection === 'horarios' && (
                 <div>
-                  <p className="text-muted-tf small">Define tus horarios de disponibilidad para que el asistente pueda planificar tu tiempo de estudio.</p>
+                  <p className="text-muted-tf small">
+                    Define tus horarios de disponibilidad para que el asistente pueda planificar tu tiempo de estudio.
+                  </p>
                   <div className="row g-3 mt-3">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day) => (
+                    {[
+                      'Lunes',
+                      'Martes',
+                      'Miércoles',
+                      'Jueves',
+                      'Viernes',
+                      'Sábado',
+                      'Domingo',
+                    ].map((day) => (
                       <div key={day} className="col-12 col-md-4">
                         <div className="d-flex justify-content-between align-items-center p-2 border-secondary rounded-3 bg-surface mb-2">
                           <span className="text-muted-tf small">{day}</span>
                           <div className="d-flex gap-2">
-                            <input type="time" className="form-control bg-surface border-secondary text-white" />
+                            <input
+                              type="time"
+                              className="form-control bg-surface border-secondary text-white"
+                              placeholder="Inicio"
+                            />
                             <span className="text-muted-tf small">a</span>
-                            <input type="time" className="form-control bg-surface border-secondary text-white" />
+                            <input
+                              type="time"
+                              className="form-control bg-surface border-secondary text-white"
+                              placeholder="Fin"
+                            />
                           </div>
                         </div>
                       </div>
@@ -121,37 +262,82 @@ const Settings = () => {
               )}
 
               {activeSection === 'planificacion' && (
-                <div className="row g-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Horas de estudio diarias (objetivo)</label>
-                    <input type="number" className="form-control bg-surface border-secondary text-white" placeholder="2" />
+                <form onSubmit={handleSave}>
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Hora habitual para comenzar el día</label>
+                      <input
+                        type="time"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="07:30"
+                        value={student.preferences?.usual_start_time || ''}
+                        onChange={(e) =>
+                          setStudent({
+                            ...student,
+                            preferences: { ...student.preferences, usual_start_time: e.target.value },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Hora habitual para dormir</label>
+                      <input
+                        type="time"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="23:00"
+                        value={student.preferences?.usual_sleep_time || ''}
+                        onChange={(e) =>
+                          setStudent({
+                            ...student,
+                            preferences: { ...student.preferences, usual_sleep_time: e.target.value },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Duración de sesiones de estudio (minutos)</label>
+                      <input
+                        type="number"
+                        min="5"
+                        max="480"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="60"
+                        value={student.preferences?.preferred_study_session_minutes || ''}
+                        onChange={(e) =>
+                          setStudent({
+                            ...student,
+                            preferences: {
+                              ...student.preferences,
+                              preferred_study_session_minutes: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted-tf small">Duración de descansos (minutos)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="15"
+                        value={student.preferences?.preferred_break_minutes || ''}
+                        onChange={(e) =>
+                          setStudent({
+                            ...student,
+                            preferences: { ...student.preferences, preferred_break_minutes: e.target.value },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="col-12">
+                      <button className="btn btn-primary mt-3" type="submit">
+                        Guardar cambios
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Bloque de estudio preferido</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>Mañana</option>
-                      <option>Tarde</option>
-                      <option>Noche</option>
-                    </select>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Días de descanso</label>
-                    <select className="form-select bg-surface border-secondary text-white" multiple>
-                      <option>Sábado</option>
-                      <option>Domingo</option>
-                    </select>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label text-muted-tf small">Recordatorios antes de clase</label>
-                    <select className="form-select bg-surface border-secondary text-white">
-                      <option>15 minutos</option>
-                      <option>30 minutos</option>
-                      <option>1 hora</option>
-                      <option>Ninguno</option>
-                    </select>
-                  </div>
-                  <button className="btn btn-primary mt-3">Guardar cambios</button>
-                </div>
+                </form>
               )}
 
               {activeSection === 'apariencia' && (
@@ -203,10 +389,18 @@ const Settings = () => {
                   <div className="col-12">
                     <label className="form-label text-muted-tf small">API key</label>
                     <div className="input-group">
-                      <input type="password" className="form-control bg-surface border-secondary text-white" placeholder="sk-or-..." />
-                      <button className="btn btn-outline-primary" type="button">👁️</button>
+                      <input
+                        type="password"
+                        className="form-control bg-surface border-secondary text-white"
+                        placeholder="sk-or-..."
+                      />
+                      <button className="btn btn-outline-primary" type="button">
+                        👁️
+                      </button>
                     </div>
-                    <p className="text-muted-tf small mt-2">La API key se almacena localmente en tu dispositivo.</p>
+                    <p className="text-muted-tf small mt-2">
+                      La API key se almacena localmente en tu dispositivo.
+                    </p>
                   </div>
                   <div className="col-12">
                     <button className="btn btn-primary">Guardar configuración de IA</button>
