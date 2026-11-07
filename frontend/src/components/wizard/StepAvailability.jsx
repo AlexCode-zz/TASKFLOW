@@ -36,21 +36,20 @@ const StepAvailability = ({ availability, onChange, onAddQuickAvailability }) =>
   };
 
   const applyQuickAvailability = (start, end, days) => {
-    const newAvailability = availability.map((a) => {
-      if (days.includes(a.day_of_week)) {
-        return { ...a, is_available: true, start_time: start, end_time: end };
+    const newForm = { ...form };
+    days.forEach((dayKey) => {
+      if (newForm[dayKey]) {
+        newForm[dayKey] = { ...newForm[dayKey], is_available: true, start_time: start, end_time: end };
       }
-      return a;
     });
-    setForm(newAvailability.reduce((acc, a) => {
-      acc[a.day_of_week] = {
-        is_available: a.is_available,
-        start_time: a.start_time || '',
-        end_time: a.end_time || '',
-      };
-      return acc;
-    }, {}));
-    onChange(newAvailability);
+    setForm(newForm);
+    const availabilityArray = DAYS.map((d) => ({
+      day_of_week: d.key,
+      is_available: newForm[d.key]?.is_available || false,
+      start_time: newForm[d.key]?.start_time || '',
+      end_time: newForm[d.key]?.end_time || '',
+    }));
+    onChange(availabilityArray);
   };
 
   return (

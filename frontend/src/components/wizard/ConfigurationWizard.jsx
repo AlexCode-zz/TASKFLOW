@@ -22,16 +22,6 @@ const INITIAL_AVAILABILITY = [
   { day_of_week: 'domingo', is_available: false, start_time: '', end_time: '' },
 ];
 
-const DAY_LABELS = {
-  lunes: 'Lunes',
-  martes: 'Martes',
-  miércoles: 'Miércoles',
-  jueves: 'Jueves',
-  viernes: 'Viernes',
-  sábado: 'Sábado',
-  domingo: 'Domingo',
-};
-
 const DAY_ORDER = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 const ConfigurationWizard = () => {
