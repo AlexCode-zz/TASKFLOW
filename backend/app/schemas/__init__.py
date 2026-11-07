@@ -44,6 +44,18 @@ from app.schemas.project import (
     ProjectUpdate,
     ProjectResponse,
 )
+from app.schemas.planning import (
+    PlanBase,
+    PlanCreate,
+    PlanResponse,
+    PlanningSessionBase,
+    PlanningSessionCreate,
+    PlanningSessionUpdate,
+    PlanningSessionResponse,
+    PlanningGenerateRequest,
+    PlanningGenerateResponse,
+    PlanningSessionManualUpdate,
+)
 
 __all__ = [
     "StudentBase",
@@ -84,4 +96,14 @@ __all__ = [
     "ProjectCreate",
     "ProjectUpdate",
     "ProjectResponse",
+    "PlanBase",
+    "PlanCreate",
+    "PlanResponse",
+    "PlanningSessionBase",
+    "PlanningSessionCreate",
+    "PlanningSessionUpdate",
+    "PlanningSessionResponse",
+    "PlanningGenerateRequest",
+    "PlanningGenerateResponse",
+    "PlanningSessionManualUpdate",
 ]

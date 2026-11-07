@@ -15,6 +15,8 @@ from app.models import (  # noqa: F401
     Evaluation,
     Task,
     Project,
+    Plan,
+    PlanningSession,
 )
 
 engine = create_engine(

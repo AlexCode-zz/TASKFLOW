@@ -8,6 +8,7 @@ from app.models.laboratory import Laboratory
 from app.models.evaluation import Evaluation
 from app.models.task import Task
 from app.models.project import Project
+from app.models.planning import Plan, PlanningSession
 
 __all__ = [
     "Student",
@@ -19,4 +20,6 @@ __all__ = [
     "Evaluation",
     "Task",
     "Project",
+    "Plan",
+    "PlanningSession",
 ]
