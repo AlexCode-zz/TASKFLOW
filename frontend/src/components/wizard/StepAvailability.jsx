@@ -42,7 +42,14 @@ const StepAvailability = ({ availability, onChange, onAddQuickAvailability }) =>
       }
       return a;
     });
-    setAvailability(newAvailability);
+    setForm(newAvailability.reduce((acc, a) => {
+      acc[a.day_of_week] = {
+        is_available: a.is_available,
+        start_time: a.start_time || '',
+        end_time: a.end_time || '',
+      };
+      return acc;
+    }, {}));
     onChange(newAvailability);
   };
 
