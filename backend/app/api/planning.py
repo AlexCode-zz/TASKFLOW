@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
-from datetime import date
+from typing import List, Dict, Any, Optional
+from datetime import date, timedelta
 
 from app.db.session import get_db
 from app.crud.student import get_latest_student
@@ -140,9 +140,8 @@ def generate_planning(
 
     week_start = request.week_start_date
     if week_start is None:
-        # Lunes de la semana actual
         today = date.today()
-        week_start = today - __import__("datetime").timedelta(days=today.weekday())
+        week_start = today - timedelta(days=today.weekday())
 
     student_data = _build_student_data(db, student)
 
