@@ -1,0 +1,19 @@
+# Frontend - TaskFlow
+
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+build/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db

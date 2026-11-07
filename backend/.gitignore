@@ -1,0 +1,25 @@
+# Backend - TaskFlow
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.env
+
+*.db
+*.sqlite
+*.sqlite3
+
+*.log
+
+.vscode/
+.idea/
+*.swp
+*~
+
+.DS_Store
+Thumbs.db

@@ -1,0 +1,34 @@
+/* TaskFlow - Estilos adicionales de componentes */
+
+/* Tarjetas de materia/evento con colores diferenciados */
+.subject-card {
+  border-left: 4px solid;
+}
+
+.subject-math {
+  border-left-color: #3b82f6;
+}
+.subject-science {
+  border-left-color: #10b981;
+}
+.subject-literature {
+  border-left-color: #f59e0b;
+}
+.subject-history {
+  border-left-color: #ec4899;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

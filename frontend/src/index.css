@@ -1,0 +1,286 @@
+/* TaskFlow - Estilos personalizados */
+:root {
+  --tf-bg: #0a0a0b;
+  --tf-surface: #141417;
+  --tf-surface-hover: #1c1c1f;
+  --tf-border: #2a2a2e;
+  --tf-text: #e8e8ea;
+  --tf-text-muted: #94949a;
+  --tf-accent: #6366f1;
+  --tf-accent-hover: #4f46e5;
+  --tf-danger: #ef4444;
+  --tf-success: #22c55e;
+  --tf-warning: #eab308;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--tf-bg);
+  color: var(--tf-text);
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+.app-wrapper {
+  height: 100vh;
+  display: flex;
+  position: relative;
+}
+
+main {
+  height: 100vh;
+  overflow-y: auto;
+  background-color: var(--tf-bg);
+}
+
+/* Tema oscuro para formularios de Bootstrap */
+.form-control,
+.form-select {
+  background-color: var(--tf-surface);
+  border: 1px solid var(--tf-border);
+  color: var(--tf-text);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--tf-surface);
+  color: var(--tf-text);
+  border-color: var(--tf-accent);
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+}
+
+.btn-outline-primary {
+  color: var(--tf-accent);
+  border-color: var(--tf-accent);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--tf-accent);
+  border-color: var(--tf-accent);
+}
+
+.btn-primary {
+  background-color: var(--tf-accent);
+  border-color: var(--tf-accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--tf-accent-hover);
+  border-color: var(--tf-accent-hover);
+}
+
+/* Tarjetas */
+.card {
+  background-color: var(--tf-surface);
+  border: 1px solid var(--tf-border);
+  color: var(--tf-text);
+}
+
+.card-header {
+  background-color: var(--tf-surface);
+  border-bottom: 1px solid var(--tf-border);
+  color: var(--tf-text);
+}
+
+.card-footer {
+  background-color: var(--tf-surface);
+  border-top: 1px solid var(--tf-border);
+  color: var(--tf-text-muted);
+}
+
+/* Tablas */
+.table {
+  color: var(--tf-text);
+}
+
+.table-dark {
+  --bs-table-bg: var(--tf-surface);
+  --bs-table-border-color: var(--tf-border);
+  --bs-table-striped-bg: var(--tf-surface-hover);
+  --bs-table-hover-bg: var(--tf-surface-hover);
+  color: var(--tf-text);
+}
+
+.table-dark > thead > tr > th {
+  border-bottom: 2px solid var(--tf-border);
+  color: var(--tf-text-muted);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tf-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tf-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tf-text-muted);
+}
+
+/* Utilidades */
+.text-muted-tf {
+  color: var(--tf-text-muted) !important;
+}
+
+.border-tf {
+  border-color: var(--tf-border) !important;
+}
+
+.bg-surface {
+  background-color: var(--tf-surface) !important;
+}
+
+/* Responsive: ocultar sidebar en pantallas pequeñas */
+@media (max-width: 991.98px) {
+  .app-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-in-out;
+    z-index: 1050;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1040;
+    display: none;
+  }
+
+  .overlay.visible {
+    display: block;
+  }
+}
+
+/* Nueva navegación lateral */
+.sidebar .nav-link:hover {
+  background-color: var(--tf-surface-hover);
+  color: var(--tf-text);
+}
+
+/* Cuadrícula semanal */
+.weekly-grid th,
+.weekly-grid td {
+  border-color: var(--tf-border) !important;
+}
+
+.day-cell {
+  background-color: var(--tf-surface);
+}
+
+.day-cell:hover {
+  background-color: var(--tf-surface-hover);
+}
+
+/* Chat del asistente IA */
+.chat-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tf-border) var(--tf-bg);
+}
+
+.typing-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--tf-text-muted);
+  animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+/* Iconos decorativos */
+.empty-icon,
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+/* Insignia de materia */
+.subject-badge {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Efecto de entrada */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
