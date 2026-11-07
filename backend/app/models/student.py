@@ -10,7 +10,7 @@ class Student(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
     institution = Column(String, nullable=True)
-    career = Column(String, nullable=False, index=True)
+    career = Column(String, nullable=True, index=True)
     faculty = Column(String, nullable=True)
     academic_year = Column(Integer, nullable=True)
     semester = Column(String, nullable=True)

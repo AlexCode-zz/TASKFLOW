@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#06b6d4', '#8b5cf6', '#ec4899', '#6366f1'];
 
-const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete }) => {
+const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
   const [newSubject, setNewSubject] = useState({
     name: '',
     code: '',
@@ -46,6 +46,17 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete }) => {
         </div>
       )}
 
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h6 className="fw-semibold mb-0">Materias</h6>
+        <button
+          type="button"
+          className="btn btn-outline-secondary btn-sm"
+          onClick={skip}
+        >
+          Omitir por ahora
+        </button>
+      </div>
+
       <div className="row g-3 mb-4">
         <div className="col-12 col-md-4">
           <label className="form-label text-muted-tf small">Nombre <span className="text-danger">*</span></label>
@@ -84,9 +95,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete }) => {
               <button
                 key={c}
                 type="button"
-                className={`btn btn-sm p-0 rounded-circle border border-secondary ${
-                  newSubject.color === c ? 'border-white' : ''
-                }`}
+                className={`btn btn-sm p-0 rounded-circle border border-secondary ${newSubject.color === c ? 'border-white' : ''}`}
                 style={{ backgroundColor: c, width: '30px', height: '30px' }}
                 onClick={() => setNewSubject({ ...newSubject, color: c })}
               />
@@ -95,18 +104,17 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete }) => {
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="form-label text-muted-tf small">Descripción</label>
-        <textarea
-          className="form-control bg-surface border-secondary text-white"
-          rows="2"
-          value={newSubject.description}
-          onChange={(e) => setNewSubject({ ...newSubject, description: e.target.value })}
-          placeholder="Descripción opcional de la materia"
-        />
-      </div>
-
       <div className="row g-3 mb-4">
+        <div className="col-12 col-md-4">
+          <label className="form-label text-muted-tf small">Descripción</label>
+          <textarea
+            className="form-control bg-surface border-secondary text-white"
+            rows="2"
+            value={newSubject.description}
+            onChange={(e) => setNewSubject({ ...newSubject, description: e.target.value })}
+            placeholder="Descripción opcional"
+          />
+        </div>
         <div className="col-12 col-md-4">
           <label className="form-label text-muted-tf small">Créditos académicos</label>
           <input
@@ -129,7 +137,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete }) => {
       <h6 className="fw-semibold text-white mb-3">Materias registradas</h6>
       {subjects.length === 0 ? (
         <div className="text-muted-tf text-center py-4">
-          No hay materias registradas. Agrega al menos una para continuar.
+          No hay materias registradas.
         </div>
       ) : (
         <div className="list-group list-group-flush">

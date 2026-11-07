@@ -5,38 +5,34 @@ import StepProgress from './StepProgress';
 import StepAcademic from './StepAcademic';
 import StepSubjects from './StepSubjects';
 import StepAvailability from './StepAvailability';
-import StepPreferences from './StepPreferences';
-import StepSummary from './StepSummary';
 
 const INITIAL_STUDENT = {
   name: '',
-  institution: '',
-  career: '',
-  faculty: '',
-  academic_year: '',
-  semester: '',
-  cycle_start_date: '',
-  cycle_end_date: '',
 };
 
 const INITIAL_SUBJECTS = [];
+
 const INITIAL_AVAILABILITY = [
-  { day_of_week: 'lunes', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'martes', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'miércoles', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'jueves', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'viernes', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'sábado', is_available: true, start_time: '', end_time: '' },
-  { day_of_week: 'domingo', is_available: true, start_time: '', end_time: '' },
+  { day_of_week: 'lunes', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'martes', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'miércoles', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'jueves', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'viernes', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'sábado', is_available: false, start_time: '', end_time: '' },
+  { day_of_week: 'domingo', is_available: false, start_time: '', end_time: '' },
 ];
-const INITIAL_PREFERENCES = {
-  usual_start_time: '',
-  usual_sleep_time: '',
-  preferred_study_session_minutes: '',
-  preferred_break_minutes: '',
-  exam_preparation_days: '',
-  planning_preference: 'daily',
+
+const DAY_LABELS = {
+  lunes: 'Lunes',
+  martes: 'Martes',
+  miércoles: 'Miércoles',
+  jueves: 'Jueves',
+  viernes: 'Viernes',
+  sábado: 'Sábado',
+  domingo: 'Domingo',
 };
+
+const DAY_ORDER = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 const ConfigurationWizard = () => {
   const navigate = useNavigate();
@@ -44,76 +40,80 @@ const ConfigurationWizard = () => {
   const [student, setStudent] = useState(INITIAL_STUDENT);
   const [subjects, setSubjects] = useState(INITIAL_SUBJECTS);
   const [availability, setAvailability] = useState(INITIAL_AVAILABILITY);
-  const [preferences, setPreferences] = useState(INITIAL_PREFERENCES);
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  const canGoNext = () => {
-    if (currentStep === 1) {
-      return !student.name.trim() ? false : true;
-    }
-    if (currentStep === 2) {
-      return subjects.length > 0;
-    }
-    if (currentStep === 3) {
-      return true;
-    }
-    if (currentStep === 4) {
-      return true;
-    }
-    return true;
+  const cleanValue = (v) => {
+    if (v === '' || v === null || v === undefined) return null;
+    return v;
+  };
+
+  const cleanNumber = (v) => {
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
   };
 
   const handleSave = async () => {
     setLoading(true);
     setSaveError('');
     try {
-      // Paso 1: Guardar información académica
-      await api.post('/students/', student);
+      const studentPayload = {
+        name: student.name.trim(),
+      };
+      await api.post('/students/', studentPayload);
 
-      // Paso 2: Guardar materias
       for (const subject of subjects) {
+        if (!subject.name || !subject.name.trim()) continue;
         await api.post('/subjects/', {
-          name: subject.name,
-          code: subject.code || undefined,
-          teacher: subject.teacher || undefined,
-          description: subject.description || undefined,
-          color: subject.color,
-          credits: subject.credits ? parseInt(subject.credits) : undefined,
+          name: subject.name.trim(),
+          code: cleanValue(subject.code),
+          teacher: cleanValue(subject.teacher),
+          description: cleanValue(subject.description),
+          color: subject.color || '#6366f1',
+          credits: cleanNumber(subject.credits),
         });
       }
 
-      // Paso 3: Guardar disponibilidad
       for (const day of availability) {
         if (day.is_available && day.start_time && day.end_time) {
           await api.post('/availability/', {
             day_of_week: day.day_of_week,
-            is_available: day.is_available,
+            is_available: true,
             start_time: day.start_time,
             end_time: day.end_time,
-          });
-        } else if (day.is_available) {
-          await api.post('/availability/', {
-            day_of_week: day.day_of_week,
-            is_available: true,
           });
         }
       }
 
-      // Paso 4: Guardar preferencias
-      await api.post('/preferences/', preferences);
-
-      // Paso 5: Marcar como configurado
       await api.post('/students/me/complete');
-
       navigate('/');
     } catch (err) {
-      setSaveError('Error al guardar la configuración. Intenta nuevamente.');
+      if (err.response && err.response.status === 422) {
+        const detail = err.response.data?.detail;
+        if (Array.isArray(detail)) {
+          const msgs = detail.map((d) => `${d.loc.join('.')}: ${d.msg}`).join(', ');
+          setSaveError(`Error de validación: ${msgs}`);
+        } else {
+          setSaveError(`Error de validación: ${detail}`);
+        }
+      } else {
+        setSaveError('Error al guardar la configuración. Intenta nuevamente.');
+      }
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddQuickAvailability = (dayStart, dayEnd, days) => {
+    const newAvailability = availability.map((a) => {
+      if (days.includes(a.day_of_week)) {
+        return { ...a, is_available: true, start_time: dayStart, end_time: dayEnd };
+      }
+      return a;
+    });
+    setAvailability(newAvailability);
   };
 
   return (
@@ -146,8 +146,7 @@ const ConfigurationWizard = () => {
               subjects={subjects}
               onAdd={(s) => setSubjects([...subjects, { ...s, id: Date.now() }])}
               onUpdate={(id, s) =>
-                setSubjects(subjects.map((sub) => (sub.id === id ? { ...sub, ...s } : sub)))
-              }
+                setSubjects(subjects.map((sub) => (sub.id === id ? { ...sub, ...s } : sub)))}
               onDelete={(id) => setSubjects(subjects.filter((sub) => sub.id !== id))}
             />
           )}
@@ -163,21 +162,7 @@ const ConfigurationWizard = () => {
                 }));
                 setAvailability(newAvailability);
               }}
-            />
-          )}
-          {currentStep === 4 && (
-            <StepPreferences
-              preferences={preferences}
-              onChange={(field, value) => setPreferences({ ...preferences, [field]: value })}
-            />
-          )}
-          {currentStep === 5 && (
-            <StepSummary
-              student={student}
-              subjects={subjects}
-              availability={availability}
-              preferences={preferences}
-              onEditStep={(step) => setCurrentStep(step)}
+              onAddQuickAvailability={handleAddQuickAvailability}
             />
           )}
         </div>
@@ -192,21 +177,12 @@ const ConfigurationWizard = () => {
               ← Anterior
             </button>
           )}
-          {currentStep < 5 ? (
+          {currentStep < 3 ? (
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => {
-                if (canGoNext()) {
-                  if (currentStep === 1) {
-                    const isValid = !errors.name && !errors.career && !errors.academic_year && !errors.cycle_end_date;
-                    if (isValid) setCurrentStep(currentStep + 1);
-                  } else {
-                    setCurrentStep(currentStep + 1);
-                  }
-                }
-              }}
-              disabled={loading || !canGoNext()}
+              onClick={() => setCurrentStep(currentStep + 1)}
+              disabled={loading}
             >
               Siguiente →
             </button>
@@ -217,7 +193,7 @@ const ConfigurationWizard = () => {
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? 'Guardando...' : 'Finalizar configuración'}
+              {loading ? 'Guardando...' : 'Comenzar'}
             </button>
           )}
           <Link to="/" className="text-muted-tf small text-decoration-none">

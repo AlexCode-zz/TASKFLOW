@@ -84,3 +84,55 @@ def test_cycle_end_date_before_start_validation(client: TestClient):
         "cycle_end_date": "2026-08-01",
     })
     assert response.status_code in (400, 422)
+
+
+def test_create_student_minimal_payload(client: TestClient):
+    """Prueba crear estudiante solo con nombre (payload mínimo, sin 422)."""
+    response = client.post("/api/students/", json={
+        "name": "Ana Gómez",
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Ana Gómez"
+    assert data["career"] is None
+    assert data["institution"] is None
+
+
+def test_create_student_complete_payload(client: TestClient):
+    """Prueba crear estudiante con todos los campos (payload completo, sin 422)."""
+    response = client.post("/api/students/", json={
+        "name": "Carlos Ruiz",
+        "institution": "Universidad Nacional",
+        "career": "Ingeniería",
+        "faculty": "Ingeniería",
+        "academic_year": 3,
+        "semester": "3º",
+        "cycle_start_date": "2026-08-01",
+        "cycle_end_date": "2026-12-15",
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Carlos Ruiz"
+    assert data["career"] == "Ingeniería"
+    assert data["semester"] == "3º"
+
+
+def test_create_student_empty_strings_to_none(client: TestClient):
+    """Prueba que strings vacíos se conviertan a null sin 422."""
+    response = client.post("/api/students/", json={
+        "name": "María López",
+        "institution": "",
+        "career": "",
+        "faculty": "",
+        "academic_year": "",
+        "semester": "",
+        "cycle_start_date": "",
+        "cycle_end_date": "",
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "María López"
+    assert data["institution"] is None
+    assert data["career"] is None
+    assert data["academic_year"] is None
+    assert data["semester"] is None
