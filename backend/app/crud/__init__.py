@@ -1,8 +1,8 @@
 # Lógica de acceso a datos
 from app.crud.student import (
-    get_student_by_id,
+    get_latest_student,
     get_configured_student,
-    create_student,
+    create_or_update_student,
     update_student,
     mark_configured,
 )
