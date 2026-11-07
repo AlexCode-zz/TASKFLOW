@@ -57,8 +57,8 @@ class PlanningEngine:
 
         busy_blocks = self._build_busy_blocks(week_start, week_end)
 
-        sleep_start = self.preferences.get("usual_sleep_time")
-        sleep_end = self.preferences.get("usual_start_time")
+        sleep_start = self.preferences.get("usual_start_time")
+        sleep_end = self.preferences.get("usual_sleep_time")
 
         available_slots = generate_available_slots(
             week_start,
