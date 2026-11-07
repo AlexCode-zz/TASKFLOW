@@ -7,16 +7,26 @@ def get_student(db: Session, student_id: int):
     return db.query(Student).filter(Student.id == student_id).first()
 
 
-def get_student_by_id(db: Session, student_id: int):
-    return get_student(db, student_id)
+def get_latest_student(db: Session):
+    """Devuelve el estudiante más reciente, independientemente de su estado de configuración."""
+    return db.query(Student).order_by(Student.id.desc()).first()
 
 
 def get_configured_student(db: Session):
-    """Devuelve el estudiante configurado (único en esta versión local)."""
+    """Devuelve el estudiante configurado (is_configured=True)."""
     return db.query(Student).filter(Student.is_configured == True).first()  # noqa: E712
 
 
-def create_student(db: Session, student_in: StudentCreate):
+def create_or_update_student(db: Session, student_in: StudentCreate):
+    """Crea un estudiante o actualiza el existente si ya hay uno."""
+    existing = get_latest_student(db)
+    if existing:
+        update_data = student_in.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(existing, field, value)
+        db.commit()
+        db.refresh(existing)
+        return existing
     db_student = Student(**student_in.model_dump())
     db.add(db_student)
     db.commit()

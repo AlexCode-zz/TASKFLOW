@@ -3,13 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.session import get_db
-from app.crud.student import get_configured_student
+from app.crud.student import get_latest_student
 from app.crud.subject import (
     get_subjects_by_student,
     get_subject_by_code,
     create_subject,
     update_subject,
     delete_subject,
+    get_subject,
 )
 from app.schemas.subject import SubjectCreate, SubjectUpdate, SubjectResponse
 
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/subjects", tags=["Materias"])
 
 
 def get_current_student(db: Session):
-    student = get_configured_student(db)
+    student = get_latest_student(db)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -54,8 +55,6 @@ def create_subject_endpoint(subject_in: SubjectCreate, db: Session = Depends(get
 def get_subject_endpoint(subject_id: int, db: Session = Depends(get_db)):
     """Obtiene los detalles de una materia."""
     student = get_current_student(db)
-    subject = get_subject_by_code(db, student.id, str(subject_id)) if False else None
-    from app.crud.subject import get_subject
     subject = get_subject(db, subject_id)
     if not subject or subject.student_id != student.id:
         raise HTTPException(
@@ -69,8 +68,6 @@ def get_subject_endpoint(subject_id: int, db: Session = Depends(get_db)):
 def update_subject_endpoint(subject_id: int, subject_in: SubjectUpdate, db: Session = Depends(get_db)):
     """Actualiza una materia existente."""
     student = get_current_student(db)
-    subject = None
-    from app.crud.subject import get_subject
     subject = get_subject(db, subject_id)
     if not subject or subject.student_id != student.id:
         raise HTTPException(
@@ -94,7 +91,6 @@ def update_subject_endpoint(subject_id: int, subject_in: SubjectUpdate, db: Sess
 def delete_subject_endpoint(subject_id: int, db: Session = Depends(get_db)):
     """Elimina una materia."""
     student = get_current_student(db)
-    from app.crud.subject import get_subject
     subject = get_subject(db, subject_id)
     if not subject or subject.student_id != student.id:
         raise HTTPException(

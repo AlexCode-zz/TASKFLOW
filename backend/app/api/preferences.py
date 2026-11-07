@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.crud.student import get_configured_student
+from app.crud.student import get_latest_student
 from app.crud.student_preference import (
     get_preference_by_student,
     create_or_update_preference,
@@ -17,11 +17,11 @@ router = APIRouter(prefix="/preferences", tags=["Preferencias de planificación"
 
 
 def get_current_student(db: Session):
-    student = get_configured_student(db)
+    student = get_latest_student(db)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontró configuración de estudiante.",
+            detail="No se encontró configururación de estudiante.",
         )
     return student
 

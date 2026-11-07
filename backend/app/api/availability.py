@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.session import get_db
-from app.crud.student import get_configured_student
+from app.crud.student import get_latest_student
 from app.crud.weekly_availability import (
     get_availability_by_student,
     create_or_update_availability,
     delete_availability_by_student,
+    get_availability_by_day,
 )
 from app.schemas.weekly_availability import (
     WeeklyAvailabilityCreate,
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/availability", tags=["Disponibilidad semanal"])
 
 
 def get_current_student(db: Session):
-    student = get_configured_student(db)
+    student = get_latest_student(db)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -58,7 +59,6 @@ def update_availability_day(
 ):
     """Actualiza la disponibilidad de un día."""
     student = get_current_student(db)
-    from app.crud.weekly_availability import get_availability_by_day
     existing = get_availability_by_day(db, student.id, day_of_week)
     if not existing:
         raise HTTPException(
