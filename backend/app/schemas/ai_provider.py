@@ -76,6 +76,8 @@ class AIProviderListItem(BaseModel):
 
 class AIModelSuggestion(BaseModel):
     """Sugerencia de modelo para un proveedor."""
+    model_config = {"protected_namespaces": ()}
+
     provider_name: str
     model_id: str
     model_name: str

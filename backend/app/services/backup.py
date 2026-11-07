@@ -7,7 +7,7 @@ entidades.
 
 import json
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
@@ -51,7 +51,7 @@ def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
     sessions = planning_crud.get_sessions_by_student(db, student_id)
 
     return {
-        "exported_at": datetime.utcnow().isoformat(),
+        "exported_at": datetime.now(timezone.utc).isoformat(),
         "version": "1.0",
         "student": {
             "name": student.name,

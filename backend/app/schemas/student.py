@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import date
 from typing import Optional, List
 
@@ -13,10 +13,11 @@ class StudentBase(BaseModel):
     cycle_start_date: Optional[date] = None
     cycle_end_date: Optional[date] = None
 
-    @validator("cycle_end_date")
-    def end_after_start(cls, v, values):
-        if v is not None and values.get("cycle_start_date") is not None:
-            if v < values["cycle_start_date"]:
+    @field_validator("cycle_end_date")
+    @classmethod
+    def end_after_start(cls, v, info):
+        if v is not None and info.data.get("cycle_start_date") is not None:
+            if v < info.data["cycle_start_date"]:
                 raise ValueError("La fecha de finalización debe ser posterior a la de inicio")
         return v
 
