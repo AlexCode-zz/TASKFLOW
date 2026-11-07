@@ -12,18 +12,17 @@ from pathlib import Path
 from typing import List
 
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
-from app.db.session import engine, SessionLocal
+from app.db.session import engine
 
 logger = logging.getLogger("taskflow.migrations")
 
 MIGRATIONS_DIR = Path(__file__).parent
 
 
-def _ensure_migrations_table(db: Session) -> None:
+def _ensure_migrations_table(connection) -> None:
     """Crea la tabla de seguimiento de migraciones si no existe."""
-    db.execute(
+    connection.execute(
         text(
             """
             CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -34,22 +33,20 @@ def _ensure_migrations_table(db: Session) -> None:
             """
         )
     )
-    db.commit()
 
 
-def _get_applied_migrations(db: Session) -> List[str]:
+def _get_applied_migrations(connection) -> List[str]:
     """Devuelve la lista de nombres de migraciones ya aplicadas."""
-    result = db.execute(text("SELECT migration_name FROM schema_migrations")).fetchall()
+    result = connection.execute(text("SELECT migration_name FROM schema_migrations")).fetchall()
     return [row[0] for row in result]
 
 
-def _record_migration(db: Session, migration_name: str) -> None:
+def _record_migration(connection, migration_name: str) -> None:
     """Registra una migración como aplicada."""
-    db.execute(
+    connection.execute(
         text("INSERT INTO schema_migrations (migration_name) VALUES (:name)"),
         {"name": migration_name},
     )
-    db.commit()
 
 
 def _discover_migration_files() -> List[Path]:
@@ -60,10 +57,9 @@ def _discover_migration_files() -> List[Path]:
 
 def run_pending_migrations() -> None:
     """Ejecuta todas las migraciones pendientes dentro de transacciones."""
-    db = SessionLocal()
-    try:
-        _ensure_migrations_table(db)
-        applied = _get_applied_migrations(db)
+    with engine.begin() as connection:
+        _ensure_migrations_table(connection)
+        applied = _get_applied_migrations(connection)
         migration_files = _discover_migration_files()
 
         for migration_file in migration_files:
@@ -73,7 +69,6 @@ def run_pending_migrations() -> None:
 
             logger.info("Aplicando migración: %s", migration_name)
 
-            # Importar el módulo de migración
             module_name = f"app.db.migrations.{migration_name}"
             module = importlib.import_module(module_name)
 
@@ -84,26 +79,22 @@ def run_pending_migrations() -> None:
                 )
                 continue
 
-            # Ejecutar dentro de una transacción
             try:
-                with db.begin():
-                    module.up(db)
-                _record_migration(db, migration_name)
+                module.up(connection)
+                _record_migration(connection, migration_name)
                 logger.info("Migración %s aplicada correctamente.", migration_name)
             except Exception as e:
-                logger.error("Error aplicando migración %s: %s", migration_name, str(e))
+                logger.error(
+                    "Error aplicando migración %s: %s", migration_name, str(e)
+                )
                 raise
-
-    finally:
-        db.close()
 
 
 def get_migration_status() -> dict:
     """Devuelve el estado de las migraciones."""
-    db = SessionLocal()
-    try:
-        _ensure_migrations_table(db)
-        applied = _get_applied_migrations(db)
+    with engine.connect() as connection:
+        _ensure_migrations_table(connection)
+        applied = _get_applied_migrations(connection)
         migration_files = _discover_migration_files()
 
         return {
@@ -111,5 +102,3 @@ def get_migration_status() -> dict:
             "pending": [f.stem for f in migration_files if f.stem not in applied],
             "total": len(migration_files),
         }
-    finally:
-        db.close()

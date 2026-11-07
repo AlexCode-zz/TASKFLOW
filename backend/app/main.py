@@ -3,20 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.exception_handler import add_exception_handlers
-from app.db.migrations.manager import run_pending_migrations
 from app.db.session import engine, Base
 
 # Crear tablas en la base de datos SQLite (no recrea tablas existentes)
 Base.metadata.create_all(bind=engine)
-
-# Ejecutar migraciones pendientes de forma segura
-run_pending_migrations()
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="Aplicación local de organización académica universitaria",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+def run_startup_migrations():
+    """Ejecuta migraciones pendientes al iniciar la aplicación."""
+    from app.db.migrations.manager import run_pending_migrations
+    run_pending_migrations()
+
 
 # CORS para el frontend local
 cors_origins = [
