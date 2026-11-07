@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Index
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -17,9 +17,3 @@ class Subject(Base):
     credits = Column(Integer, nullable=True)
 
     student = relationship("Student", back_populates="subjects")
-
-    __table_args__ = (
-        Index("ix_subjects_student_id", "student_id"),
-        Index("ix_subjects_name", "name"),
-        Index("ix_subjects_code", "code"),
-    )

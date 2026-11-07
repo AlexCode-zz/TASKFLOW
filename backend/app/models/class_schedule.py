@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Index
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -20,8 +20,3 @@ class ClassSchedule(Base):
 
     student = relationship("Student", back_populates="class_schedules")
     subject = relationship("Subject")
-
-    __table_args__ = (
-        Index("ix_class_schedules_student_day", "student_id", "day_of_week"),
-        Index("ix_class_schedules_subject", "subject_id"),
-    )
