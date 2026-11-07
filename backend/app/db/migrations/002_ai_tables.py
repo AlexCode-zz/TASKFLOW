@@ -62,12 +62,9 @@ def up(db: Session) -> None:
     db.execute(text("CREATE INDEX IF NOT EXISTS ix_ai_messages_conversation ON ai_messages(conversation_id)"))
     db.execute(text("CREATE INDEX IF NOT EXISTS ix_ai_messages_created ON ai_messages(created_at)"))
 
-    db.commit()
-
 
 def down(db: Session) -> None:
     """Elimina las tablas de IA."""
     db.execute(text("DROP TABLE IF EXISTS ai_messages"))
     db.execute(text("DROP TABLE IF EXISTS ai_conversations"))
     db.execute(text("DROP TABLE IF EXISTS ai_provider_configs"))
-    db.commit()

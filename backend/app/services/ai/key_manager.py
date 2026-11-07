@@ -8,7 +8,7 @@ import json
 import os
 import stat
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 # Directorio de configuración local del usuario
 CONFIG_DIR = Path.home() / ".taskflow"

@@ -16,7 +16,6 @@ from app.schemas.ai_provider import (
     AIProviderSetupRequest,
     AIProviderTestRequest,
     AIProviderTestResponse,
-    AIProviderConfig as AIProviderConfigSchema,
     ConversationCreate,
     ConversationUpdate,
     ConversationResponse,
