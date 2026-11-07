@@ -5,7 +5,17 @@ from app.core.config import settings
 from app.db.base import Base
 
 # Importar todos los modelos para que SQLAlchemy registre las tablas en Base.metadata
-from app.models import Student, Subject, WeeklyAvailability, StudentPreference  # noqa: F401
+from app.models import (  # noqa: F401
+    Student,
+    Subject,
+    WeeklyAvailability,
+    StudentPreference,
+    ClassSchedule,
+    Laboratory,
+    Evaluation,
+    Task,
+    Project,
+)
 
 engine = create_engine(
     settings.DATABASE_URL,
