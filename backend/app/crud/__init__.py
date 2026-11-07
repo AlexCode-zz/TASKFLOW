@@ -81,3 +81,20 @@ from app.crud.planning import (
     delete_session,
     delete_sessions_by_plan,
 )
+from app.crud.ai_provider import (
+    get_ai_provider_config,
+    get_ai_provider_configs,
+    get_active_ai_provider,
+    create_ai_provider_config,
+    update_ai_provider_config,
+    set_active_provider,
+    delete_ai_provider_config,
+    update_connection_status,
+    get_conversation,
+    get_conversations,
+    create_conversation,
+    update_conversation,
+    delete_conversation,
+    get_messages_by_conversation,
+    create_message,
+)

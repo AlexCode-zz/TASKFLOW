@@ -9,6 +9,7 @@ from app.models.evaluation import Evaluation
 from app.models.task import Task
 from app.models.project import Project
 from app.models.planning import Plan, PlanningSession
+from app.models.ai_provider import AIProviderConfig, Conversation, Message
 
 __all__ = [
     "Student",
@@ -22,4 +23,7 @@ __all__ = [
     "Project",
     "Plan",
     "PlanningSession",
+    "AIProviderConfig",
+    "Conversation",
+    "Message",
 ]

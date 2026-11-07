@@ -17,6 +17,9 @@ from app.models import (  # noqa: F401
     Project,
     Plan,
     PlanningSession,
+    AIProviderConfig,
+    Conversation,
+    Message,
 )
 
 engine = create_engine(
