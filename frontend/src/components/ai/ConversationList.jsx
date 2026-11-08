@@ -5,19 +5,28 @@ const ConversationList = ({ conversations, onSelect, onDelete, onNew }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    let cancelled = false;
 
-  const loadConversations = async () => {
-    try {
-      const response = await api.get('/ai/conversations/');
-      onSelect(response.data);
-    } catch (err) {
-      console.error('Error cargando conversaciones:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadConversations = async () => {
+      try {
+        const response = await api.get('/ai/conversations');
+        if (cancelled) return;
+        if (response.data.length > 0) {
+          onSelect(response.data[0]);
+        }
+      } catch (err) {
+        console.error('Error cargando conversaciones:', err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadConversations();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDelete = async (e, conversation) => {
     e.stopPropagation();

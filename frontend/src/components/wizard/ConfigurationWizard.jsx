@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import StepProgress from './StepProgress';
@@ -21,8 +21,6 @@ const INITIAL_AVAILABILITY = [
   { day_of_week: 'sábado', is_available: false, start_time: '', end_time: '' },
   { day_of_week: 'domingo', is_available: false, start_time: '', end_time: '' },
 ];
-
-const DAY_ORDER = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 const ConfigurationWizard = () => {
   const navigate = useNavigate();
@@ -97,6 +95,17 @@ const ConfigurationWizard = () => {
     }
   };
 
+  const handleNext = () => {
+    // Validación inline del paso 1: el nombre es obligatorio
+    if (currentStep === 1) {
+      const e = {};
+      if (!student.name.trim()) e.name = 'El nombre es obligatorio';
+      setErrors(e);
+      if (Object.keys(e).length > 0) return;
+    }
+    setCurrentStep(currentStep + 1);
+  };
+
   const handleAddQuickAvailability = (dayStart, dayEnd, days) => {
     const newAvailability = availability.map((a) => {
       if (days.includes(a.day_of_week)) {
@@ -122,8 +131,8 @@ const ConfigurationWizard = () => {
 
       <StepProgress currentStep={currentStep} />
 
-      <div className="card border-secondary shadow-sm">
-        <div className="card-body p-4">
+      <div className="wizard-card">
+        <div className="card-body">
           {currentStep === 1 && (
             <StepAcademic
               form={student}
@@ -139,6 +148,7 @@ const ConfigurationWizard = () => {
               onUpdate={(id, s) =>
                 setSubjects(subjects.map((sub) => (sub.id === id ? { ...sub, ...s } : sub)))}
               onDelete={(id) => setSubjects(subjects.filter((sub) => sub.id !== id))}
+              skip={() => setCurrentStep(3)}
             />
           )}
           {currentStep === 3 && (
@@ -157,7 +167,7 @@ const ConfigurationWizard = () => {
             />
           )}
         </div>
-        <div className="card-footer border-secondary bg-transparent d-flex justify-content-between align-items-center px-4 pb-3">
+        <div className="card-footer border-secondary bg-transparent d-flex justify-content-between align-items-center">
           {currentStep > 1 && (
             <button
               type="button"
@@ -172,7 +182,7 @@ const ConfigurationWizard = () => {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => setCurrentStep(currentStep + 1)}
+              onClick={handleNext}
               disabled={loading}
             >
               Siguiente →

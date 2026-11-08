@@ -10,7 +10,7 @@ const DAYS = [
   { key: 'domingo', label: 'Domingo' },
 ];
 
-const StepAvailability = ({ availability, onChange, onAddQuickAvailability }) => {
+const StepAvailability = ({ availability, onChange }) => {
   const [form, setForm] = useState(
     availability.reduce((acc, a) => {
       acc[a.day_of_week] = {

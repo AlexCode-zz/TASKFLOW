@@ -4,7 +4,7 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
-const StepSummary = ({ student, subjects, availability, preferences, onEditStep }) => {
+const StepSummary = ({ student, subjects, availability, preferences }) => {
   const availabilityByDay = availability.reduce((acc, a) => {
     acc[a.day_of_week] = a;
     return acc;

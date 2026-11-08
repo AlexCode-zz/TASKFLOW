@@ -12,17 +12,17 @@ const ProviderConfig = ({ onConfigChange }) => {
   const [providers, setProviders] = useState([]);
   const [configured, setConfigured] = useState([]);
   const [availableProviders, setAvailableProviders] = useState([]);
-  [form, setForm] = useState({
+  const [form, setForm] = useState({
     provider_name: '',
     api_key: '',
     model: '',
     is_active: false,
   });
-  [testResult, setTestResult] = useState(null);
-  [testing, setTesting] = useState(false);
-  [saving, setSaving] = useState(false);
-  [showKey, setShowKey] = useState(false);
-  [models, setModels] = useState([]);
+  const [testResult, setTestResult] = useState(null);
+  const [testing, setTesting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [models, setModels] = useState([]);
 
   useEffect(() => {
     loadProviders();
@@ -31,15 +31,25 @@ const ProviderConfig = ({ onConfigChange }) => {
   const loadProviders = async () => {
     try {
       const [providersRes, availableRes, configuredRes] = await Promise.all([
-        api.get('/ai/providers/'),
+        api.get('/ai/providers'),
         api.get('/ai/providers/available'),
         api.get('/ai/providers/configured'),
       ]);
       setProviders(providersRes.data);
       setAvailableProviders(availableRes.data);
       setConfigured(configuredRes.data);
-    } catch (err) {
-      console.error('Error cargando proveedores:', err.message);
+    } catch {
+      // Silenciar error de carga de proveedores
+    }
+  };
+
+  const fetchModels = async (provider) => {
+    try {
+      const response = await api.get(`/ai/providers/${provider}/models`);
+      setModels(response.data);
+    } catch {
+      // Los modelos pueden no estar disponibles sin clave, ignorar silenciosamente
+      setModels([]);
     }
   };
 
@@ -48,16 +58,6 @@ const ProviderConfig = ({ onConfigChange }) => {
     setForm({ ...form, provider_name: provider });
     if (provider && models.length === 0) {
       fetchModels(provider);
-    }
-  };
-
-  const fetchModels = async (provider) => {
-    try {
-      const response = await api.get(`/ai/providers/${provider}/models`);
-      setModels(response.data);
-    } catch (err) {
-      // Los modelos pueden no estar disponibles sin clave, ignorar silenciosamente
-      setModels([]);
     }
   };
 
@@ -73,11 +73,10 @@ const ProviderConfig = ({ onConfigChange }) => {
       });
       setTestResult(response.data);
       if (response.data.success) {
-        // Obtener modelos si la prueba fue exitosa
         try {
           const modelsRes = await api.get(`/ai/providers/${form.provider_name}/models`);
           setModels(modelsRes.data);
-        } catch (err) {
+        } catch {
           // Ignorar
         }
       }
@@ -87,21 +86,21 @@ const ProviderConfig = ({ onConfigChange }) => {
         provider_name: form.provider_name,
         status: 'error',
         message: err.response?.data?.detail || err.message,
+        error_code: 'error',
       });
     } finally {
       setTesting(false);
     }
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const persistProvider = async (formData) => {
     setSaving(true);
     try {
       const response = await api.post('/ai/providers/setup', {
-        provider_name: form.provider_name,
-        api_key: form.api_key,
-        model: form.model || undefined,
-        is_active: form.is_active,
+        provider_name: formData.provider_name,
+        api_key: formData.api_key,
+        model: formData.model || undefined,
+        is_active: formData.is_active,
       });
       onConfigChange(response.data);
       await loadProviders();
@@ -119,20 +118,19 @@ const ProviderConfig = ({ onConfigChange }) => {
     }
   };
 
+  const handleSave = async (e) => {
+    e.preventDefault();
+    await persistProvider(form);
+  };
+
   const handleDeleteProvider = async (providerName) => {
     if (!window.confirm(`¿Eliminar la configuración de ${providerName}?`)) return;
     try {
       await api.delete(`/ai/providers/${providerName}`);
       await loadProviders();
-    } catch (err) {
-      console.error('Error eliminando proveedor:', err.message);
+    } catch {
+      // Error al eliminar proveedor
     }
-  };
-
-  const maskKey = (key) => {
-    if (!key) return '';
-    if (key.length <= 8) return '*'.repeat(key.length);
-    return key.substring(0, 4) + '*'.repeat(key.length - 8) + key.substring(key.length - 4);
   };
 
   return (
@@ -141,7 +139,6 @@ const ProviderConfig = ({ onConfigChange }) => {
         <h6 className="fw-semibold mb-0">Configuración de Proveedores IA</h6>
       </div>
       <div className="card-body p-3">
-        {/* Formulario para agregar/editar proveedor */}
         <div className="mb-4">
           <h6 className="fw-medium text-white mb-3">Agregar proveedor</h6>
           <form onSubmit={handleSave}>
@@ -220,11 +217,7 @@ const ProviderConfig = ({ onConfigChange }) => {
                 >
                   {testing ? 'Probando...' : 'Probar conexión'}
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm"
-                  disabled={saving || !form.provider_name || !form.api_key}
-                >
+                <button type="submit" className="btn btn-primary btn-sm" disabled={saving || !form.provider_name || !form.api_key}>
                   {saving ? 'Guardando...' : 'Guardar proveedor'}
                 </button>
               </div>
@@ -232,14 +225,12 @@ const ProviderConfig = ({ onConfigChange }) => {
           </form>
         </div>
 
-        {/* Resultado de prueba */}
         {testResult && (
           <div className={`alert mb-3 ${testResult.success ? 'alert-success text-white border-success' : 'alert-danger text-white border-danger'}`}>
             <strong>{testResult.success ? '✓ Éxito' : '✗ Error'}:</strong> {testResult.message}
           </div>
         )}
 
-        {/* Proveedores configurados */}
         <div className="mt-4">
           <h6 className="fw-medium text-white mb-3">Proveedores configurados</h6>
           {providers.length === 0 ? (
@@ -251,10 +242,7 @@ const ProviderConfig = ({ onConfigChange }) => {
               const info = PROVIDER_INFO[p.provider_name] || { name: p.provider_name, description: '' };
               const isConfigured = configured.includes(p.provider_name);
               return (
-                <div
-                  key={p.provider_name}
-                  className="card border-secondary bg-surface mb-2"
-                >
+                <div key={p.provider_name} className="card border-secondary bg-surface mb-2">
                   <div className="card-body p-3">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>
@@ -315,7 +303,12 @@ const ProviderConfig = ({ onConfigChange }) => {
                               model: p.model || '',
                               is_active: true,
                             });
-                            handleSave(new Event('submit'));
+                            persistProvider({
+                              provider_name: p.provider_name,
+                              api_key: '',
+                              model: p.model || '',
+                              is_active: true,
+                            });
                           }}
                         >
                           Activar

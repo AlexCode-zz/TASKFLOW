@@ -1,14 +1,11 @@
-import { useState } from 'react';
-
 const StepAcademic = ({ form, onChange, errors, setErrors }) => {
-  const [localErrors, setLocalErrors] = useState(errors || {});
+  const localErrors = errors || {};
 
-  const validate = () => {
-    const e = {};
-    if (!form.name.trim()) e.name = 'El nombre es obligatorio';
-    setLocalErrors(e);
-    if (setErrors) setErrors(e);
-    return Object.keys(e).length === 0;
+  const handleChange = (field, value) => {
+    const nextLocalErrors = { ...localErrors };
+    delete nextLocalErrors[field];
+    if (setErrors) setErrors(nextLocalErrors);
+    onChange(field, value);
   };
 
   return (
@@ -19,7 +16,7 @@ const StepAcademic = ({ form, onChange, errors, setErrors }) => {
           type="text"
           className={`form-control bg-surface border-secondary text-white ${localErrors.name ? 'is-invalid' : ''}`}
           value={form.name}
-          onChange={(e) => onChange('name', e.target.value)}
+          onChange={(e) => handleChange('name', e.target.value)}
           placeholder="Juan Pérez"
         />
         {localErrors.name && <div className="invalid-feedback d-block">{localErrors.name}</div>}
