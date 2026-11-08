@@ -13,6 +13,7 @@ const emptyForm = {
   code: '',
   teacher: '',
   classroom: '',
+  cycle: '',
   description: '',
   color: '#6366f1',
 };
@@ -60,6 +61,7 @@ const Subjects = () => {
       code: subject.code || '',
       teacher: subject.teacher || '',
       classroom: subject.classroom || '',
+      cycle: subject.cycle ? String(subject.cycle) : '',
       description: subject.description || '',
       color: subject.color || '#6366f1',
     });
@@ -85,6 +87,7 @@ const Subjects = () => {
         code: form.code.trim() || null,
         teacher: form.teacher.trim() || null,
         classroom: form.classroom.trim() || null,
+        cycle: form.cycle ? Number(form.cycle) : null,
         description: form.description.trim() || null,
         color: form.color || '#6366f1',
       };
@@ -126,7 +129,13 @@ const Subjects = () => {
   });
 
   const previewName = form.name.trim() || 'Nombre de la materia';
-  const previewMeta = [form.classroom.trim() || 'Aula sin definir', form.code.trim()].filter(Boolean).join(' · ');
+  const previewMeta = [
+    form.cycle ? `Ciclo ${form.cycle}` : 'Sin ciclo',
+    form.classroom.trim() || 'Aula sin definir',
+    form.code.trim(),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div className="fade-in">
@@ -214,6 +223,10 @@ const Subjects = () => {
                         <span className="text-muted-tf">
                           <i className="bi bi-person me-2" aria-hidden="true" />
                           {subject.teacher || 'Sin docente'}
+                        </span>
+                        <span className="text-muted-tf">
+                          <i className="bi bi-layers me-2" aria-hidden="true" />
+                          {subject.cycle ? `Ciclo ${subject.cycle}` : 'Sin ciclo'}
                         </span>
                         <span className="text-muted-tf">
                           <i className="bi bi-door-open me-2" aria-hidden="true" />
@@ -327,7 +340,7 @@ const Subjects = () => {
                 placeholder="MAT-101"
               />
             </div>
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-4">
               <label className="form-label text-muted-tf small" htmlFor="subject-teacher">
                 Docente
               </label>
@@ -341,7 +354,7 @@ const Subjects = () => {
                 placeholder="Dra. Elena Rodríguez"
               />
             </div>
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-4">
               <label className="form-label text-muted-tf small" htmlFor="subject-classroom">
                 Aula
               </label>
@@ -354,6 +367,24 @@ const Subjects = () => {
                 onChange={(e) => setForm({ ...form, classroom: e.target.value })}
                 placeholder="Aula 302 / Laboratorio B"
               />
+            </div>
+            <div className="col-12 col-md-4">
+              <label className="form-label text-muted-tf small" htmlFor="subject-cycle">
+                Ciclo
+              </label>
+              <select
+                id="subject-cycle"
+                className="form-select bg-surface border-secondary text-white"
+                value={form.cycle}
+                onChange={(e) => setForm({ ...form, cycle: e.target.value })}
+              >
+                <option value="">Sin ciclo</option>
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    Ciclo {n}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="col-12">
               <label className="form-label text-muted-tf small" htmlFor="subject-description">

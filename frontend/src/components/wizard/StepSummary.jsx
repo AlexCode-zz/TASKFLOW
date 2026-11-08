@@ -78,7 +78,7 @@ const StepSummary = ({ student, subjects, availability, preferences }) => {
                       </span>
                     </div>
                     <div className="text-muted-tf small mt-1">
-                      {s.code ? s.code + ' · ' : ''}{s.teacher || ''}
+                      {s.code ? s.code + ' · ' : ''}{s.teacher || ''}{s.cycle ? ` · Ciclo ${s.cycle}` : ''}
                     </div>
                   </div>
                 ))}

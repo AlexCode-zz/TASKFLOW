@@ -55,6 +55,7 @@ const ConfigurationWizard = () => {
           description: cleanValue(subject.description),
           color: subject.color || '#6366f1',
           classroom: cleanValue(subject.classroom),
+          cycle: subject.cycle ? Number(subject.cycle) : null,
         });
       }
 

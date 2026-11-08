@@ -10,6 +10,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
     description: '',
     color: '#3b82f6',
     classroom: '',
+    cycle: '',
   });
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
@@ -35,7 +36,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
     } else {
       onAdd(newSubject);
     }
-    setNewSubject({ name: '', code: '', teacher: '', description: '', color: '#3b82f6', classroom: '' });
+    setNewSubject({ name: '', code: '', teacher: '', description: '', color: '#3b82f6', classroom: '', cycle: '' });
   };
 
   return (
@@ -105,7 +106,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
       </div>
 
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-md-6">
           <label className="form-label text-muted-tf small">Descripción</label>
           <textarea
             className="form-control bg-surface border-secondary text-white"
@@ -115,7 +116,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
             placeholder="Descripción opcional"
           />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-md-3">
           <label className="form-label text-muted-tf small">Aula</label>
           <input
             type="text"
@@ -126,7 +127,22 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
             placeholder="Aula 302"
           />
         </div>
-        <div className="col-12 col-md-4 d-flex align-items-end">
+        <div className="col-12 col-md-3">
+          <label className="form-label text-muted-tf small">Ciclo</label>
+          <select
+            className="form-select bg-surface border-secondary text-white"
+            value={newSubject.cycle}
+            onChange={(e) => setNewSubject({ ...newSubject, cycle: e.target.value })}
+          >
+            <option value="">Sin ciclo</option>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                Ciclo {n}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-12">
           <button type="button" className="btn btn-primary w-100" onClick={handleSave}>
             {editingId ? 'Actualizar materia' : 'Agregar materia'}
           </button>
@@ -145,7 +161,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
               <div>
                 <div className="fw-medium text-white">{s.name}</div>
                 <div className="text-muted-tf small">
-                  {s.code ? s.code + ' - ' : ''}{s.teacher || ''}
+                  {s.code ? s.code + ' - ' : ''}{s.teacher || ''}{s.cycle ? ` · Ciclo ${s.cycle}` : ''}
                 </div>
               </div>
               <div className="text-end">
@@ -156,7 +172,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
                   type="button"
                   className="btn btn-outline-primary btn-sm"
                   onClick={() => {
-                    setNewSubject({ ...s, classroom: s.classroom || '' });
+                    setNewSubject({ ...s, classroom: s.classroom || '', cycle: s.cycle ? String(s.cycle) : '' });
                     setEditingId(s.id);
                   }}
                 >
