@@ -87,6 +87,45 @@ const AcademicItemList = ({ subject }) => {
     }
   };
 
+  const handleDelete = async (kind, itemId) => {
+    try {
+      if (kind === 'parcial') {
+        await api.delete(`/evaluations/${itemId}`);
+      } else {
+        await api.delete(`/laboratories/${itemId}`);
+      }
+      if (subject?.id) await loadItems(subject.id);
+    } catch {
+      setError('No se pudo eliminar el ítem.');
+    }
+  };
+
+  const handleAdd = async (kind) => {
+    const items = kind === 'parcial' ? parciales : laboratorios;
+    const prefix = kind === 'parcial' ? 'Parcial' : 'Laboratorio';
+    const numbers = items.map((i) => {
+      const match = new RegExp(`^${prefix} (\\d+)$`).exec(i.title || '');
+      return match ? Number(match[1]) : 0;
+    });
+    const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
+    const payload = {
+      subject_id: subject?.id,
+      title: `${prefix} ${next}`,
+      evaluation_type: kind === 'parcial' ? 'parcial' : 'laboratorio',
+      status: 'pendiente',
+    };
+    try {
+      if (kind === 'parcial') {
+        await api.post('/evaluations/', payload);
+      } else {
+        await api.post('/laboratories/', payload);
+      }
+      if (subject?.id) await loadItems(subject.id);
+    } catch {
+      setError('No se pudo agregar el ítem.');
+    }
+  };
+
   const toggleRealizado = async (kind, itemId, currentStatus) => {
     const newStatus = currentStatus === 'realizado' ? 'pendiente' : 'realizado';
     const current = kind === 'parcial' ? parciales.find((p) => p.id === itemId) : laboratorios.find((l) => l.id === itemId);
@@ -137,9 +176,12 @@ const AcademicItemList = ({ subject }) => {
         <span className="text-muted-tf small">
           Peso: {item.weight_percentage !== null && item.weight_percentage !== undefined ? `${Number(item.weight_percentage)}%` : '—'}
         </span>
-        <Button variant="outline" size="sm" className="ms-auto" onClick={() => startEdit(kind, item)}>
+        <Button variant="outline" size="sm" onClick={() => startEdit(kind, item)}>
           <i className="bi bi-pencil me-1" aria-hidden="true" />
           Editar
+        </Button>
+        <Button variant="danger" size="sm" onClick={() => handleDelete(kind, item.id)} aria-label="Eliminar">
+          <i className="bi bi-trash" aria-hidden="true" />
         </Button>
       </div>
     );
@@ -222,6 +264,13 @@ const AcademicItemList = ({ subject }) => {
   const renderGroup = (title, kind, items) => (
     <div className="mb-4">
       <h6 className="fw-semibold text-white mb-2">{title}</h6>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="fw-semibold text-white mb-0">{title}</h6>
+        <Button variant="outline" size="sm" onClick={() => handleAdd(kind)}>
+          <i className="bi bi-plus-lg" aria-hidden="true" />
+          Agregar {kind === 'parcial' ? 'parcial' : 'laboratorio'}
+        </Button>
+      </div>
       {items.length === 0 ? (
         <div className="text-muted-tf small mb-2">Sin ítems registrados.</div>
       ) : (
