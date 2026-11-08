@@ -8,7 +8,12 @@ def get_subject(db: Session, subject_id: int):
 
 
 def get_subjects_by_student(db: Session, student_id: int):
-    return db.query(Subject).filter(Subject.student_id == student_id).all()
+    return (
+        db.query(Subject)
+        .filter(Subject.student_id == student_id)
+        .order_by(Subject.is_favorite.desc(), Subject.id)
+        .all()
+    )
 
 
 def get_subject_by_code(db: Session, student_id: int, code: str):

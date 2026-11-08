@@ -10,6 +10,7 @@ class SubjectBase(BaseModel):
     color: str = Field(default="#6366f1", max_length=20)
     classroom: Optional[str] = Field(None, max_length=50)
     cycle: Optional[int] = Field(None, ge=1, le=20)
+    is_favorite: bool = False
 
 
 class SubjectCreate(SubjectBase):
@@ -24,6 +25,7 @@ class SubjectUpdate(BaseModel):
     color: Optional[str] = Field(None, max_length=20)
     classroom: Optional[str] = Field(None, max_length=50)
     cycle: Optional[int] = Field(None, ge=1, le=20)
+    is_favorite: Optional[bool] = None
 
 
 class SubjectResponse(SubjectBase):

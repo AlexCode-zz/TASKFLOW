@@ -29,6 +29,7 @@ def test_create_subject(client: TestClient):
     assert data["code"] == "MAT-101"
     assert data["classroom"] == "Aula 101"
     assert data["cycle"] == 3
+    assert data["is_favorite"] is False
 
 
 def test_duplicate_subject_code_rejected(client: TestClient):
@@ -63,6 +64,31 @@ def test_list_subjects(client: TestClient):
     response = client.get("/api/subjects/")
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+def test_toggle_subject_favorite(client: TestClient):
+    """Prueba fijar una materia y que aparezca primero en la lista."""
+    _create_student(client)
+    client.post("/api/subjects/", json={
+        "name": "Cálculo Diferencial",
+        "code": "MAT-101",
+        "color": "#3b82f6",
+    })
+    client.post("/api/subjects/", json={
+        "name": "Programación II",
+        "code": "INF-203",
+        "color": "#10b981",
+    })
+    subjects = client.get("/api/subjects/").json()
+    second_id = subjects[1]["id"]
+
+    response = client.put(f"/api/subjects/{second_id}", json={"is_favorite": True})
+    assert response.status_code == 200
+    assert response.json()["is_favorite"] is True
+
+    listed = client.get("/api/subjects/").json()
+    assert listed[0]["id"] == second_id
+    assert listed[0]["is_favorite"] is True
 
 
 def test_delete_subject(client: TestClient):

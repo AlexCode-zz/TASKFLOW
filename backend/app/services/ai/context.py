@@ -120,6 +120,7 @@ class AcademicContext:
                 "teacher": s.teacher,
                 "classroom": s.classroom,
                 "cycle": s.cycle,
+                "is_favorite": s.is_favorite,
                 "color": s.color,
             }
             for s in subjects

@@ -73,6 +73,7 @@ def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
                 "color": s.color,
                 "classroom": s.classroom,
                 "cycle": s.cycle,
+                "is_favorite": s.is_favorite,
             }
             for s in subjects
         ],
