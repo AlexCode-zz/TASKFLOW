@@ -1,5 +1,13 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
+from datetime import date
+
+
+def _empty_to_none(value):
+    """Convierte strings vacíos a None para campos opcionales."""
+    if value == "" or value is None:
+        return None
+    return value
 
 
 class SubjectBase(BaseModel):
@@ -11,6 +19,21 @@ class SubjectBase(BaseModel):
     classroom: Optional[str] = Field(None, max_length=50)
     cycle: Optional[int] = Field(None, ge=1, le=20)
     is_favorite: bool = False
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+
+    @field_validator("start_date", "end_date", mode="before")
+    @classmethod
+    def empty_to_none_date(cls, v):
+        return _empty_to_none(v)
+
+    @field_validator("end_date")
+    @classmethod
+    def end_after_start(cls, v, info):
+        if v is not None and info.data.get("start_date") is not None:
+            if v < info.data["start_date"]:
+                raise ValueError("La fecha de finalización debe ser posterior a la de inicio")
+        return v
 
 
 class SubjectCreate(SubjectBase):
@@ -26,6 +49,8 @@ class SubjectUpdate(BaseModel):
     classroom: Optional[str] = Field(None, max_length=50)
     cycle: Optional[int] = Field(None, ge=1, le=20)
     is_favorite: Optional[bool] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
 
 
 class SubjectResponse(SubjectBase):

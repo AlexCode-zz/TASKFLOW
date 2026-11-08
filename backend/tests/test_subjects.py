@@ -32,6 +32,33 @@ def test_create_subject(client: TestClient):
     assert data["is_favorite"] is False
 
 
+def test_create_subject_with_dates(client: TestClient):
+    """Prueba crear una materia con fechas de inicio y fin opcionales."""
+    _create_student(client)
+    response = client.post("/api/subjects/", json={
+        "name": "Cálculo Diferencial",
+        "code": "MAT-101",
+        "color": "#3b82f6",
+        "start_date": "2026-08-01",
+        "end_date": "2026-12-15",
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["start_date"] == "2026-08-01"
+    assert data["end_date"] == "2026-12-15"
+
+
+def test_subject_end_date_before_start_rejected(client: TestClient):
+    """Prueba que la fecha de fin no sea anterior a la de inicio."""
+    _create_student(client)
+    response = client.post("/api/subjects/", json={
+        "name": "Cálculo Diferencial",
+        "start_date": "2026-12-15",
+        "end_date": "2026-08-01",
+    })
+    assert response.status_code == 422
+
+
 def test_duplicate_subject_code_rejected(client: TestClient):
     """Prueba que se rechace código de materia duplicado."""
     _create_student(client)

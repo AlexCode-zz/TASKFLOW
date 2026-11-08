@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Boolean, Column, Date, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -17,5 +17,7 @@ class Subject(Base):
     classroom = Column(String, nullable=True)
     cycle = Column(Integer, nullable=True)
     is_favorite = Column(Boolean, nullable=False, default=False)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
 
     student = relationship("Student", back_populates="subjects")

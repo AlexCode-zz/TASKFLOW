@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Column, Date, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -17,6 +17,8 @@ class ClassSchedule(Base):
     teacher = Column(String, nullable=True)
     modality = Column(String, default="presencial", nullable=False)
     observations = Column(Text, nullable=True)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
 
     student = relationship("Student", back_populates="class_schedules")
     subject = relationship("Subject")

@@ -18,6 +18,8 @@ const emptyForm = {
   cycle: '',
   description: '',
   color: '#6366f1',
+  start_date: '',
+  end_date: '',
 };
 
 const Subjects = () => {
@@ -72,6 +74,8 @@ const Subjects = () => {
       cycle: subject.cycle ? String(subject.cycle) : '',
       description: subject.description || '',
       color: subject.color || '#6366f1',
+      start_date: subject.start_date || '',
+      end_date: subject.end_date || '',
     });
     setSaveError('');
     setFormOpen(true);
@@ -98,6 +102,8 @@ const Subjects = () => {
         cycle: form.cycle ? Number(form.cycle) : null,
         description: form.description.trim() || null,
         color: form.color || '#6366f1',
+        start_date: form.start_date || null,
+        end_date: form.end_date || null,
       };
       if (editingId) {
         await api.put(`/subjects/${editingId}`, payload);
@@ -492,6 +498,30 @@ const Subjects = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="col-12 col-md-6">
+              <label className="form-label text-muted-tf small" htmlFor="subject-start_date">
+                Fecha inicio
+              </label>
+              <input
+                id="subject-start_date"
+                type="date"
+                className="form-control bg-surface border-secondary text-white"
+                value={form.start_date}
+                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+              />
+            </div>
+            <div className="col-12 col-md-6">
+              <label className="form-label text-muted-tf small" htmlFor="subject-end_date">
+                Fecha fin
+              </label>
+              <input
+                id="subject-end_date"
+                type="date"
+                className="form-control bg-surface border-secondary text-white"
+                value={form.end_date}
+                onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+              />
             </div>
             <div className="col-12">
               <label className="form-label text-muted-tf small" htmlFor="subject-description">
