@@ -1,68 +1,96 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const modules = [
-  { to: '/', label: 'Inicio', icon: '🏠' },
-  { to: '/semana', label: 'Mi semana', icon: '📅' },
-  { to: '/materias', label: 'Materias', icon: '📚' },
-  { to: '/clases', label: 'Horarios', icon: '🕒' },
-  { to: '/laboratorios', label: 'Laboratorios', icon: '🔬' },
-  { to: '/calendario', label: 'Calendario', icon: '🗓️' },
-  { to: '/evaluaciones', label: 'Evaluaciones', icon: '📝' },
-  { to: '/tareas', label: 'Tareas y proyectos', icon: '✅' },
-  { to: '/proyectos', label: 'Proyectos', icon: '🗂️' },
-  { to: '/informes', label: 'Informes', icon: '📊' },
-  { to: '/asistente-ia', label: 'Asistente IA', icon: '🤖' },
-  { to: '/configuracion', label: 'Configuración', icon: '⚙️' },
+const groups = [
+  {
+    id: 'planificacion',
+    label: 'Planificación',
+    items: [
+      { to: '/', label: 'Inicio', icon: 'bi-house' },
+      { to: '/semana', label: 'Mi semana', icon: 'bi-calendar-week' },
+    ],
+  },
+  {
+    id: 'academico',
+    label: 'Académico',
+    items: [
+      { to: '/materias', label: 'Materias', icon: 'bi-book' },
+      { to: '/clases', label: 'Horarios', icon: 'bi-clock' },
+      { to: '/laboratorios', label: 'Laboratorios', icon: 'bi-flask' },
+      { to: '/evaluaciones', label: 'Evaluaciones', icon: 'bi-clipboard-check' },
+      { to: '/tareas', label: 'Tareas y proyectos', icon: 'bi-list-task' },
+      { to: '/proyectos', label: 'Proyectos', icon: 'bi-folder-2-open' },
+    ],
+  },
+  {
+    id: 'herramientas',
+    label: 'Herramientas',
+    items: [
+      { to: '/informes', label: 'Informes', icon: 'bi-bar-chart' },
+      { to: '/asistente-ia', label: 'Asistente IA', icon: 'bi-robot' },
+      { to: '/configuracion', label: 'Configuración', icon: 'bi-gear' },
+    ],
+  },
 ];
 
-const Sidebar = () => {
-  const [open, setOpen] = useState(false);
+const Sidebar = ({ open, onClose }) => {
   const location = useLocation();
 
   useEffect(() => {
-    setOpen(false);
-  }, [location]);
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
-  const activeTo = location.pathname === '/' ? '/' : location.pathname;
+  const isActive = (to) => {
+    if (to === '/') return location.pathname === '/';
+    return location.pathname === to || location.pathname.startsWith(`${to}/`);
+  };
 
   return (
-    <aside className={`sidebar p-3 border-end border-secondary ${open ? 'open' : ''}`}>
-      <div className="d-flex align-items-center mb-4">
-        <Link to="/" className="fw-bold fs-4 text-decoration-none d-flex align-items-center gap-2">
-          <span className="text-primary">Task</span><span className="text-white">Flow</span>
-        </Link>
-        <button
-          className="ms-auto btn btn-link text-white p-0 border-0 d-lg-none"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-label="Abrir menú"
-        >
-          ☰
-        </button>
-      </div>
+    <>
+      {open && <div className="sidebar-overlay" onClick={onClose} />}
+      <aside className={`sidebar p-3 ${open ? 'open' : ''}`} aria-label="Navegación principal">
+        <div className="sidebar-brand">
+          <Link to="/" className="fw-bold d-flex align-items-center gap-2 text-decoration-none" onClick={onClose}>
+            <span className="fs-4 text-white">T</span>
+            <span className="fs-4 text-white">TaskFlow</span>
+          </Link>
+          <button
+            type="button"
+            className="ms-auto btn btn-link text-white p-0 border-0 d-lg-none"
+            onClick={onClose}
+            aria-label="Cerrar menú"
+            tabIndex={open ? 0 : -1}
+          >
+            <i className="bi bi-x fs-4" aria-hidden="true" />
+          </button>
+        </div>
 
-      <nav className="flex-column">
-        {modules.map((item) => {
-          const isActive = activeTo === item.to || (item.to !== '/' && activeTo.startsWith(item.to));
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`nav-link d-flex align-items-center py-2.5 rounded-3 ${isActive ? 'bg-primary text-white' : 'text-muted-tf hover-bg-surface'}`}
-              onClick={() => setOpen(false)}
-            >
-              <span className="me-3 fs-5">{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="mt-auto pt-4 border-top border-secondary">
-        <div className="text-muted-tf small text-center">TaskFlow v1.0.0</div>
-        <div className="text-muted-tf small text-center">Fase 4 - Gestión académica</div>
-      </div>
-    </aside>
+        <nav className="sidebar-nav flex-column" aria-label="Secciones">
+          {groups.map((group) => (
+            <div key={group.id} className="mb-3">
+              <div className="sidebar-group-title">{group.label}</div>
+              {group.items.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`sidebar-link ${isActive(item.to) ? 'active' : ''}`}
+                  aria-current={isActive(item.to) ? 'page' : undefined}
+                  onClick={onClose}
+                >
+                  <i className={`bi ${item.icon} fs-5`} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };
 
