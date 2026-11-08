@@ -28,7 +28,7 @@ const Home = () => {
 
         const pendingTasks = tasks.filter((t) => t.status !== 'completada');
         const upcomingEvals = evals
-          .filter((e) => e.status === 'pendiente')
+          .filter((e) => e.status === 'pendiente' && e.date)
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         setSummary({
@@ -156,7 +156,7 @@ const Home = () => {
             { to: '/semana', icon: 'bi-calendar-week', label: 'Mi semana' },
             { to: '/materias', icon: 'bi-book', label: 'Materias' },
             { to: '/laboratorios', icon: 'bi-flask', label: 'Laboratorios' },
-            { to: '/evaluaciones', icon: 'bi-clipboard-check', label: 'Evaluaciones' },
+            { to: '/parciales', icon: 'bi-clipboard-check', label: 'Parciales' },
             { to: '/tareas', icon: 'bi-list-task', label: 'Tareas' },
             { to: '/proyectos', icon: 'bi-folder-2-open', label: 'Proyectos' },
           ].map((item) => (

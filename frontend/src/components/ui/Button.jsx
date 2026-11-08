@@ -1,4 +1,4 @@
-const Button = ({ variant = 'primary', size = 'md', loading, children, className = '', disabled, ...rest }) => {
+const Button = ({ variant = 'primary', size = 'md', loading, children, className = '', disabled, type = 'button', ...rest }) => {
   const base = 'btn';
   const variantClass =
     variant === 'primary'
@@ -12,7 +12,7 @@ const Button = ({ variant = 'primary', size = 'md', loading, children, className
   const classes = [base, variantClass, sizeClass, className].filter(Boolean).join(' ');
 
   return (
-    <button type="button" className={classes} disabled={disabled || loading} {...rest}>
+    <button type={type} className={classes} disabled={disabled || loading} {...rest}>
       {loading ? 'Cargando...' : children}
     </button>
   );

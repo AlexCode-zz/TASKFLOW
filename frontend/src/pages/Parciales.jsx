@@ -17,26 +17,29 @@ const TYPE_LABELS = {
   otro: 'Otro',
 };
 
-const Evaluations = () => {
-  const [evaluations, setEvaluations] = useState([]);
+const initialForm = {
+  subject_id: '',
+  title: '',
+  evaluation_type: 'parcial',
+  date: '',
+  start_time: '',
+  end_time: '',
+  weight_percentage: '',
+  grade: '',
+  description: '',
+  topics: '',
+  preparation_level: 'no_iniciado',
+  status: 'pendiente',
+};
+
+const Parciales = () => {
+  const [parciales, setParciales] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saveError, setSaveError] = useState('');
 
-  const [form, setForm] = useState({
-    subject_id: '',
-    title: '',
-    evaluation_type: 'parcial',
-    date: '',
-    start_time: '',
-    end_time: '',
-    weight_percentage: '',
-    description: '',
-    topics: '',
-    preparation_level: 'no_iniciado',
-    status: 'pendiente',
-  });
+  const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -44,15 +47,17 @@ const Evaluations = () => {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError('');
     try {
       const [eRes, subRes] = await Promise.all([
         api.get('/evaluations/'),
         api.get('/subjects/'),
       ]);
-      setEvaluations(eRes.data);
+      setParciales(eRes.data);
       setSubjects(subRes.data);
     } catch {
-      setError('No se pudieron cargar las evaluaciones.');
+      setError('No se pudieron cargar los datos.');
     } finally {
       setLoading(false);
     }
@@ -65,43 +70,47 @@ const Evaluations = () => {
       const payload = { ...form };
       if (payload.weight_percentage === '') payload.weight_percentage = null;
       if (payload.weight_percentage !== null) payload.weight_percentage = Number(payload.weight_percentage);
+      if (payload.grade === '') payload.grade = null;
+      if (payload.grade !== null) payload.grade = Number(payload.grade);
+      if (payload.subject_id !== '') payload.subject_id = Number(payload.subject_id);
       if (editingId) {
         await api.put(`/evaluations/${editingId}`, payload);
         setEditingId(null);
       } else {
         await api.post('/evaluations/', payload);
       }
-      setForm({
-        subject_id: '',
-        title: '',
-        evaluation_type: 'parcial',
-        date: '',
-        start_time: '',
-        end_time: '',
-        weight_percentage: '',
-        description: '',
-        topics: '',
-        preparation_level: 'no_iniciado',
-        status: 'pendiente',
-      });
+      setForm(initialForm);
       await loadData();
     } catch (err) {
-      setSaveError(err.response?.data?.detail || 'Error al guardar la evaluación.');
+      setSaveError(err.response?.data?.detail || 'Error al guardar el parcial.');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta evaluación?')) return;
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este parcial?')) return;
     try {
       await api.delete(`/evaluations/${id}`);
       await loadData();
     } catch {
-      setError('No se pudo eliminar la evaluación.');
+      setError('No se pudo eliminar el parcial.');
     }
   };
 
   const handleEdit = (item) => {
-    setForm({ ...item, weight_percentage: item.weight_percentage || '' });
+    setForm({
+      subject_id: item.subject_id,
+      title: item.title,
+      evaluation_type: item.evaluation_type,
+      date: item.date || '',
+      start_time: item.start_time || '',
+      end_time: item.end_time || '',
+      weight_percentage: item.weight_percentage ?? '',
+      grade: item.grade ?? '',
+      description: item.description || '',
+      topics: item.topics || '',
+      preparation_level: item.preparation_level || 'no_iniciado',
+      status: item.status || 'pendiente',
+    });
     setEditingId(item.id);
   };
 
@@ -131,16 +140,16 @@ const Evaluations = () => {
         </div>
       )}
       <PageHeader
-        title="Evaluaciones"
-        description="Exámenes, laboratorios, exposiciones y proyectos calificados."
+        title="Parciales"
+        description="Exámenes parciales, quizzes y evaluaciones calificadas de tus materias."
         actions={
-          <Button onClick={() => setEditingId(null)}>Registrar evaluación</Button>
+          <Button onClick={() => { setEditingId(null); setForm(initialForm); }}>Registrar parcial</Button>
         }
       />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
-          <h6 className="fw-semibold mb-0">{editingId ? 'Editar evaluación' : 'Nueva evaluación'}</h6>
+          <h6 className="fw-semibold mb-0">{editingId ? 'Editar parcial' : 'Nuevo parcial'}</h6>
         </div>
         <div className="card-body p-3">
           <form onSubmit={handleSave}>
@@ -192,7 +201,7 @@ const Evaluations = () => {
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
                 />
               </div>
-              <div className="col-12 col-md-1">
+              <div className="col-12 col-md-2">
                 <label className="form-label text-muted-tf small">Hora inicio</label>
                 <input
                   type="time"
@@ -201,7 +210,7 @@ const Evaluations = () => {
                   onChange={(e) => setForm({ ...form, start_time: e.target.value })}
                 />
               </div>
-              <div className="col-12 col-md-1">
+              <div className="col-12 col-md-2">
                 <label className="form-label text-muted-tf small">Hora fin</label>
                 <input
                   type="time"
@@ -222,7 +231,20 @@ const Evaluations = () => {
                   placeholder="30"
                 />
               </div>
-              <div className="col-12 col-md-3">
+              <div className="col-12 col-md-2">
+                <label className="form-label text-muted-tf small">Nota</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  className="form-control bg-surface border-secondary text-white"
+                  value={form.grade}
+                  onChange={(e) => setForm({ ...form, grade: e.target.value })}
+                  placeholder="Opcional"
+                />
+              </div>
+              <div className="col-12 col-md-2">
                 <label className="form-label text-muted-tf small">Nivel de preparación</label>
                 <select
                   className="form-select bg-surface border-secondary text-white"
@@ -234,7 +256,7 @@ const Evaluations = () => {
                   <option value="preparado">Preparado</option>
                 </select>
               </div>
-              <div className="col-12 col-md-3">
+              <div className="col-12 col-md-2">
                 <label className="form-label text-muted-tf small">Estado</label>
                 <select
                   className="form-select bg-surface border-secondary text-white"
@@ -267,13 +289,13 @@ const Evaluations = () => {
                 />
               </div>
               <div className="col-12 d-flex gap-2 mt-3">
-                <button type="submit" className="btn btn-primary">
-                  {editingId ? 'Actualizar evaluación' : 'Registrar evaluación'}
-                </button>
+                <Button type="submit" variant="primary">
+                  {editingId ? 'Actualizar parcial' : 'Registrar parcial'}
+                </Button>
                 {editingId && (
-                  <button type="button" className="btn btn-outline-secondary" onClick={() => setEditingId(null)}>
+                  <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(initialForm); }}>
                     Cancelar
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -281,50 +303,19 @@ const Evaluations = () => {
         </div>
       </div>
 
-      <div className="row g-4 mb-4">
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card border-secondary shadow-sm">
-            <div className="card-body p-3 text-center">
-              <div className="text-muted-tf small mb-1">Total evaluaciones</div>
-              <div className="fw-bold text-white">{evaluations.length}</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card border-secondary shadow-sm">
-            <div className="card-body p-3 text-center">
-              <div className="text-muted-tf small mb-1">Próximas</div>
-              <div className="fw-bold text-white">
-                {evaluations.filter((e) => e.status === 'pendiente').length}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card border-secondary shadow-sm">
-            <div className="card-body p-3 text-center">
-              <div className="text-muted-tf small mb-1">Realizadas</div>
-              <div className="fw-bold text-white">
-                {evaluations.filter((e) => e.status === 'realizado').length}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <h6 className="fw-semibold text-white mb-3">Evaluaciones registradas</h6>
-      {evaluations.length === 0 ? (
+      <h6 className="fw-semibold text-white mb-3">Parciales registrados</h6>
+      {parciales.length === 0 ? (
         <EmptyState
           icon={<i className="bi bi-clipboard2" aria-hidden="true" />}
-          title="Aún no tienes evaluaciones"
-          message="Registra tu primera evaluación para comenzar."
-          actionLabel="Registrar evaluación"
-          onAction={() => setEditingId(null)}
+          title="Aún no tienes parciales"
+          message="Registra tu primer parcial para comenzar."
+          actionLabel="Registrar parcial"
+          onAction={() => { setEditingId(null); setForm(initialForm); }}
         />
       ) : (
         <div className="row g-3">
-          {evaluations.map((e) => {
-            const subject = subjects.find((sub) => sub.id === e.subject_id);
+          {parciales.map((e) => {
+            const subject = subjects.find((s) => s.id === e.subject_id);
             return (
               <div key={e.id} className="col-12 col-md-6 col-lg-4">
                 <div className="card border-secondary shadow-sm h-100">
@@ -348,6 +339,12 @@ const Evaluations = () => {
                         <span className="fw-medium text-white">{e.weight_percentage}%</span>
                       </div>
                     )}
+                    {e.grade && (
+                      <div className="mb-2">
+                        <span className="text-muted-tf small d-block">Nota</span>
+                        <span className="fw-medium text-white">{Number(e.grade).toFixed(1)}</span>
+                      </div>
+                    )}
                     {e.preparation_level && (
                       <div className="mb-2">
                         <span className="text-muted-tf small d-block">Preparación</span>
@@ -356,20 +353,12 @@ const Evaluations = () => {
                     )}
                   </div>
                   <div className="card-footer border-secondary bg-transparent pt-2 pb-2 d-flex gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-outline-primary btn-sm flex-grow-1"
-                      onClick={() => handleEdit(e)}
-                    >
+                    <Button variant="outline" size="sm" className="flex-grow-1" onClick={() => handleEdit(e)}>
                       Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDelete(e.id)}
-                    >
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(e.id)}>
                       Eliminar
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -381,4 +370,4 @@ const Evaluations = () => {
   );
 };
 
-export default Evaluations;
+export default Parciales;

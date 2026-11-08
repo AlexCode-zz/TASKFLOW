@@ -5,6 +5,8 @@ import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import Modal from '../components/ui/Modal';
+import SubjectAcademicModal from '../components/academic/SubjectAcademicModal';
+import SubjectScheduleModal from '../components/academic/SubjectScheduleModal';
 
 const COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#06b6d4', '#8b5cf6', '#ec4899', '#6366f1'];
 
@@ -30,6 +32,11 @@ const Subjects = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+
+  const [academicSubject, setAcademicSubject] = useState(null);
+  const [academicOpen, setAcademicOpen] = useState(false);
+  const [scheduleSubject, setScheduleSubject] = useState(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   useEffect(() => {
     loadSubjects();
@@ -308,7 +315,32 @@ const Subjects = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="card-footer border-secondary bg-transparent pt-2 pb-2 d-flex gap-2">
+                    <div className="card-footer border-secondary bg-transparent pt-2 pb-2">
+                    <div className="d-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setScheduleSubject(subject);
+                          setScheduleOpen(true);
+                        }}
+                      >
+                        <i className="bi bi-clock me-1" aria-hidden="true" />
+                        Horario
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setAcademicSubject(subject);
+                          setAcademicOpen(true);
+                        }}
+                      >
+                        <i className="bi bi-journal-text me-1" aria-hidden="true" />
+                        Parciales y laboratorios
+                      </Button>
+                    </div>
+                    <div className="d-flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -329,6 +361,7 @@ const Subjects = () => {
                         Eliminar
                       </Button>
                     </div>
+                  </div>
                   </article>
                 </div>
               ))}
@@ -500,6 +533,24 @@ const Subjects = () => {
           </div>
         </form>
       </Modal>
+
+      <SubjectAcademicModal
+        subject={academicSubject}
+        open={academicOpen}
+        onClose={() => {
+          setAcademicOpen(false);
+          setAcademicSubject(null);
+        }}
+      />
+
+      <SubjectScheduleModal
+        subject={scheduleSubject}
+        open={scheduleOpen}
+        onClose={() => {
+          setScheduleOpen(false);
+          setScheduleSubject(null);
+        }}
+      />
     </div>
   );
 };

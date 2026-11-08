@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
 import Week from './pages/Week';
@@ -7,7 +7,7 @@ import Subjects from './pages/Subjects';
 import ClassSchedules from './pages/ClassSchedules';
 import Laboratories from './pages/Laboratories';
 import Calendar from './pages/Calendar';
-import Evaluations from './pages/Evaluations';
+import Parciales from './pages/Parciales';
 import Tasks from './pages/Tasks';
 import Projects from './pages/Projects';
 import Reports from './pages/Reports';
@@ -111,11 +111,17 @@ const App = () => {
             }
           />
           <Route
-            path="/evaluaciones"
+            path="/parciales"
             element={
               <ErrorBoundary>
-                <Evaluations />
+                <Parciales />
               </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/evaluaciones"
+            element={
+              <Navigate to="/parciales" replace />
             }
           />
           <Route

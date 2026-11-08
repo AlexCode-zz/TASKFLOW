@@ -57,13 +57,14 @@ const Calendar = () => {
 
       if (labs.status === 'fulfilled') {
         labs.value.data.forEach((l) => {
+          if (!l.date) return;
           allEvents.push({
             id: `lab-${l.id}`,
             title: l.title,
             type: 'laboratory',
             date: l.date,
-            start_time: l.start_time,
-            end_time: l.end_time,
+            start_time: l.start_time || '09:00',
+            end_time: l.end_time || '11:00',
             location: l.location,
             color: typeColors.laboratory,
           });
@@ -72,13 +73,14 @@ const Calendar = () => {
 
       if (evals.status === 'fulfilled') {
         evals.value.data.forEach((e) => {
+          if (!e.date) return;
           allEvents.push({
             id: `eval-${e.id}`,
             title: e.title,
             type: 'evaluation',
             date: e.date,
-            start_time: e.start_time,
-            end_time: e.end_time,
+            start_time: e.start_time || '09:00',
+            end_time: e.end_time || '11:00',
             color: typeColors.evaluation,
           });
         });
@@ -145,7 +147,7 @@ const Calendar = () => {
     { value: 'all', label: 'Todos' },
     { value: 'class', label: 'Clases' },
     { value: 'laboratory', label: 'Laboratorios' },
-    { value: 'evaluation', label: 'Evaluaciones' },
+    { value: 'evaluation', label: 'Parciales' },
     { value: 'task', label: 'Tareas' },
     { value: 'project', label: 'Proyectos' },
   ];

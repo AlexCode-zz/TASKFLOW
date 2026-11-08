@@ -17,7 +17,7 @@ const groups = [
       { to: '/materias', label: 'Materias', icon: 'bi-book' },
       { to: '/clases', label: 'Horarios', icon: 'bi-clock' },
       { to: '/laboratorios', label: 'Laboratorios', icon: 'bi-flask' },
-      { to: '/evaluaciones', label: 'Evaluaciones', icon: 'bi-clipboard-check' },
+      { to: '/parciales', label: 'Parciales', icon: 'bi-clipboard-check' },
       { to: '/tareas', label: 'Tareas y proyectos', icon: 'bi-list-task' },
       { to: '/proyectos', label: 'Proyectos', icon: 'bi-folder-2-open' },
     ],

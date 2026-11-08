@@ -64,6 +64,7 @@ const Week = () => {
 
       if (labs.status === 'fulfilled') {
         labs.value.data.forEach((l) => {
+          if (!l.date) return;
           const d = new Date(l.date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -71,8 +72,8 @@ const Week = () => {
             title: l.title,
             type: 'laboratory',
             day: ((dayIndex + 5) % 7),
-            start: parseInt(l.start_time.split(':')[0]),
-            end: parseInt(l.end_time.split(':')[0]),
+            start: l.start_time ? parseInt(l.start_time.split(':')[0]) : 9,
+            end: l.end_time ? parseInt(l.end_time.split(':')[0]) : 11,
             room: l.location,
             color: typeColors.laboratory,
             date: l.date,
@@ -83,6 +84,7 @@ const Week = () => {
 
       if (evals.status === 'fulfilled') {
         evals.value.data.forEach((e) => {
+          if (!e.date) return;
           const d = new Date(e.date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -383,7 +385,7 @@ const Week = () => {
             const labels = {
               class: 'Clases',
               laboratory: 'Laboratorios',
-              evaluation: 'Evaluaciones',
+              evaluation: 'Parciales',
               task: 'Tareas',
               project: 'Proyectos',
               study: 'Sesiones de estudio',
@@ -438,8 +440,8 @@ const Week = () => {
             </Link>
           </div>
           <div className="col-12 col-md-2">
-            <Link to="/evaluaciones" className="btn btn-outline-primary w-100 text-white">
-              Evaluaciones
+            <Link to="/parciales" className="btn btn-outline-primary w-100 text-white">
+              Parciales
             </Link>
           </div>
           <div className="col-12 col-md-2">

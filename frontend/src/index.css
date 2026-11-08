@@ -821,3 +821,27 @@ textarea.form-control:focus {
 .step-item.active .step-label {
   color: var(--text);
 }
+
+/* ---------- Académico: parciales y laboratorios ---------- */
+.academic-summary-card {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.academic-average-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.modal-lg {
+  max-width: 800px;
+}
+
+.academic-item-card {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}

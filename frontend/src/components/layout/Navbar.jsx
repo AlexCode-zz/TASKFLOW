@@ -8,7 +8,7 @@ const TITLES = {
   '/clases': 'Horarios',
   '/laboratorios': 'Laboratorios',
   '/calendario': 'Calendario',
-  '/evaluaciones': 'Evaluaciones',
+  '/parciales': 'Parciales',
   '/tareas': 'Tareas y proyectos',
   '/proyectos': 'Proyectos',
   '/informes': 'Informes',

@@ -3,6 +3,21 @@ import api from '../services/api';
 import StatusBadge from '../components/common/StatusBadge';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
+
+const initialForm = {
+  subject_id: '',
+  title: '',
+  date: '',
+  start_time: '08:00',
+  end_time: '10:00',
+  location: '',
+  description: '',
+  materials: '',
+  weight_percentage: '',
+  grade: '',
+  status: 'pendiente',
+};
 
 const Laboratories = () => {
   const [laboratories, setLaboratories] = useState([]);
@@ -11,17 +26,7 @@ const Laboratories = () => {
   const [error, setError] = useState('');
   const [saveError, setSaveError] = useState('');
 
-  const [form, setForm] = useState({
-    subject_id: '',
-    title: '',
-    date: '',
-    start_time: '08:00',
-    end_time: '10:00',
-    location: '',
-    description: '',
-    materials: '',
-    status: 'pendiente',
-  });
+  const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -29,6 +34,8 @@ const Laboratories = () => {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError('');
     try {
       const [lRes, subRes] = await Promise.all([
         api.get('/laboratories/'),
@@ -47,23 +54,19 @@ const Laboratories = () => {
     e.preventDefault();
     setSaveError('');
     try {
+      const payload = { ...form };
+      if (payload.weight_percentage === '') payload.weight_percentage = null;
+      if (payload.weight_percentage !== null) payload.weight_percentage = Number(payload.weight_percentage);
+      if (payload.grade === '') payload.grade = null;
+      if (payload.grade !== null) payload.grade = Number(payload.grade);
+      if (payload.subject_id !== '') payload.subject_id = Number(payload.subject_id);
       if (editingId) {
-        await api.put(`/laboratories/${editingId}`, form);
+        await api.put(`/laboratories/${editingId}`, payload);
         setEditingId(null);
       } else {
-        await api.post('/laboratories/', form);
+        await api.post('/laboratories/', payload);
       }
-      setForm({
-        subject_id: '',
-        title: '',
-        date: '',
-        start_time: '08:00',
-        end_time: '10:00',
-        location: '',
-        description: '',
-        materials: '',
-        status: 'pendiente',
-      });
+      setForm(initialForm);
       await loadData();
     } catch (err) {
       setSaveError(err.response?.data?.detail || 'Error al guardar el laboratorio.');
@@ -81,9 +84,28 @@ const Laboratories = () => {
   };
 
   const handleEdit = (lab) => {
-    setForm({ ...lab });
+    setForm({
+      subject_id: lab.subject_id,
+      title: lab.title,
+      date: lab.date || '',
+      start_time: lab.start_time || '08:00',
+      end_time: lab.end_time || '10:00',
+      location: lab.location || '',
+      description: lab.description || '',
+      materials: lab.materials || '',
+      weight_percentage: lab.weight_percentage ?? '',
+      grade: lab.grade ?? '',
+      status: lab.status || 'pendiente',
+    });
     setEditingId(lab.id);
   };
+
+  const grouped = subjects
+    .map((subject) => ({
+      subject,
+      labs: laboratories.filter((l) => l.subject_id === subject.id),
+    }))
+    .filter((group) => group.labs.length > 0);
 
   if (loading) {
     return (
@@ -114,7 +136,10 @@ const Laboratories = () => {
       )}
       <PageHeader
         title="Laboratorios"
-        description="Registra tus sesiones de laboratorio."
+        description="Sesiones de laboratorio y prácticas de tus materias."
+        actions={
+          <Button onClick={() => { setEditingId(null); setForm(initialForm); }}>Agregar laboratorio</Button>
+        }
       />
 
       <div className="card border-secondary shadow-sm mb-4">
@@ -199,6 +224,31 @@ const Laboratories = () => {
                   <option value="cancelado">Cancelado</option>
                 </select>
               </div>
+              <div className="col-12 col-md-3">
+                <label className="form-label text-muted-tf small">Peso (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-control bg-surface border-secondary text-white"
+                  value={form.weight_percentage}
+                  onChange={(e) => setForm({ ...form, weight_percentage: e.target.value })}
+                  placeholder="Opcional"
+                />
+              </div>
+              <div className="col-12 col-md-3">
+                <label className="form-label text-muted-tf small">Nota</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  className="form-control bg-surface border-secondary text-white"
+                  value={form.grade}
+                  onChange={(e) => setForm({ ...form, grade: e.target.value })}
+                  placeholder="Opcional"
+                />
+              </div>
               <div className="col-12">
                 <label className="form-label text-muted-tf small">Descripción</label>
                 <textarea
@@ -220,13 +270,13 @@ const Laboratories = () => {
                 />
               </div>
               <div className="col-12 d-flex gap-2 mt-3">
-                <button type="submit" className="btn btn-primary">
+                <Button type="submit" variant="primary">
                   {editingId ? 'Actualizar laboratorio' : 'Registrar laboratorio'}
-                </button>
+                </Button>
                 {editingId && (
-                  <button type="button" className="btn btn-outline-secondary" onClick={() => setEditingId(null)}>
+                  <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(initialForm); }}>
                     Cancelar
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -234,68 +284,68 @@ const Laboratories = () => {
         </div>
       </div>
 
-      <h6 className="fw-semibold text-white mb-3">Laboratorios registrados</h6>
+      <h6 className="fw-semibold text-white mb-3">Laboratorios por materia</h6>
       {laboratories.length === 0 ? (
         <EmptyState
           icon={<i className="bi bi-flask" aria-hidden="true" />}
           title="Aún no tienes laboratorios"
           message="Registra tu primera sesión de laboratorio para comenzar."
           actionLabel="Agregar laboratorio"
-          onAction={() => setEditingId(null)}
+          onAction={() => { setEditingId(null); setForm(initialForm); }}
+        />
+      ) : grouped.length === 0 ? (
+        <EmptyState
+          icon={<i className="bi bi-flask" aria-hidden="true" />}
+          title="Sin laboratorios"
+          message="Registra laboratorios para tus materias."
         />
       ) : (
-        <div className="row g-3">
-          {laboratories.map((l) => {
-            const subject = subjects.find((sub) => sub.id === l.subject_id);
-            return (
-              <div key={l.id} className="col-12 col-md-6 col-lg-4">
-                <div className="card border-secondary shadow-sm h-100">
-                  <div className="card-body p-3">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <h6 className="fw-semibold mb-0">{l.title}</h6>
-                      <StatusBadge status={l.status} />
-                    </div>
-                    <div className="mb-2">
-                      <span className="badge bg-dark text-white small me-2">{subject?.code || ''}</span>
-                      <span className="text-muted-tf small">{subject ? subject.name : 'Materia'}</span>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="text-muted-tf small">{l.date}</span>
-                      <span className="text-muted-tf small">{l.start_time} - {l.end_time}</span>
-                    </div>
-                    {l.location && (
-                      <div className="text-muted-tf small mb-2">{l.location}</div>
-                    )}
-                    {l.materials && (
-                      <div className="text-muted-tf small mb-2">
-                        <strong className="text-white">Materiales:</strong> {l.materials}
+        grouped.map(({ subject, labs }) => (
+          <div key={subject.id} className="mb-4">
+            <h6 className="fw-semibold text-white mb-2">{subject.name}</h6>
+            <div className="row g-3">
+              {labs.map((l) => (
+                <div key={l.id} className="col-12 col-md-6 col-lg-4">
+                  <div className="card border-secondary shadow-sm h-100">
+                    <div className="card-body p-3">
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <h6 className="fw-semibold mb-0">{l.title}</h6>
+                        <StatusBadge status={l.status} />
                       </div>
-                    )}
-                    {l.description && (
-                      <div className="text-muted-tf small">{l.description}</div>
-                    )}
-                  </div>
-                  <div className="card-footer border-secondary bg-transparent pt-2 pb-2 d-flex gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-outline-primary btn-sm flex-grow-1"
-                      onClick={() => handleEdit(l)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDelete(l.id)}
-                    >
-                      Eliminar
-                    </button>
+                      <div className="text-muted-tf small mb-2">{subject.code || ''}</div>
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="text-muted-tf small">{l.date}</span>
+                        <span className="text-muted-tf small">{l.start_time} - {l.end_time}</span>
+                      </div>
+                      {l.location && <div className="text-muted-tf small mb-2">{l.location}</div>}
+                      {l.grade && (
+                        <div className="mb-2">
+                          <span className="text-muted-tf small d-block">Nota</span>
+                          <span className="fw-medium text-white">{Number(l.grade).toFixed(1)}</span>
+                        </div>
+                      )}
+                      {l.weight_percentage && (
+                        <div className="mb-2">
+                          <span className="text-muted-tf small d-block">Peso</span>
+                          <span className="fw-medium text-white">{Number(l.weight_percentage)}%</span>
+                        </div>
+                      )}
+                      {l.description && <div className="text-muted-tf small">{l.description}</div>}
+                    </div>
+                    <div className="card-footer border-secondary bg-transparent pt-2 pb-2 d-flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-grow-1" onClick={() => handleEdit(l)}>
+                        Editar
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(l.id)}>
+                        Eliminar
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );
