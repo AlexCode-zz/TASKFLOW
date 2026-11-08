@@ -280,7 +280,10 @@ const Laboratories = () => {
               <div className="row g-3">
                 {labs.map((l) => (
                   <div key={l.id} className="col-12 col-md-6 col-lg-4">
-                    <div className="card border-secondary shadow-sm h-100">
+                    <div
+                      className="card border-secondary shadow-sm h-100"
+                      style={{ backgroundColor: subject.color }}
+                    >
                       <div className="card-body p-3">
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <h6 className="fw-semibold mb-0">{l.title}</h6>
@@ -295,7 +298,13 @@ const Laboratories = () => {
                         {l.grade && (
                           <div className="mb-2">
                             <span className="text-muted-tf small d-block">Nota</span>
-                            <span className="fw-medium text-white">{Number(l.grade).toFixed(1)}</span>
+                            <span
+                              className="fw-bold text-white"
+                              style={{ fontSize: '2rem', lineHeight: '1.2' }}
+                              data-testid="lab-grade"
+                            >
+                              {Number(l.grade).toFixed(1)}
+                            </span>
                           </div>
                         )}
                         {l.weight_percentage && (
