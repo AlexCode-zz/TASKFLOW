@@ -9,7 +9,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
     teacher: '',
     description: '',
     color: '#3b82f6',
-    credits: '',
+    classroom: '',
   });
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
     } else {
       onAdd(newSubject);
     }
-    setNewSubject({ name: '', code: '', teacher: '', description: '', color: '#3b82f6', credits: '' });
+    setNewSubject({ name: '', code: '', teacher: '', description: '', color: '#3b82f6', classroom: '' });
   };
 
   return (
@@ -116,15 +116,14 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
           />
         </div>
         <div className="col-12 col-md-4">
-          <label className="form-label text-muted-tf small">Créditos académicos</label>
+          <label className="form-label text-muted-tf small">Aula</label>
           <input
-            type="number"
-            min="1"
-            max="20"
+            type="text"
+            maxLength={50}
             className="form-control bg-surface border-secondary text-white"
-            value={newSubject.credits}
-            onChange={(e) => setNewSubject({ ...newSubject, credits: e.target.value })}
-            placeholder="4"
+            value={newSubject.classroom}
+            onChange={(e) => setNewSubject({ ...newSubject, classroom: e.target.value })}
+            placeholder="Aula 302"
           />
         </div>
         <div className="col-12 col-md-4 d-flex align-items-end">
@@ -150,14 +149,14 @@ const StepSubjects = ({ subjects, onAdd, onUpdate, onDelete, skip }) => {
                 </div>
               </div>
               <div className="text-end">
-                <span className="badge" style={{ backgroundColor: s.color, color: '#ffffff' }}>{s.credits || '—'} cr</span>
+                <span className="badge" style={{ backgroundColor: s.color, color: '#ffffff' }}>{s.classroom || 'Sin aula'}</span>
               </div>
               <div className="d-flex gap-1">
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm"
                   onClick={() => {
-                    setNewSubject({ ...s, credits: s.credits ? String(s.credits) : '' });
+                    setNewSubject({ ...s, classroom: s.classroom || '' });
                     setEditingId(s.id);
                   }}
                 >

@@ -74,7 +74,7 @@ const StepSummary = ({ student, subjects, availability, preferences }) => {
                         className="badge"
                         style={{ backgroundColor: s.color, color: '#ffffff' }}
                       >
-                        {s.credits || '—'} cr
+                        {s.classroom || 'Sin aula'}
                       </span>
                     </div>
                     <div className="text-muted-tf small mt-1">

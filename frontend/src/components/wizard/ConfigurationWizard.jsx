@@ -37,12 +37,6 @@ const ConfigurationWizard = () => {
     return v;
   };
 
-  const cleanNumber = (v) => {
-    if (v === '' || v === null || v === undefined) return null;
-    const n = Number(v);
-    return isNaN(n) ? null : n;
-  };
-
   const handleSave = async () => {
     setLoading(true);
     setSaveError('');
@@ -60,7 +54,7 @@ const ConfigurationWizard = () => {
           teacher: cleanValue(subject.teacher),
           description: cleanValue(subject.description),
           color: subject.color || '#6366f1',
-          credits: cleanNumber(subject.credits),
+          classroom: cleanValue(subject.classroom),
         });
       }
 
