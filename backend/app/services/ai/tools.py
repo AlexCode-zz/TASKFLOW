@@ -220,6 +220,7 @@ class AITools:
                     "code": s.code,
                     "teacher": s.teacher,
                     "classroom": s.classroom,
+                    "cycle": s.cycle,
                     "color": s.color,
                 }
                 for s in subjects

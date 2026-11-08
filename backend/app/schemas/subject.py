@@ -9,6 +9,7 @@ class SubjectBase(BaseModel):
     description: Optional[str] = None
     color: str = Field(default="#6366f1", max_length=20)
     classroom: Optional[str] = Field(None, max_length=50)
+    cycle: Optional[int] = Field(None, ge=1, le=20)
 
 
 class SubjectCreate(SubjectBase):
@@ -22,6 +23,7 @@ class SubjectUpdate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = Field(None, max_length=20)
     classroom: Optional[str] = Field(None, max_length=50)
+    cycle: Optional[int] = Field(None, ge=1, le=20)
 
 
 class SubjectResponse(SubjectBase):

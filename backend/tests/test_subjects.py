@@ -21,11 +21,14 @@ def test_create_subject(client: TestClient):
         "teacher": "Dra. Elena",
         "color": "#3b82f6",
         "classroom": "Aula 101",
+        "cycle": 3,
     })
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == "Cálculo Diferencial"
     assert data["code"] == "MAT-101"
+    assert data["classroom"] == "Aula 101"
+    assert data["cycle"] == 3
 
 
 def test_duplicate_subject_code_rejected(client: TestClient):

@@ -15,5 +15,6 @@ class Subject(Base):
     description = Column(Text, nullable=True)
     color = Column(String, default="#6366f1", nullable=False)
     classroom = Column(String, nullable=True)
+    cycle = Column(Integer, nullable=True)
 
     student = relationship("Student", back_populates="subjects")
