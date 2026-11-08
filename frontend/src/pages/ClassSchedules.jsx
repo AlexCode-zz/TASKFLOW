@@ -19,12 +19,8 @@ const emptyForm = {
   day_of_week: 'lunes',
   start_time: '08:00',
   end_time: '10:00',
-  room: '',
-  teacher: '',
   modality: 'presencial',
   observations: '',
-  start_date: '',
-  end_date: '',
 };
 
 const ClassSchedules = () => {
@@ -72,12 +68,8 @@ const ClassSchedules = () => {
       day_of_week: schedule.day_of_week,
       start_time: schedule.start_time,
       end_time: schedule.end_time,
-      room: schedule.room || '',
-      teacher: schedule.teacher || '',
       modality: schedule.modality || 'presencial',
       observations: schedule.observations || '',
-      start_date: schedule.start_date || '',
-      end_date: schedule.end_date || '',
     });
     setSaveError('');
     setFormOpen(true);
@@ -100,12 +92,8 @@ const ClassSchedules = () => {
         day_of_week: form.day_of_week,
         start_time: form.start_time,
         end_time: form.end_time,
-        room: form.room || null,
-        teacher: form.teacher || null,
         modality: form.modality,
         observations: form.observations || null,
-        start_date: form.start_date || null,
-        end_date: form.end_date || null,
       };
       const subjectId = Number(form.subject_id);
       if (editingId) {
@@ -209,11 +197,6 @@ const ClassSchedules = () => {
                         <span className="fw-medium text-white">{s.start_time} - {s.end_time}</span>
                         {s.room && <span className="text-muted-tf small">{s.room}</span>}
                       </div>
-                      {(s.start_date || s.end_date) && (
-                        <div className="text-muted-tf small mb-2">
-                          {s.start_date} → {s.end_date}
-                        </div>
-                      )}
                       {s.teacher && (
                         <div className="text-muted-tf small mb-2">{s.teacher}</div>
                       )}
@@ -285,27 +268,6 @@ const ClassSchedules = () => {
                 ))}
               </select>
             </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label text-muted-tf small">Fecha inicio</label>
-              <input
-                type="date"
-                className="form-control bg-surface border-secondary text-white"
-                value={form.start_date}
-                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="row g-3">
-            <div className="col-12 col-md-6">
-              <label className="form-label text-muted-tf small">Fecha fin</label>
-              <input
-                type="date"
-                className="form-control bg-surface border-secondary text-white"
-                value={form.end_date}
-                onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-              />
-            </div>
             <div className="col-12 col-md-3">
               <label className="form-label text-muted-tf small">Día <span className="text-danger">*</span></label>
               <select
@@ -353,26 +315,6 @@ const ClassSchedules = () => {
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
-            </div>
-            <div className="col-12 col-md-3">
-              <label className="form-label text-muted-tf small">Aula</label>
-              <input
-                type="text"
-                className="form-control bg-surface border-secondary text-white"
-                value={form.room}
-                onChange={(e) => setForm({ ...form, room: e.target.value })}
-                placeholder="Salón A-101"
-              />
-            </div>
-            <div className="col-12 col-md-3">
-              <label className="form-label text-muted-tf small">Docente</label>
-              <input
-                type="text"
-                className="form-control bg-surface border-secondary text-white"
-                value={form.teacher}
-                onChange={(e) => setForm({ ...form, teacher: e.target.value })}
-                placeholder="Dra. Rodríguez"
-              />
             </div>
           </div>
 

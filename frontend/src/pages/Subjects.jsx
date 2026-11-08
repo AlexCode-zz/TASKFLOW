@@ -319,6 +319,12 @@ const Subjects = () => {
                           <i className="bi bi-door-open me-2" aria-hidden="true" />
                           {subject.classroom || 'Aula sin definir'}
                         </span>
+                        {subject.start_date && (
+                          <span className="text-muted-tf">
+                            <i className="bi bi-calendar me-2" aria-hidden="true" />
+                            {subject.start_date} → {subject.end_date}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="card-footer border-secondary bg-transparent pt-2 pb-2">

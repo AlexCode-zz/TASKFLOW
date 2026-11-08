@@ -17,12 +17,8 @@ const emptyForm = {
   day_of_week: 'lunes',
   start_time: '08:00',
   end_time: '10:00',
-  room: '',
-  teacher: '',
   modality: 'presencial',
   observations: '',
-  start_date: '',
-  end_date: '',
 };
 
 const SubjectScheduleModal = ({ subject, open, onClose }) => {
@@ -68,12 +64,8 @@ const SubjectScheduleModal = ({ subject, open, onClose }) => {
       day_of_week: schedule.day_of_week,
       start_time: schedule.start_time,
       end_time: schedule.end_time,
-      room: schedule.room || '',
-      teacher: schedule.teacher || '',
       modality: schedule.modality || 'presencial',
       observations: schedule.observations || '',
-      start_date: schedule.start_date || '',
-      end_date: schedule.end_date || '',
     });
     setSaveError('');
     setFormOpen(true);
@@ -96,12 +88,8 @@ const SubjectScheduleModal = ({ subject, open, onClose }) => {
         day_of_week: form.day_of_week,
         start_time: form.start_time,
         end_time: form.end_time,
-        room: form.room || null,
-        teacher: form.teacher || null,
         modality: form.modality,
         observations: form.observations || null,
-        start_date: form.start_date || null,
-        end_date: form.end_date || null,
       };
       if (editingId) {
         await api.put(`/class-schedules/${editingId}`, payload);
@@ -219,44 +207,6 @@ const SubjectScheduleModal = ({ subject, open, onClose }) => {
                     ))}
                   </select>
                 </div>
-                <div className="col-12 col-md-3">
-                  <label className="form-label text-muted-tf small">Aula</label>
-                  <input
-                    type="text"
-                    className="form-control bg-surface border-secondary text-white"
-                    value={form.room}
-                    onChange={(e) => setForm({ ...form, room: e.target.value })}
-                    placeholder="Salón A-101"
-                  />
-                </div>
-                <div className="col-12 col-md-3">
-                  <label className="form-label text-muted-tf small">Docente</label>
-                  <input
-                    type="text"
-                    className="form-control bg-surface border-secondary text-white"
-                    value={form.teacher}
-                    onChange={(e) => setForm({ ...form, teacher: e.target.value })}
-                    placeholder="Dra. Rodríguez"
-                  />
-                </div>
-                <div className="col-12 col-md-6">
-                  <label className="form-label text-muted-tf small">Fecha inicio</label>
-                  <input
-                    type="date"
-                    className="form-control bg-surface border-secondary text-white"
-                    value={form.start_date}
-                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                  />
-                </div>
-                <div className="col-12 col-md-6">
-                  <label className="form-label text-muted-tf small">Fecha fin</label>
-                  <input
-                    type="date"
-                    className="form-control bg-surface border-secondary text-white"
-                    value={form.end_date}
-                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                  />
-                </div>
                 <div className="col-12">
                   <label className="form-label text-muted-tf small">Observaciones</label>
                   <textarea
@@ -302,11 +252,6 @@ const SubjectScheduleModal = ({ subject, open, onClose }) => {
                       <div className="text-muted-tf small mt-1">
                         {s.start_time} - {s.end_time}
                       </div>
-                      {(s.start_date || s.end_date) && (
-                        <div className="text-muted-tf small mt-1">
-                          {s.start_date} → {s.end_date}
-                        </div>
-                      )}
                       {s.room && <div className="text-muted-tf small mt-1">{s.room}</div>}
                       {s.teacher && <div className="text-muted-tf small">{s.teacher}</div>}
                       {s.observations && <div className="text-muted-tf small mt-1">{s.observations}</div>}
