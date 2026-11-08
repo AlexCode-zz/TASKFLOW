@@ -15,6 +15,7 @@ import Assistant from './pages/Assistant';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import ConfigurationWizard from './components/wizard/ConfigurationWizard';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import api from './services/api';
 
 const App = () => {
@@ -25,7 +26,7 @@ const App = () => {
       try {
         const response = await api.get('/students/configuration-status');
         setIsConfigured(response.data.is_configured);
-      } catch (error) {
+      } catch {
         setIsConfigured(false);
       }
     };
@@ -50,28 +51,124 @@ const App = () => {
   }
 
   if (!isConfigured) {
-    return <ConfigurationWizard />;
+    return (
+      <ErrorBoundary>
+        <ConfigurationWizard />
+      </ErrorBoundary>
+    );
   }
 
   return (
-    <AppLayout>
+    <ErrorBoundary>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/semana" element={<Week />} />
-        <Route path="/materias" element={<Subjects />} />
-        <Route path="/materias/nueva" element={<Subjects />} />
-        <Route path="/clases" element={<ClassSchedules />} />
-        <Route path="/laboratorios" element={<Laboratories />} />
-        <Route path="/calendario" element={<Calendar />} />
-        <Route path="/evaluaciones" element={<Evaluations />} />
-        <Route path="/tareas" element={<Tasks />} />
-        <Route path="/proyectos" element={<Projects />} />
-        <Route path="/informes" element={<Reports />} />
-        <Route path="/asistente-ia" element={<Assistant />} />
-        <Route path="/configuracion" element={<Settings />} />
-        <Route path="*" element={<NotFound />} />
+        <Route element={<AppLayout />}>
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary>
+                <Home />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/semana"
+            element={
+              <ErrorBoundary>
+                <Week />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/materias"
+            element={
+              <ErrorBoundary>
+                <Subjects />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/clases"
+            element={
+              <ErrorBoundary>
+                <ClassSchedules />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/laboratorios"
+            element={
+              <ErrorBoundary>
+                <Laboratories />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/calendario"
+            element={
+              <ErrorBoundary>
+                <Calendar />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/evaluaciones"
+            element={
+              <ErrorBoundary>
+                <Evaluations />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/tareas"
+            element={
+              <ErrorBoundary>
+                <Tasks />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/proyectos"
+            element={
+              <ErrorBoundary>
+                <Projects />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/informes"
+            element={
+              <ErrorBoundary>
+                <Reports />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/asistente-ia"
+            element={
+              <ErrorBoundary>
+                <Assistant />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/configuracion"
+            element={
+              <ErrorBoundary>
+                <Settings />
+              </ErrorBoundary>
+            }
+          />
+        </Route>
+        <Route
+          path="*"
+          element={
+            <ErrorBoundary>
+              <NotFound />
+            </ErrorBoundary>
+          }
+        />
       </Routes>
-    </AppLayout>
+    </ErrorBoundary>
   );
 };
 
