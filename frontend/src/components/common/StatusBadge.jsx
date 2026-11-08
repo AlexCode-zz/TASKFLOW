@@ -1,5 +1,7 @@
 const STATUS_STYLE = {
   pending: { bg: 'bg-warning text-dark', label: 'Pendiente' },
+  realizado: { bg: 'bg-success text-white', label: 'Realizado' },
+  cancelado: { bg: 'bg-secondary text-white', label: 'Cancelado' },
   completed: { bg: 'bg-success text-white', label: 'Completada' },
   upcoming: { bg: 'bg-info text-dark', label: 'Próxima' },
 };

@@ -263,7 +263,6 @@ const AcademicItemList = ({ subject }) => {
 
   const renderGroup = (title, kind, items) => (
     <div className="mb-4">
-      <h6 className="fw-semibold text-white mb-2">{title}</h6>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h6 className="fw-semibold text-white mb-0">{title}</h6>
         <Button variant="outline" size="sm" onClick={() => handleAdd(kind)}>
