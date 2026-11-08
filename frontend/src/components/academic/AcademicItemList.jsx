@@ -130,11 +130,13 @@ const AcademicItemList = ({ subject }) => {
             Realizado
           </label>
         </div>
+        <span className="fw-semibold text-white small">{title}</span>
+        <StatusBadge status={item.status} />
         <span className="text-muted-tf small">Fecha: {item.date || 'Sin fecha'}</span>
         <span className="text-muted-tf small">Nota: {formatGrade(item.grade)}</span>
-        {item.weight_percentage !== null && item.weight_percentage !== undefined && (
-          <span className="text-muted-tf small">Peso: {Number(item.weight_percentage)}%</span>
-        )}
+        <span className="text-muted-tf small">
+          Peso: {item.weight_percentage !== null && item.weight_percentage !== undefined ? `${Number(item.weight_percentage)}%` : '—'}
+        </span>
         <Button variant="outline" size="sm" className="ms-auto" onClick={() => startEdit(kind, item)}>
           <i className="bi bi-pencil me-1" aria-hidden="true" />
           Editar
@@ -213,15 +215,7 @@ const AcademicItemList = ({ subject }) => {
     );
 
     return (
-      <div className="card border-secondary shadow-sm h-100">
-        <div className="card-body p-3">
-          <div className="d-flex justify-content-between align-items-start mb-2">
-            <h6 className="fw-semibold mb-0">{title}</h6>
-            <StatusBadge status={item.status} />
-          </div>
-          {editContent}
-        </div>
-      </div>
+      <div className="py-2 px-2">{editContent}</div>
     );
   };
 
