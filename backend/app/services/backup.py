@@ -116,6 +116,8 @@ def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
                 "location": l.location,
                 "description": l.description,
                 "materials": l.materials,
+                "weight_percentage": l.weight_percentage,
+                "grade": l.grade,
                 "status": l.status,
             }
             for l in laboratories
@@ -128,6 +130,7 @@ def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
                 "start_time": e.start_time,
                 "end_time": e.end_time,
                 "weight_percentage": e.weight_percentage,
+                "grade": e.grade,
                 "description": e.description,
                 "topics": e.topics,
                 "preparation_level": e.preparation_level,

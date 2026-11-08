@@ -13,6 +13,8 @@ from app.crud.subject import (
     get_subject,
 )
 from app.schemas.subject import SubjectCreate, SubjectUpdate, SubjectResponse
+from app.schemas.academic import SubjectAcademicItemsResponse
+from app.services.academic import ensure_subject_defaults, get_subject_academic_items
 
 router = APIRouter(prefix="/subjects", tags=["Materias"])
 
@@ -48,7 +50,23 @@ def create_subject_endpoint(subject_in: SubjectCreate, db: Session = Depends(get
                 detail=f"Ya existe una materia con el código '{subject_in.code}'.",
             )
 
-    return create_subject(db, student.id, subject_in)
+    subject = create_subject(db, student.id, subject_in)
+    # Cada materia nace con 4 parciales y 4 laboratorios vacíos.
+    ensure_subject_defaults(db, student.id, subject.id)
+    return subject
+
+
+@router.get("/{subject_id}/academic-items", response_model=SubjectAcademicItemsResponse)
+def get_subject_academic_items_endpoint(subject_id: int, db: Session = Depends(get_db)):
+    """Devuelve parciales, laboratorios y promedio ponderado de una materia."""
+    student = get_current_student(db)
+    subject = get_subject(db, subject_id)
+    if not subject or subject.student_id != student.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Materia no encontrada.",
+        )
+    return get_subject_academic_items(db, student.id, subject_id)
 
 
 @router.get("/{subject_id}", response_model=SubjectResponse)

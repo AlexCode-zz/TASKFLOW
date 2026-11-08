@@ -15,6 +15,7 @@ def get_laboratories_by_subject(db: Session, student_id: int, subject_id: int):
     return (
         db.query(Laboratory)
         .filter(Laboratory.student_id == student_id, Laboratory.subject_id == subject_id)
+        .order_by(Laboratory.id)
         .all()
     )
 

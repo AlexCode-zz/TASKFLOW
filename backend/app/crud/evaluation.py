@@ -15,6 +15,7 @@ def get_evaluations_by_subject(db: Session, student_id: int, subject_id: int):
     return (
         db.query(Evaluation)
         .filter(Evaluation.student_id == student_id, Evaluation.subject_id == subject_id)
+        .order_by(Evaluation.id)
         .all()
     )
 

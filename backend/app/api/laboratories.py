@@ -46,7 +46,11 @@ def create_laboratory_endpoint(laboratory_in: LaboratoryCreate, db: Session = De
     """Registra un nuevo laboratorio."""
     student = get_current_student(db)
 
-    if laboratory_in.end_time <= laboratory_in.start_time:
+    if (
+        laboratory_in.start_time
+        and laboratory_in.end_time
+        and laboratory_in.end_time <= laboratory_in.start_time
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La hora de finalización debe ser posterior a la hora de inicio.",
@@ -81,7 +85,7 @@ def update_laboratory_endpoint(laboratory_id: int, laboratory_in: LaboratoryUpda
 
     start_time = laboratory_in.start_time or laboratory.start_time
     end_time = laboratory_in.end_time or laboratory.end_time
-    if end_time <= start_time:
+    if start_time and end_time and end_time <= start_time:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La hora de finalización debe ser posterior a la hora de inicio.",

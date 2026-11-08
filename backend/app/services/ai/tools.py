@@ -302,6 +302,7 @@ class AITools:
                     "type": e.evaluation_type,
                     "date": e.date.isoformat() if e.date else None,
                     "weight_percentage": e.weight_percentage,
+                    "grade": e.grade,
                     "status": e.status,
                     "preparation_level": e.preparation_level,
                 }
@@ -323,6 +324,7 @@ class AITools:
                     "type": e.evaluation_type,
                     "date": e.date.isoformat() if e.date else None,
                     "weight_percentage": e.weight_percentage,
+                    "grade": e.grade,
                     "status": e.status,
                 }
                 for e in evaluations
