@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import PriorityBadge from '../components/common/PriorityBadge';
 import StatusBadge from '../components/common/StatusBadge';
+import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/ui/PageHeader';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -38,8 +39,8 @@ const Tasks = () => {
       ]);
       setTasks(tRes.data);
       setSubjects(subRes.data);
-    } catch (err) {
-      setError('No se pudieron cargar las tareas.');
+    } catch {
+      setError('No se puderon cargar las tareas.');
     } finally {
       setLoading(false);
     }
@@ -51,8 +52,11 @@ const Tasks = () => {
     try {
       const payload = { ...form };
       if (payload.assigned_date === '') payload.assigned_date = null;
+      if (payload.due_date === '') payload.due_date = null;
       if (payload.due_time === '') payload.due_time = null;
       if (payload.estimated_minutes === '') payload.estimated_minutes = null;
+      if (payload.estimated_minutes !== null) payload.estimated_minutes = Number(payload.estimated_minutes);
+      if (payload.subject_id !== '' && payload.subject_id !== null) payload.subject_id = Number(payload.subject_id);
       if (editingId) {
         await api.put(`/tasks/${editingId}`, payload);
         setEditingId(null);
@@ -82,7 +86,7 @@ const Tasks = () => {
     try {
       await api.delete(`/tasks/${id}`);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo eliminar la tarea.');
     }
   };
@@ -97,7 +101,7 @@ const Tasks = () => {
       const newStatus = task.status === 'completada' ? 'pendiente' : 'completada';
       await api.put(`/tasks/${task.id}`, { status: newStatus });
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo actualizar el estado de la tarea.');
     }
   };
@@ -118,7 +122,12 @@ const Tasks = () => {
     <div className="fade-in">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
-          {error}
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{error}</span>
+            <button type="button" className="btn btn-outline-light btn-sm" onClick={loadData}>
+              Reintentar
+            </button>
+          </div>
         </div>
       )}
       {saveError && (
@@ -126,15 +135,7 @@ const Tasks = () => {
           {saveError}
         </div>
       )}
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Tareas y proyectos</h1>
-          <p className="text-muted-tf mb-0">Organiza tus actividades académicas.</p>
-        </div>
-        <Link to="/" className="btn btn-outline-secondary btn-sm">
-          ← Volver a Mi semana
-        </Link>
-      </header>
+      <PageHeader title="Tareas y proyectos" description="Organiza tus actividades académicas." />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
@@ -167,9 +168,10 @@ const Tasks = () => {
                 />
               </div>
               <div className="col-12 col-md-2">
-                <label className="form-label text-muted-tf small">Fecha entrega</label>
+                <label className="form-label text-muted-tf small">Fecha entrega <span className="text-danger">*</span></label>
                 <input
                   type="date"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.due_date}
                   onChange={(e) => setForm({ ...form, due_date: e.target.value })}
@@ -284,9 +286,13 @@ const Tasks = () => {
 
       <h6 className="fw-semibold text-white mb-3">Tareas registradas</h6>
       {filtered.length === 0 ? (
-        <div className="text-muted-tf text-center py-4">
-          No hay tareas registradas.
-        </div>
+        <EmptyState
+          icon="✅"
+          title="Aún no tienes tareas"
+          message="Registra tu primera tarea pendiente para comenzar a organizar tu semana."
+          actionLabel="Crear tarea"
+          onAction={() => setEditingId(null)}
+        />
       ) : (
         <div className="row g-3">
           {filtered.map((t) => {
@@ -311,7 +317,7 @@ const Tasks = () => {
                         <span className="text-muted-tf small">{t.estimated_minutes} min estimados</span>
                       )}
                     </div>
-                    <div className="progress bg-secondary" style={{ height: '6px' }} mb-2>
+                    <div className="progress bg-secondary" style={{ height: '6px' }}>
                       <div
                         className="progress-bar"
                         style={{

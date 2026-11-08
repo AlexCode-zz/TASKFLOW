@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
+import Skeleton from '../components/ui/Skeleton';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const TIME_SLOTS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
@@ -17,7 +20,6 @@ const typeColors = {
 const Week = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [events, setEvents] = useState([]);
-  const [planningSessions, setPlanningSessions] = useState([]);
   const [unscheduledTasks, setUnscheduledTasks] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [explanations, setExplanations] = useState([]);
@@ -44,7 +46,7 @@ const Week = () => {
       const allEvents = [];
 
       if (classes.status === 'fulfilled') {
-        classes.data.forEach((c) => {
+        classes.value.data.forEach((c) => {
           allEvents.push({
             id: `class-${c.id}`,
             title: c.subject_name || 'Clase',
@@ -61,7 +63,7 @@ const Week = () => {
       }
 
       if (labs.status === 'fulfilled') {
-        labs.data.forEach((l) => {
+        labs.value.data.forEach((l) => {
           const d = new Date(l.date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -80,7 +82,7 @@ const Week = () => {
       }
 
       if (evals.status === 'fulfilled') {
-        evals.data.forEach((e) => {
+        evals.value.data.forEach((e) => {
           const d = new Date(e.date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -98,7 +100,7 @@ const Week = () => {
       }
 
       if (tasks.status === 'fulfilled') {
-        tasks.data.forEach((t) => {
+        tasks.value.data.forEach((t) => {
           const d = new Date(t.due_date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -116,7 +118,7 @@ const Week = () => {
       }
 
       if (projects.status === 'fulfilled') {
-        projects.data.forEach((p) => {
+        projects.value.data.forEach((p) => {
           const d = new Date(p.due_date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -135,8 +137,7 @@ const Week = () => {
 
       // Sesiones de planificación (estudio)
       if (planRes.status === 'fulfilled') {
-        setPlanningSessions(planRes.data || []);
-        planRes.data.forEach((s) => {
+        planRes.value.data.forEach((s) => {
           const d = new Date(s.scheduled_date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -198,7 +199,6 @@ const Week = () => {
         week_start_date: weekStartISO,
       });
       if (response.data.success) {
-        setPlanningSessions(response.data.sessions || []);
         setUnscheduledTasks(response.data.unscheduled_tasks || []);
         setWarnings(response.data.warnings || []);
         setExplanations(response.data.explanations || []);
@@ -206,7 +206,7 @@ const Week = () => {
       } else {
         setGenerateError(response.data.error || 'Error al generar la planificación.');
       }
-    } catch (err) {
+    } catch {
       setGenerateError('Error al conectar con el servidor.');
     } finally {
       setGenerating(false);
@@ -215,44 +215,49 @@ const Week = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
+      <div className="fade-in">
+        <Skeleton lines={4} />
+        <div className="mt-5">
+          <Skeleton lines={14} />
         </div>
       </div>
     );
   }
 
+  const now = new Date();
+  const isTodayWeek = weekDays.some(
+    (d) =>
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear()
+  );
+
   return (
     <div className="fade-in">
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Mi semana</h1>
-          <p className="text-muted-tf mb-0">{weekLabel}</p>
+      <PageHeader
+        title="Mi semana"
+        description={`${weekLabel} · ${now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}`}
+        actions={
+          <div className="d-flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => changeWeek(-1)} disabled={!canGoBack}>
+              Semana anterior
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => changeWeek(1)}>
+              Semana siguiente
+            </Button>
+            <Button onClick={handleGeneratePlan} disabled={generating}>
+              {generating ? 'Generando...' : 'Generar planificación'}
+            </Button>
+          </div>
+        }
+      />
+
+      {isTodayWeek && (
+        <div className="alert alert-info text-white border-secondary mb-4" role="status">
+          <i className="bi bi-clock-history me-2" aria-hidden="true" />
+          Hora actual: {now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
         </div>
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => changeWeek(-1)}
-            disabled={!canGoBack}
-          >
-            Semana anterior
-          </button>
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => changeWeek(1)}
-          >
-            Semana siguiente
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={handleGeneratePlan}
-            disabled={generating}
-          >
-            {generating ? 'Generando...' : 'Generar planificación'}
-          </button>
-        </div>
-      </header>
+      )}
 
       {generateError && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">

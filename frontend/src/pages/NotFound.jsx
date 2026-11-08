@@ -1,13 +1,25 @@
-import { Link } from 'react-router-dom';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
 
 const NotFound = () => {
   return (
-    <div className="text-center py-5">
-      <h1 className="fw-bold">404</h1>
-      <p className="text-muted-tf">Página no encontrada.</p>
-      <Link to="/" className="btn btn-primary mt-3">
-        Volver a Mi semana
-      </Link>
+    <div className="fade-in">
+      <PageHeader title="404" description="La página que buscas no existe." />
+      <div className="state-container">
+        <div className="state-icon" aria-hidden="true">
+          <i className="bi bi-exclamation-triangle-fill" />
+        </div>
+        <h2 className="state-title">Página no encontrada</h2>
+        <p className="state-message">
+          No encontramos la página que intentabas visitar. Revisa la ruta o vuelve al inicio.
+        </p>
+        <div className="state-actions">
+          <Button>
+            <i className="bi bi-house-door me-1" aria-hidden="true" />
+            Ir al inicio
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

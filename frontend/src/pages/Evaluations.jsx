@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import StatusBadge from '../components/common/StatusBadge';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
+import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 
 const TYPE_LABELS = {
   parcial: 'Parcial',
@@ -48,7 +51,7 @@ const Evaluations = () => {
       ]);
       setEvaluations(eRes.data);
       setSubjects(subRes.data);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar las evaluaciones.');
     } finally {
       setLoading(false);
@@ -61,6 +64,7 @@ const Evaluations = () => {
     try {
       const payload = { ...form };
       if (payload.weight_percentage === '') payload.weight_percentage = null;
+      if (payload.weight_percentage !== null) payload.weight_percentage = Number(payload.weight_percentage);
       if (editingId) {
         await api.put(`/evaluations/${editingId}`, payload);
         setEditingId(null);
@@ -91,7 +95,7 @@ const Evaluations = () => {
     try {
       await api.delete(`/evaluations/${id}`);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo eliminar la evaluación.');
     }
   };
@@ -103,10 +107,8 @@ const Evaluations = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="fade-in">
+        <Skeleton lines={4} />
       </div>
     );
   }
@@ -115,7 +117,12 @@ const Evaluations = () => {
     <div className="fade-in">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
-          {error}
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{error}</span>
+            <button type="button" className="btn btn-outline-light btn-sm" onClick={loadData}>
+              Reintentar
+            </button>
+          </div>
         </div>
       )}
       {saveError && (
@@ -123,15 +130,13 @@ const Evaluations = () => {
           {saveError}
         </div>
       )}
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Evaluaciones</h1>
-          <p className="text-muted-tf mb-0">Exámenes, laboratorios, exposiciones y proyectos calificados.</p>
-        </div>
-        <Link to="/" className="btn btn-outline-secondary btn-sm">
-          ← Volver a Mi semana
-        </Link>
-      </header>
+      <PageHeader
+        title="Evaluaciones"
+        description="Exámenes, laboratorios, exposiciones y proyectos calificados."
+        actions={
+          <Button onClick={() => setEditingId(null)}>Registrar evaluación</Button>
+        }
+      />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
@@ -143,9 +148,10 @@ const Evaluations = () => {
               <div className="col-12 col-md-3">
                 <label className="form-label text-muted-tf small">Materia <span className="text-danger">*</span></label>
                 <select
+                  required
                   className="form-select bg-surface border-secondary text-white"
                   value={form.subject_id}
-                  onChange={(e) => setForm({ ...form, subject_id: parseInt(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, subject_id: e.target.value === '' ? '' : Number(e.target.value) })}
                 >
                   <option value="">Seleccionar materia</option>
                   {subjects.map((s) => (
@@ -157,6 +163,7 @@ const Evaluations = () => {
                 <label className="form-label text-muted-tf small">Título <span className="text-danger">*</span></label>
                 <input
                   type="text"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -179,6 +186,7 @@ const Evaluations = () => {
                 <label className="form-label text-muted-tf small">Fecha <span className="text-danger">*</span></label>
                 <input
                   type="date"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -306,9 +314,13 @@ const Evaluations = () => {
 
       <h6 className="fw-semibold text-white mb-3">Evaluaciones registradas</h6>
       {evaluations.length === 0 ? (
-        <div className="text-muted-tf text-center py-4">
-          No hay evaluaciones registradas.
-        </div>
+        <EmptyState
+          icon="📝"
+          title="Aún no tienes evaluaciones"
+          message="Registra tu primera evaluación para comenzar."
+          actionLabel="Registrar evaluación"
+          onAction={() => setEditingId(null)}
+        />
       ) : (
         <div className="row g-3">
           {evaluations.map((e) => {

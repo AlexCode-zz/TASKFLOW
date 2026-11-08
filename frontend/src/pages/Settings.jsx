@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import ProviderConfig from '../components/ai/ProviderConfig';
 
@@ -10,12 +9,13 @@ const Settings = () => {
   const [saveMessage, setSaveMessage] = useState('');
 
   const sections = [
-    { id: 'perfil', label: 'Perfil académico', icon: '👤' },
-    { id: 'carrera', label: 'Carrera y semestre', icon: '🎓' },
-    { id: 'horarios', label: 'Horarios y disponibilidad', icon: '🕒' },
-    { id: 'planificacion', label: 'Preferencias de planificación', icon: '📋' },
-    { id: 'apariencia', label: 'Apariencia', icon: '🎨' },
-    { id: 'ia', label: 'Asistente IA', icon: '🤖' },
+    { id: 'perfil', label: 'Perfil académico', icon: 'bi-person' },
+    { id: 'carrera', label: 'Carrera y semestre', icon: 'bi-mortarboard' },
+    { id: 'horarios', label: 'Horarios y disponibilidad', icon: 'bi-clock' },
+    { id: 'planificacion', label: 'Preferencias de planificación', icon: 'bi-list-checks' },
+    { id: 'apariencia', label: 'Apariencia', icon: 'bi-palette' },
+    { id: 'ia', label: 'Asistente IA', icon: 'bi-robot' },
+    { id: 'respaldo', label: 'Respaldo', icon: 'bi-database-backup' },
   ];
 
   useEffect(() => {
@@ -39,10 +39,38 @@ const Settings = () => {
       await api.put('/students/me', student);
       setSaveMessage('Cambios guardados correctamente.');
       setTimeout(() => setSaveMessage(''), 3000);
-    } catch (err) {
+    } catch {
       setSaveMessage('Error al guardar los cambios.');
       setTimeout(() => setSaveMessage(''), 3000);
     }
+  };
+
+  const handleBackup = async () => {
+    try {
+      const [subjects, tasks, projects, evaluations, labs, classes] = await Promise.all([
+        api.get('/subjects/'),
+        api.get('/tasks/'),
+        api.get('/projects/'),
+        api.get('/evaluations/'),
+        api.get('/laboratories/'),
+        api.get('/class-schedules/'),
+      ]);
+      const backup = {
+        exported_at: new Date().toISOString(),
+        data: { subjects: subjects.data, tasks: tasks.data, projects: projects.data, evaluations: evaluations.data, laboratories: labs.data, class_schedules: classes.data },
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `taskflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setSaveMessage('Respaldo descargado correctamente.');
+    } catch {
+      setSaveMessage('No se pudo generar el respaldo.');
+    }
+    setTimeout(() => setSaveMessage(''), 3000);
   };
 
   if (loading) {
@@ -76,6 +104,7 @@ const Settings = () => {
       <header className="mb-4">
         <h1 className="fw-bold mb-1">Configuración</h1>
         <p className="text-muted-tf mb-0">Ajustes de TaskFlow.</p>
+        <div className="text-muted-tf small mt-2">TaskFlow v1.0.0</div>
       </header>
 
       <div className="row">
@@ -88,7 +117,7 @@ const Settings = () => {
                 className={`list-group-item list-group-item-action bg-surface border-secondary text-white d-flex align-items-center gap-2 ${activeSection === s.id ? 'bg-primary' : ''}`}
                 onClick={() => setActiveSection(s.id)}
               >
-                <span className="fs-5">{s.icon}</span>
+                <i className={`bi ${s.icon} fs-5`} aria-hidden="true" />
                 {s.label}
               </button>
             ))}
@@ -369,12 +398,36 @@ const Settings = () => {
                     <div className="card border-secondary shadow-sm">
                       <div className="card-header bg-transparent border-secondary">
                         <div className="d-flex align-items-center gap-2">
-                          <span className="text-primary fw-medium">🤖</span>
+                          <i className="bi bi-robot text-primary fs-5" aria-hidden="true" />
                           <h6 className="fw-semibold mb-0">Configuración del asistente IA</h6>
                         </div>
                       </div>
                       <div className="card-body p-0">
                         <ProviderConfig onConfigChange={() => {}} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'respaldo' && (
+                <div className="row g-3">
+                  <div className="col-12">
+                    <div className="card border-secondary shadow-sm">
+                      <div className="card-header bg-transparent border-secondary">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-database-backup text-primary fs-5" aria-hidden="true" />
+                          <h6 className="fw-semibold mb-0">Respaldo de datos</h6>
+                        </div>
+                      </div>
+                      <div className="card-body p-3">
+                        <p className="text-muted-tf small mb-3">
+                          Descarga un archivo JSON con todas tus materias, tareas, proyectos, evaluaciones, laboratorios y horarios.
+                        </p>
+                        <button type="button" className="btn btn-outline-primary" onClick={handleBackup}>
+                          <i className="bi bi-download me-1" aria-hidden="true" />
+                          Descargar respaldo
+                        </button>
                       </div>
                     </div>
                   </div>

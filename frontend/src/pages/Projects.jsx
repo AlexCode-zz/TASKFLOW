@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import PriorityBadge from '../components/common/PriorityBadge';
-import StatusBadge from '../components/common/StatusBadge';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
+import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -35,7 +37,7 @@ const Projects = () => {
       ]);
       setProjects(pRes.data);
       setSubjects(subRes.data);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los proyectos.');
     } finally {
       setLoading(false);
@@ -46,7 +48,22 @@ const Projects = () => {
     e.preventDefault();
     setSaveError('');
     try {
-      await api.post('/projects/', form);
+      const payload = {
+        subject_id: form.subject_id ? Number(form.subject_id) : null,
+        name: form.name.trim(),
+        description: form.description || null,
+        start_date: form.start_date || null,
+        due_date: form.due_date || null,
+        priority: form.priority || 'media',
+        status: form.status || 'pendiente',
+        progress_percentage: Number(form.progress_percentage) || 0,
+      };
+      if (editingId) {
+        await api.put(`/projects/${editingId}`, payload);
+        setEditingId(null);
+      } else {
+        await api.post('/projects/', payload);
+      }
       setForm({
         subject_id: '',
         name: '',
@@ -68,7 +85,7 @@ const Projects = () => {
     try {
       await api.delete(`/projects/${id}`);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo eliminar el proyecto.');
     }
   };
@@ -80,10 +97,8 @@ const Projects = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="fade-in">
+        <Skeleton lines={4} />
       </div>
     );
   }
@@ -100,15 +115,13 @@ const Projects = () => {
           {saveError}
         </div>
       )}
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Proyectos</h1>
-          <p className="text-muted-tf mb-0">Gestiona tus proyectos académicos.</p>
-        </div>
-        <Link to="/" className="btn btn-outline-secondary btn-sm">
-          ← Volver a Mi semana
-        </Link>
-      </header>
+      <PageHeader
+        title="Proyectos"
+        description="Gestiona tus proyectos académicos."
+        actions={
+          <Button onClick={() => setEditingId(null)}>Registrar proyecto</Button>
+        }
+      />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
@@ -134,6 +147,7 @@ const Projects = () => {
                 <label className="form-label text-muted-tf small">Nombre <span className="text-danger">*</span></label>
                 <input
                   type="text"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -141,18 +155,20 @@ const Projects = () => {
                 />
               </div>
               <div className="col-12 col-md-2">
-                <label className="form-label text-muted-tf small">Fecha inicio</label>
+                <label className="form-label text-muted-tf small">Fecha inicio <span className="text-danger">*</span></label>
                 <input
                   type="date"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.start_date}
                   onChange={(e) => setForm({ ...form, start_date: e.target.value })}
                 />
               </div>
               <div className="col-12 col-md-2">
-                <label className="form-label text-muted-tf small">Fecha entrega</label>
+                <label className="form-label text-muted-tf small">Fecha entrega <span className="text-danger">*</span></label>
                 <input
                   type="date"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.due_date}
                   onChange={(e) => setForm({ ...form, due_date: e.target.value })}
@@ -182,7 +198,18 @@ const Projects = () => {
                 />
               </div>
               <div className="col-12 d-flex gap-2 mt-3">
-                <button type="submit" className="btn btn-primary">Registrar proyecto</button>
+                <button type="submit" className="btn btn-primary">
+                  {editingId ? 'Actualizar proyecto' : 'Registrar proyecto'}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Cancelar
+                  </button>
+                )}
               </div>
             </div>
           </form>
@@ -191,9 +218,13 @@ const Projects = () => {
 
       <h6 className="fw-semibold text-white mb-3">Proyectos registrados</h6>
       {projects.length === 0 ? (
-        <div className="text-muted-tf text-center py-4">
-          No hay proyectos registrados.
-        </div>
+        <EmptyState
+          icon="📁"
+          title="Aún no tienes proyectos"
+          message="Registra tu primer proyecto académico para comenzar."
+          actionLabel="Registrar proyecto"
+          onAction={() => setEditingId(null)}
+        />
       ) : (
         <div className="row g-3">
           {projects.map((p) => {

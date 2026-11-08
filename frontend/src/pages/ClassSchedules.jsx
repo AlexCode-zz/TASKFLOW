@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
+import PageHeader from '../components/ui/PageHeader';
+import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const MODALITIES = [
@@ -40,7 +42,7 @@ const ClassSchedules = () => {
       ]);
       setSchedules(sRes.data);
       setSubjects(subRes.data);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los datos.');
     } finally {
       setLoading(false);
@@ -78,7 +80,7 @@ const ClassSchedules = () => {
     try {
       await api.delete(`/class-schedules/${id}`);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo eliminar el horario de clase.');
     }
   };
@@ -92,10 +94,8 @@ const ClassSchedules = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="fade-in">
+        <Skeleton lines={4} />
       </div>
     );
   }
@@ -104,7 +104,12 @@ const ClassSchedules = () => {
     <div className="fade-in">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
-          {error}
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{error}</span>
+            <button type="button" className="btn btn-outline-light btn-sm" onClick={loadData}>
+              Reintentar
+            </button>
+          </div>
         </div>
       )}
       {saveError && (
@@ -112,15 +117,10 @@ const ClassSchedules = () => {
           {saveError}
         </div>
       )}
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Horarios de clases</h1>
-          <p className="text-muted-tf mb-0">Registra las sesiones semanales de cada materia.</p>
-        </div>
-        <Link to="/" className="btn btn-outline-secondary btn-sm">
-          ← Volver a Mi semana
-        </Link>
-      </header>
+      <PageHeader
+        title="Horarios"
+        description="Registra las sesiones semanales de cada materia."
+      />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
@@ -132,9 +132,10 @@ const ClassSchedules = () => {
               <div className="col-12 col-md-3">
                 <label className="form-label text-muted-tf small">Materia <span className="text-danger">*</span></label>
                 <select
+                  required
                   className="form-select bg-surface border-secondary text-white"
                   value={form.subject_id}
-                  onChange={(e) => setForm({ ...form, subject_id: parseInt(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, subject_id: e.target.value === '' ? '' : Number(e.target.value) })}
                 >
                   <option value="">Seleccionar materia</option>
                   {subjects.map((s) => (
@@ -231,9 +232,13 @@ const ClassSchedules = () => {
 
       <h6 className="fw-semibold text-white mb-3">Horarios registrados</h6>
       {schedules.length === 0 ? (
-        <div className="text-muted-tf text-center py-4">
-          No hay horarios de clases registrados.
-        </div>
+        <EmptyState
+          icon="🕒"
+          title="Aún no tienes horarios"
+          message="Registra tu primer horario de clase para comenzar."
+          actionLabel="Registrar horario"
+          onAction={() => setEditingId(null)}
+        />
       ) : (
         <div className="row g-3">
           {schedules.map((s) => {

@@ -9,22 +9,21 @@ const Assistant = () => {
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  [sending, setSending] = useState(false);
-  [error, setError] = useState('');
-  [providerConfig, setProviderConfig] = useState(null);
-  [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'config'
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const [providerConfig, setProviderConfig] = useState(null);
 
   useEffect(() => {
     loadConversations();
     checkProvider();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadConversations = async () => {
     try {
-      const response = await api.get('/ai/conversations/');
+      const response = await api.get('/ai/conversations');
       setConversations(response.data);
-      if (response.data.length > 0 && !currentConversation) {
+      if (response.data.length > 0) {
         selectConversation(response.data[0]);
       }
     } catch (err) {
@@ -34,7 +33,7 @@ const Assistant = () => {
 
   const checkProvider = async () => {
     try {
-      const response = await api.get('/ai/providers/');
+      const response = await api.get('/ai/providers');
       const configured = response.data.filter((p) => p.is_configured);
       if (configured.length > 0) {
         const active = configured.find((p) => p.is_active) || configured[0];
@@ -49,7 +48,7 @@ const Assistant = () => {
     setCurrentConversation(conv);
     setMessages([]);
     try {
-      const response = await api.get(`/ai/conversations/${conv.id}/messages/`);
+      const response = await api.get(`/ai/conversations/${conv.id}/messages`);
       setMessages(response.data);
     } catch (err) {
       console.error('Error cargando mensajes:', err.message);
@@ -58,7 +57,7 @@ const Assistant = () => {
 
   const createNewConversation = async () => {
     try {
-      const response = await api.post('/ai/conversations/', {
+      const response = await api.post('/ai/conversations', {
         title: 'Nueva conversación',
         provider_name: providerConfig?.provider_name || null,
         model: providerConfig?.model || null,
@@ -93,7 +92,7 @@ const Assistant = () => {
     setError('');
 
     try {
-      const response = await api.post('/ai/chat/', {
+      const response = await api.post('/ai/chat', {
         message: text,
         conversation_id: currentConversation?.id || null,
         provider_name: providerConfig?.provider_name || undefined,

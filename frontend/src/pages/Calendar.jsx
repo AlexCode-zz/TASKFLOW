@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import EventCard from '../components/common/EventCard';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS_SHORT = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
@@ -13,25 +15,20 @@ const typeColors = {
   project: '#f59e0b',
 };
 
-const typeLabels = {
-  class: 'Clase',
-  laboratory: 'Laboratorio',
-  evaluation: 'Evaluación',
-  task: 'Tarea',
-  project: 'Proyecto',
-};
-
 const Calendar = () => {
   const [view, setView] = useState('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
+  const [typeFilter, setTypeFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadEvents();
   }, []);
 
   const loadEvents = async () => {
+    setError('');
     try {
       const [classes, labs, evals, tasks, projects] = await Promise.allSettled([
         api.get('/class-schedules/'),
@@ -44,7 +41,7 @@ const Calendar = () => {
       const allEvents = [];
 
       if (classes.status === 'fulfilled') {
-        classes.data.forEach((c) => {
+        classes.value.data.forEach((c) => {
           allEvents.push({
             id: `class-${c.id}`,
             title: c.subject_name || 'Clase',
@@ -59,7 +56,7 @@ const Calendar = () => {
       }
 
       if (labs.status === 'fulfilled') {
-        labs.data.forEach((l) => {
+        labs.value.data.forEach((l) => {
           allEvents.push({
             id: `lab-${l.id}`,
             title: l.title,
@@ -74,7 +71,7 @@ const Calendar = () => {
       }
 
       if (evals.status === 'fulfilled') {
-        evals.data.forEach((e) => {
+        evals.value.data.forEach((e) => {
           allEvents.push({
             id: `eval-${e.id}`,
             title: e.title,
@@ -88,7 +85,7 @@ const Calendar = () => {
       }
 
       if (tasks.status === 'fulfilled') {
-        tasks.data.forEach((t) => {
+        tasks.value.data.forEach((t) => {
           allEvents.push({
             id: `task-${t.id}`,
             title: t.title,
@@ -101,7 +98,7 @@ const Calendar = () => {
       }
 
       if (projects.status === 'fulfilled') {
-        projects.data.forEach((p) => {
+        projects.value.data.forEach((p) => {
           allEvents.push({
             id: `project-${p.id}`,
             title: p.name,
@@ -115,6 +112,7 @@ const Calendar = () => {
       setEvents(allEvents);
     } catch (err) {
       console.error('Error loading calendar events:', err);
+      setError('No se pudieron cargar los eventos del calendario.');
     } finally {
       setLoading(false);
     }
@@ -138,8 +136,19 @@ const Calendar = () => {
 
   const eventsForDay = (day) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.filter((e) => e.date === dateStr);
+    return events.filter(
+      (e) => (typeFilter === 'all' || e.type === typeFilter) && e.date === dateStr
+    );
   };
+
+  const typeFilters = [
+    { value: 'all', label: 'Todos' },
+    { value: 'class', label: 'Clases' },
+    { value: 'laboratory', label: 'Laboratorios' },
+    { value: 'evaluation', label: 'Evaluaciones' },
+    { value: 'task', label: 'Tareas' },
+    { value: 'project', label: 'Proyectos' },
+  ];
 
   const monthLabel = `${MONTHS[month]} ${year}`;
 
@@ -153,43 +162,68 @@ const Calendar = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-5">
+        <div className="alert alert-danger text-white border-secondary" role="alert">
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{error}</span>
+            <button type="button" className="btn btn-outline-light btn-sm" onClick={loadEvents}>
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in">
-      <header className="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-          <h1 className="fw-bold mb-1">Calendario</h1>
-          <p className="text-muted-tf mb-0">Organización académica por fechas.</p>
-        </div>
-        <div className="d-flex align-items-center gap-3">
-          <div className="d-flex gap-2">
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={() => changeMonth(-1)}
-              disabled={year <= 2024 && month === 0}
-            >
-              Mes anterior
-            </button>
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={() => changeMonth(1)}
-            >
-              Mes siguiente
-            </button>
+      <PageHeader
+        title="Calendario"
+        description="Organización académica por fechas."
+        actions={
+          <div className="d-flex flex-column gap-2 align-items-md-start">
+            <div className="btn-group btn-group-outline" role="group" aria-label="Vista del calendario">
+              {['month', 'week', 'day'].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={view === v ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}
+                  onClick={() => setView(v)}
+                  aria-pressed={view === v}
+                >
+                  {v === 'month' ? 'Mensual' : v === 'week' ? 'Semanal' : 'Diaria'}
+                </button>
+              ))}
+            </div>
+            <div className="d-flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => changeMonth(-1)}>
+                Mes anterior
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => changeMonth(1)}>
+                Mes siguiente
+              </Button>
+            </div>
           </div>
-          <div className="btn-group btn-group-outline" role="group">
-            {['month', 'week', 'day'].map((v) => (
-              <button
-                key={v}
-                type="button"
-                className={`btn btn-outline-primary btn-sm ${view === v ? 'bg-primary text-white border-primary' : 'text-muted-tf'}`}
-                onClick={() => setView(v)}
-              >
-                {v === 'month' ? 'Mensual' : v === 'week' ? 'Semanal' : 'Diaria'}
-              </button>
-            ))}
-          </div>
+        }
+      />
+
+      <div className="mb-4">
+        <div className="btn-group" role="group" aria-label="Filtrar por tipo de evento">
+          {typeFilters.map((t) => (
+            <Button
+              key={t.value}
+              variant={typeFilter === t.value ? 'primary' : 'outline'}
+              size="sm"
+              className=""
+              onClick={() => setTypeFilter(t.value)}
+            >
+              {t.label}
+            </Button>
+          ))}
         </div>
-      </header>
+      </div>
 
       {view === 'month' ? (
         <div className="card border-secondary shadow-sm">
@@ -241,7 +275,7 @@ const Calendar = () => {
             <div className="text-muted-tf mb-3">Vista {view === 'week' ? 'semanal' : 'diaria'}</div>
             <div className="empty-icon mb-3">🗓️</div>
             <h5 className="fw-semibold text-white">Vista {view === 'week' ? 'semanal' : 'diaria'}</h5>
-            <p className="text-muted-tf small">Selecciona "Mensual" para ver el calendario completo.</p>
+            <p className="text-muted-tf small">Selecciona el calendario &quot;Mensual&quot; para ver el calendario completo.</p>
           </div>
         </div>
       )}

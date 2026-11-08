@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import StatusBadge from '../components/common/StatusBadge';
-
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/ui/PageHeader';
 
 const Laboratories = () => {
   const [laboratories, setLaboratories] = useState([]);
@@ -37,7 +36,7 @@ const Laboratories = () => {
       ]);
       setLaboratories(lRes.data);
       setSubjects(subRes.data);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los datos.');
     } finally {
       setLoading(false);
@@ -76,7 +75,7 @@ const Laboratories = () => {
     try {
       await api.delete(`/laboratories/${id}`);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('No se pudo eliminar el laboratorio.');
     }
   };
@@ -85,8 +84,6 @@ const Laboratories = () => {
     setForm({ ...lab });
     setEditingId(lab.id);
   };
-
-  const getDayLabel = (key) => DAYS[['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'].indexOf(key)] || key;
 
   if (loading) {
     return (
@@ -102,7 +99,12 @@ const Laboratories = () => {
     <div className="fade-in">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
-          {error}
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{error}</span>
+            <button type="button" className="btn btn-outline-light btn-sm" onClick={loadData}>
+              Reintentar
+            </button>
+          </div>
         </div>
       )}
       {saveError && (
@@ -110,15 +112,10 @@ const Laboratories = () => {
           {saveError}
         </div>
       )}
-      <header className="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="fw-bold mb-1">Laboratorios</h1>
-          <p className="text-muted-tf mb-0">Registra tus sesiones de laboratorio.</p>
-        </div>
-        <Link to="/" className="btn btn-outline-secondary btn-sm">
-          ← Volver a Mi semana
-        </Link>
-      </header>
+      <PageHeader
+        title="Laboratorios"
+        description="Registra tus sesiones de laboratorio."
+      />
 
       <div className="card border-secondary shadow-sm mb-4">
         <div className="card-header bg-transparent border-secondary">
@@ -130,9 +127,10 @@ const Laboratories = () => {
               <div className="col-12 col-md-3">
                 <label className="form-label text-muted-tf small">Materia <span className="text-danger">*</span></label>
                 <select
+                  required
                   className="form-select bg-surface border-secondary text-white"
                   value={form.subject_id}
-                  onChange={(e) => setForm({ ...form, subject_id: parseInt(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, subject_id: e.target.value === '' ? '' : Number(e.target.value) })}
                 >
                   <option value="">Seleccionar materia</option>
                   {subjects.map((s) => (
@@ -144,6 +142,7 @@ const Laboratories = () => {
                 <label className="form-label text-muted-tf small">Título <span className="text-danger">*</span></label>
                 <input
                   type="text"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -154,6 +153,7 @@ const Laboratories = () => {
                 <label className="form-label text-muted-tf small">Fecha <span className="text-danger">*</span></label>
                 <input
                   type="date"
+                  required
                   className="form-control bg-surface border-secondary text-white"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -236,9 +236,13 @@ const Laboratories = () => {
 
       <h6 className="fw-semibold text-white mb-3">Laboratorios registrados</h6>
       {laboratories.length === 0 ? (
-        <div className="text-muted-tf text-center py-4">
-          No hay laboratorios registrados.
-        </div>
+        <EmptyState
+          icon="🔬"
+          title="Aún no tienes laboratorios"
+          message="Registra tu primera sesión de laboratorio para comenzar."
+          actionLabel="Agregar laboratorio"
+          onAction={() => setEditingId(null)}
+        />
       ) : (
         <div className="row g-3">
           {laboratories.map((l) => {
