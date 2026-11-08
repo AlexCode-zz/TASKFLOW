@@ -8,7 +8,7 @@ class SubjectBase(BaseModel):
     teacher: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
     color: str = Field(default="#6366f1", max_length=20)
-    credits: Optional[int] = Field(None, ge=1, le=20)
+    classroom: Optional[str] = Field(None, max_length=50)
 
 
 class SubjectCreate(SubjectBase):
@@ -21,7 +21,7 @@ class SubjectUpdate(BaseModel):
     teacher: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
     color: Optional[str] = Field(None, max_length=20)
-    credits: Optional[int] = Field(None, ge=1, le=20)
+    classroom: Optional[str] = Field(None, max_length=50)
 
 
 class SubjectResponse(SubjectBase):

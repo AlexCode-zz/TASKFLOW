@@ -20,7 +20,7 @@ def test_create_subject(client: TestClient):
         "code": "MAT-101",
         "teacher": "Dra. Elena",
         "color": "#3b82f6",
-        "credits": 4,
+        "classroom": "Aula 101",
     })
     assert response.status_code == 201
     data = response.json()

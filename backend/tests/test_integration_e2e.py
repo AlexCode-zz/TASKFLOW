@@ -29,7 +29,7 @@ def _setup_complete_student(client: TestClient):
         "code": "MAT-101",
         "teacher": "Dra. Elena",
         "color": "#3b82f6",
-        "credits": 4,
+        "classroom": "Aula 101",
     })
 
     client.post("/api/availability/", json={

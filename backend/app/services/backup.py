@@ -71,7 +71,7 @@ def export_student_data(db: Session, student_id: int) -> Dict[str, Any]:
                 "teacher": s.teacher,
                 "description": s.description,
                 "color": s.color,
-                "credits": s.credits,
+                "classroom": s.classroom,
             }
             for s in subjects
         ],

@@ -118,7 +118,7 @@ class AcademicContext:
                 "name": s.name,
                 "code": s.code,
                 "teacher": s.teacher,
-                "credits": s.credits,
+                "classroom": s.classroom,
                 "color": s.color,
             }
             for s in subjects

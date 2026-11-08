@@ -25,7 +25,7 @@ def test_export_backup(client: TestClient):
         "code": "MAT-101",
         "teacher": "Dra. Elena",
         "color": "#3b82f6",
-        "credits": 4,
+        "classroom": "Aula 101",
     })
     print(f"Create subject status: {resp.status_code}")
     assert resp.status_code == 201, f"Expected 201, got {resp.status_code}: {resp.text}"

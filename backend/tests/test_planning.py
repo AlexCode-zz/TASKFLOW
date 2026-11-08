@@ -29,7 +29,7 @@ def _setup_student_with_data(client: TestClient, db_session: Session):
         name="Cálculo Diferencial",
         code="MAT-101",
         color="#3b82f6",
-        credits=4,
+        classroom="Aula 101",
     )
     db_session.add(subject)
     db_session.commit()

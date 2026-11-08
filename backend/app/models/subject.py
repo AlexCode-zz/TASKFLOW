@@ -14,6 +14,6 @@ class Subject(Base):
     teacher = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     color = Column(String, default="#6366f1", nullable=False)
-    credits = Column(Integer, nullable=True)
+    classroom = Column(String, nullable=True)
 
     student = relationship("Student", back_populates="subjects")
