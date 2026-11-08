@@ -342,8 +342,45 @@ textarea:focus-visible {
 
 /* ---------- Materias ---------- */
 .subject-card {
+  position: relative;
   border-top: 3px solid transparent;
   overflow: hidden;
+}
+
+.subject-favorite {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.subject-favorite:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.subject-favorite.is-favorite {
+  opacity: 1;
+}
+
+.subject-favorite:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+  border-radius: var(--radius-sm);
 }
 
 .subject-dot {

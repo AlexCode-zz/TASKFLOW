@@ -21,6 +21,7 @@ const emptyForm = {
 const Subjects = () => {
   const [subjects, setSubjects] = useState([]);
   const [search, setSearch] = useState('');
+  const [cycleFilter, setCycleFilter] = useState('all');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saveError, setSaveError] = useState('');
@@ -118,15 +119,42 @@ const Subjects = () => {
     }
   };
 
-  const filtered = subjects.filter((s) => {
-    const term = search.toLowerCase();
-    return (
-      s.name.toLowerCase().includes(term) ||
-      (s.code && s.code.toLowerCase().includes(term)) ||
-      (s.teacher && s.teacher.toLowerCase().includes(term)) ||
-      (s.classroom && s.classroom.toLowerCase().includes(term))
-    );
-  });
+  const toggleFavorite = async (subject) => {
+    const updated = { ...subject, is_favorite: !subject.is_favorite };
+    setSubjects((prev) => prev.map((s) => (s.id === subject.id ? updated : s)));
+    try {
+      const response = await api.put(`/subjects/${subject.id}`, { is_favorite: updated.is_favorite });
+      setSubjects((prev) => prev.map((s) => (s.id === subject.id ? response.data : s)));
+    } catch {
+      setSubjects((prev) => prev.map((s) => (s.id === subject.id ? subject : s)));
+      setError('No se pudo actualizar la materia fijada.');
+    }
+  };
+
+  const filtered = subjects
+    .filter((s) => {
+      if (cycleFilter === 'none' && s.cycle) return false;
+      if (cycleFilter !== 'all' && cycleFilter !== 'none' && Number(s.cycle) !== Number(cycleFilter)) {
+        return false;
+      }
+      const term = search.toLowerCase();
+      return (
+        s.name.toLowerCase().includes(term) ||
+        (s.code && s.code.toLowerCase().includes(term)) ||
+        (s.teacher && s.teacher.toLowerCase().includes(term)) ||
+        (s.classroom && s.classroom.toLowerCase().includes(term))
+      );
+    })
+    .sort((a, b) => {
+      const favoriteDiff = Number(b.is_favorite) - Number(a.is_favorite);
+      return favoriteDiff !== 0 ? favoriteDiff : a.id - b.id;
+    });
+
+  const hasFilters = search !== '' || cycleFilter !== 'all';
+  const clearFilters = () => {
+    setSearch('');
+    setCycleFilter('all');
+  };
 
   const previewName = form.name.trim() || 'Nombre de la materia';
   const previewMeta = [
@@ -197,6 +225,35 @@ const Subjects = () => {
                 />
               </div>
             </div>
+            <div className="col-12 col-md-5 col-lg-4">
+              <div className="input-group">
+                <span className="input-group-text bg-surface border-secondary text-white">
+                  <i className="bi bi-layers" aria-hidden="true" />
+                </span>
+                <select
+                  className="form-select bg-surface border-secondary text-white"
+                  value={cycleFilter}
+                  onChange={(e) => setCycleFilter(e.target.value)}
+                  aria-label="Filtrar por ciclo"
+                >
+                  <option value="all">Todos los ciclos</option>
+                  <option value="none">Sin ciclo</option>
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      Ciclo {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {hasFilters && (
+              <div className="col-12 col-md-2 col-lg-3 d-flex align-items-center">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={clearFilters}>
+                  <i className="bi bi-x-lg me-1" aria-hidden="true" />
+                  Limpiar filtros
+                </button>
+              </div>
+            )}
           </div>
 
           {filtered.length > 0 ? (
@@ -204,8 +261,25 @@ const Subjects = () => {
               {filtered.map((subject) => (
                 <div key={subject.id} className="col-12 col-sm-6 col-xl-4">
                   <article className="card subject-card h-100" style={{ borderTopColor: subject.color }}>
+                    <button
+                      type="button"
+                      className={`subject-favorite ${subject.is_favorite ? 'is-favorite' : ''}`}
+                      onClick={() => toggleFavorite(subject)}
+                      aria-pressed={subject.is_favorite}
+                      aria-label={
+                        subject.is_favorite
+                          ? `Quitar ${subject.name} de fijadas`
+                          : `Fijar ${subject.name} como favorita`
+                      }
+                      title={subject.is_favorite ? 'Quitar de fijadas' : 'Fijar materia'}
+                    >
+                      <i
+                        className={`bi ${subject.is_favorite ? 'bi-star-fill' : 'bi-star'}`}
+                        aria-hidden="true"
+                      />
+                    </button>
                     <div className="card-body p-3">
-                      <div className="d-flex align-items-start gap-3 mb-3">
+                      <div className="d-flex align-items-start gap-3 mb-3 pe-5">
                         <span className="subject-dot" style={{ backgroundColor: subject.color }} aria-hidden="true" />
                         <div className="flex-grow-1" style={{ minWidth: 0 }}>
                           <h3 className="h6 fw-semibold mb-1 text-truncate">{subject.name}</h3>
@@ -263,9 +337,9 @@ const Subjects = () => {
             <EmptyState
               icon={<i className="bi bi-search" aria-hidden="true" />}
               title="No se encontraron materias"
-              message="Prueba con otro nombre, código, docente o aula."
-              actionLabel="Limpiar búsqueda"
-              onAction={() => setSearch('')}
+              message="Prueba con otro nombre, código, docente, aula o ciclo."
+              actionLabel="Limpiar filtros"
+              onAction={clearFilters}
             />
           )}
         </>
