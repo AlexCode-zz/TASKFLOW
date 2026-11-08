@@ -29,7 +29,9 @@ class ErrorBoundary extends Component {
     if (hasError) {
       return (
         <div className="error-boundary d-flex flex-column align-items-center justify-content-center text-center py-5">
-          <div className="error-boundary-icon mb-3">⚠️</div>
+          <div className="error-boundary-icon mb-3">
+            <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
+          </div>
           <h2 className="fw-bold mb-2">Algo salió mal</h2>
           <p className="text-muted-tf mb-2">La página encontró un error inesperado.</p>
           {this.state.error && (

@@ -175,7 +175,7 @@ const ConfigurationWizard = () => {
               onClick={() => setCurrentStep(currentStep - 1)}
               disabled={loading}
             >
-              ← Anterior
+              <i className="bi bi-arrow-left me-1" aria-hidden="true" /> Anterior
             </button>
           )}
           {currentStep < 3 ? (
@@ -185,7 +185,7 @@ const ConfigurationWizard = () => {
               onClick={handleNext}
               disabled={loading}
             >
-              Siguiente →
+              Siguiente <i className="bi bi-arrow-right ms-1" aria-hidden="true" />
             </button>
           ) : (
             <button

@@ -219,7 +219,7 @@ const Projects = () => {
       <h6 className="fw-semibold text-white mb-3">Proyectos registrados</h6>
       {projects.length === 0 ? (
         <EmptyState
-          icon="📁"
+          icon={<i className="bi bi-folder" aria-hidden="true" />}
           title="Aún no tienes proyectos"
           message="Registra tu primer proyecto académico para comenzar."
           actionLabel="Registrar proyecto"

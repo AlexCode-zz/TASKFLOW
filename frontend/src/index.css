@@ -99,7 +99,8 @@ a {
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg);
+  /* Superficie transparente: el patrón de puntos blancos del body se ve en toda la pantalla */
+  background-color: transparent;
 }
 
 .app-main {

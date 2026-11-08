@@ -26,7 +26,7 @@ const Modal = ({ open, title, onClose, children, footer, className = '' }) => {
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
           <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onClose} aria-label="Cerrar">
-            ✕
+            <i className="bi bi-x" aria-hidden="true" />
           </button>
         </div>
         <div className="modal-body">{children}</div>

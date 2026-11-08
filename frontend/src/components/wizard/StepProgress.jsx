@@ -18,7 +18,7 @@ const StepProgress = ({ currentStep }) => {
           const isCurrent = step.id === currentStep;
           return (
             <div key={step.id} className={`step-item ${isCurrent ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
-              <div className="step-circle">{isCompleted ? '✓' : step.id}</div>
+              <div className="step-circle">{isCompleted ? <i className="bi bi-check" aria-hidden="true" /> : step.id}</div>
               <div className={`step-label ${isCurrent ? 'active' : ''}`}>{step.label}</div>
             </div>
           );

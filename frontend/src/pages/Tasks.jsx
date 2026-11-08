@@ -287,7 +287,7 @@ const Tasks = () => {
       <h6 className="fw-semibold text-white mb-3">Tareas registradas</h6>
       {filtered.length === 0 ? (
         <EmptyState
-          icon="✅"
+          icon={<i className="bi bi-check2-circle" aria-hidden="true" />}
           title="Aún no tienes tareas"
           message="Registra tu primera tarea pendiente para comenzar a organizar tu semana."
           actionLabel="Crear tarea"

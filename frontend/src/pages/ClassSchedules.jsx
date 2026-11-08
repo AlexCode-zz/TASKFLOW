@@ -233,7 +233,7 @@ const ClassSchedules = () => {
       <h6 className="fw-semibold text-white mb-3">Horarios registrados</h6>
       {schedules.length === 0 ? (
         <EmptyState
-          icon="🕒"
+          icon={<i className="bi bi-clock" aria-hidden="true" />}
           title="Aún no tienes horarios"
           message="Registra tu primer horario de clase para comenzar."
           actionLabel="Registrar horario"

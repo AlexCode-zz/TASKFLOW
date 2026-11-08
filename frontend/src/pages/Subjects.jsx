@@ -216,7 +216,9 @@ const Subjects = () => {
       <div className="row g-3 mb-4">
         <div className="col-12 col-lg-4">
           <div className="input-group">
-            <span className="input-group-text bg-surface border-secondary text-white">🔍</span>
+            <span className="input-group-text bg-surface border-secondary text-white">
+              <i className="bi bi-search" aria-hidden="true" />
+            </span>
             <input
               type="text"
               className="form-control bg-surface border-secondary text-white"
@@ -273,7 +275,7 @@ const Subjects = () => {
         </div>
       ) : (
         <EmptyState
-          icon="📚"
+          icon={<i className="bi bi-book" aria-hidden="true" />}
           title={search ? 'No se encontraron materias' : 'Aún no tienes materias'}
           message={search ? 'Intenta con otro término de búsqueda.' : 'Registra tu primera materia para comenzar.'}
           actionLabel={search ? null : 'Agregar materia'}

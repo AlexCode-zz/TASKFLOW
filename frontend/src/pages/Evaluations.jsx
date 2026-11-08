@@ -315,7 +315,7 @@ const Evaluations = () => {
       <h6 className="fw-semibold text-white mb-3">Evaluaciones registradas</h6>
       {evaluations.length === 0 ? (
         <EmptyState
-          icon="📝"
+          icon={<i className="bi bi-clipboard2" aria-hidden="true" />}
           title="Aún no tienes evaluaciones"
           message="Registra tu primera evaluación para comenzar."
           actionLabel="Registrar evaluación"

@@ -33,16 +33,16 @@ const Reports = () => {
 
       <div className="row g-3 mb-4">
         <div className="col-md-6 col-lg-3">
-          <StatCard label="Tiempo de estudio (semana)" value="12 h" icon="⏱️" color="#3b82f6" />
+          <StatCard label="Tiempo de estudio (semana)" value="12 h" icon={<i className="bi bi-clock-history" aria-hidden="true" />} color="#3b82f6" />
         </div>
         <div className="col-md-6 col-lg-3">
-          <StatCard label="Actividades completadas" value="24" trend="+3 esta semana" icon="✅" color="#10b981" />
+          <StatCard label="Actividades completadas" value="24" trend="+3 esta semana" icon={<i className="bi bi-check2-circle" aria-hidden="true" />} color="#10b981" />
         </div>
         <div className="col-md-6 col-lg-3">
-          <StatCard label="Tareas pendientes" value="7" icon="⏳" color="#f59e0b" />
+          <StatCard label="Tareas pendientes" value="7" icon={<i className="bi bi-hourglass-split" aria-hidden="true" />} color="#f59e0b" />
         </div>
         <div className="col-md-6 col-lg-3">
-          <StatCard label="Promedio general" value="3.8 / 5.0" icon="📊" color="#8b5cf6" />
+          <StatCard label="Promedio general" value="3.8 / 5.0" icon={<i className="bi bi-graph-up" aria-hidden="true" />} color="#8b5cf6" />
         </div>
       </div>
 

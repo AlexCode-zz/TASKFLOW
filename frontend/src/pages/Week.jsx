@@ -267,7 +267,10 @@ const Week = () => {
 
       {warnings.length > 0 && (
         <div className="alert alert-warning text-white border-secondary mb-3" role="alert">
-          <h6 className="fw-semibold mb-2">⚠️ Advertencias de planificación</h6>
+          <h6 className="fw-semibold mb-2">
+            <i className="bi bi-exclamation-triangle-fill me-2" aria-hidden="true" />
+            Advertencias de planificación
+          </h6>
           <ul className="mb-0 small">
             {warnings.map((w, i) => (
               <li key={i}>{w}</li>

@@ -176,7 +176,7 @@ const ProviderConfig = ({ onConfigChange }) => {
                     className="btn btn-outline-secondary"
                     onClick={() => setShowKey(!showKey)}
                   >
-                    {showKey ? '🙈' : '👁️'}
+                    {showKey ? <i className="bi bi-eye-slash" aria-hidden="true" /> : <i className="bi bi-eye" aria-hidden="true" />}
                   </button>
                 </div>
               </div>
@@ -227,7 +227,19 @@ const ProviderConfig = ({ onConfigChange }) => {
 
         {testResult && (
           <div className={`alert mb-3 ${testResult.success ? 'alert-success text-white border-success' : 'alert-danger text-white border-danger'}`}>
-            <strong>{testResult.success ? '✓ Éxito' : '✗ Error'}:</strong> {testResult.message}
+            <strong>
+              {testResult.success ? (
+                <>
+                  <i className="bi bi-check2" aria-hidden="true" /> Éxito
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-x-lg" aria-hidden="true" /> Error
+                </>
+              )}
+              :
+            </strong>{' '}
+            {testResult.message}
           </div>
         )}
 

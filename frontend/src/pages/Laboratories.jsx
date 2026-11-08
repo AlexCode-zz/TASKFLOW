@@ -237,7 +237,7 @@ const Laboratories = () => {
       <h6 className="fw-semibold text-white mb-3">Laboratorios registrados</h6>
       {laboratories.length === 0 ? (
         <EmptyState
-          icon="🔬"
+          icon={<i className="bi bi-flask" aria-hidden="true" />}
           title="Aún no tienes laboratorios"
           message="Registra tu primera sesión de laboratorio para comenzar."
           actionLabel="Agregar laboratorio"

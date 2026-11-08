@@ -119,7 +119,7 @@ const Home = () => {
                     </div>
                   ) : (
                     <EmptyState
-                      icon="✅"
+                      icon={<i className="bi bi-check2-circle" aria-hidden="true" />}
                       title="Al día"
                       message="No tienes tareas pendientes. ¡Buen trabajo!"
                     />
@@ -140,7 +140,7 @@ const Home = () => {
                       ))}
                     </div>
                   ) : (
-                    <EmptyState icon="📝" title="Sin exámenes" message="No hay exámenes programados." />
+                    <EmptyState icon={<i className="bi bi-journal-text" aria-hidden="true" />} title="Sin exámenes" message="No hay exámenes programados." />
                   )}
                 </div>
               </Card>

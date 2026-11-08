@@ -273,7 +273,9 @@ const Calendar = () => {
         <div className="card border-secondary shadow-sm">
           <div className="card-body p-4 text-center py-5">
             <div className="text-muted-tf mb-3">Vista {view === 'week' ? 'semanal' : 'diaria'}</div>
-            <div className="empty-icon mb-3">🗓️</div>
+            <div className="empty-icon mb-3">
+              <i className="bi bi-calendar-event" aria-hidden="true" />
+            </div>
             <h5 className="fw-semibold text-white">Vista {view === 'week' ? 'semanal' : 'diaria'}</h5>
             <p className="text-muted-tf small">Selecciona el calendario &quot;Mensual&quot; para ver el calendario completo.</p>
           </div>
