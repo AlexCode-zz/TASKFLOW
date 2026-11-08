@@ -274,9 +274,9 @@ const AcademicItemList = ({ subject }) => {
       {items.length === 0 ? (
         <div className="text-muted-tf small mb-2">Sin ítems registrados.</div>
       ) : (
-        <div className="row g-3">
+        <div>
           {items.map((item) => (
-            <div key={`${kind}-${item.id}`} className="col-12 col-md-6 col-lg-4">
+            <div key={`${kind}-${item.id}`} className="py-2 px-2">
               {renderItem(kind, item, item.title)}
             </div>
           ))}
