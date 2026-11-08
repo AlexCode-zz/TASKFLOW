@@ -14,7 +14,7 @@ Correr solo de forma local. Sin auth. Datos en SQLite local.
 
 ## Arquitectura y fronteras
 
-- `backend/app/api` → routers FastAPI; `backend/app/crud` → acceso a BD; `backend/app/services` → reglas de negocio (p. ej. academic); `backend/app/schemas` → Pydantic; `backend/app/models` → SQLAlchemy; `backend/app/db/migrations` → migraciones 001–006.
+- `backend/app/api` → routers FastAPI; `backend/app/crud` → acceso a BD; `backend/app/services` → reglas de negocio (p. ej. academic); `backend/app/schemas` → Pydantic; `backend/app/models` → SQLAlchemy; `backend/app/db/migrations` → migraciones 001–007.
 - `frontend/src/pages` → rutas; `frontend/src/components/{ui,common,layout,academic,ai,wizard}` → componentes; `frontend/src/utils` → helpers.
 - Rutas actuales: `/` Inicio, `/semana`, `/materias`, `/clases` (Horarios), `/laboratorios`, `/parciales`, `/calendario`, `/tareas`, `/proyectos`, `/informes`, `/asistente-ia`, `/configuracion`. Redirección: `/evaluaciones` → `/parciales`.
 
