@@ -287,26 +287,7 @@ const Laboratories = () => {
                       <div className="card-body p-3">
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <h6 className="fw-semibold mb-0">{l.title}</h6>
-                          <div className="d-flex align-items-start gap-2">
-                            {l.grade !== null && l.grade !== undefined && (
-                              <span
-                                className="fw-bold lab-grade"
-                                data-testid="lab-grade"
-                                style={{
-                                  fontSize: '2rem',
-                                  lineHeight: '1.2',
-                                  color: Number(l.grade) <= 6 ? '#ff4d4f' : '#ffffff',
-                                  textShadow:
-                                    Number(l.grade) <= 6
-                                      ? '0 0 14px rgba(255, 77, 79, 0.95)'
-                                      : '0 0 14px rgba(255, 255, 255, 0.95)',
-                                }}
-                              >
-                                {Number(l.grade).toFixed(1)}
-                              </span>
-                            )}
-                            <StatusBadge status={l.status} />
-                          </div>
+                          <StatusBadge status={l.status} />
                         </div>
                         <div className="text-muted-tf small mb-2">{subject.code || ''}</div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
@@ -314,6 +295,25 @@ const Laboratories = () => {
                           <span className="text-muted-tf small">{l.start_time} - {l.end_time}</span>
                         </div>
                         {l.location && <div className="text-muted-tf small mb-2">{l.location}</div>}
+                        {l.grade !== null && l.grade !== undefined && (
+                          <div className="d-flex justify-content-end mb-2">
+                            <span
+                              className="fw-bold lab-grade"
+                              data-testid="lab-grade"
+                              style={{
+                                fontSize: '2rem',
+                                lineHeight: '1.2',
+                                color: Number(l.grade) <= 6 ? '#ff4d4f' : '#ffffff',
+                                textShadow:
+                                  Number(l.grade) <= 6
+                                    ? '0 0 14px rgba(255, 77, 79, 0.95)'
+                                    : '0 0 14px rgba(255, 255, 255, 0.95)',
+                              }}
+                            >
+                              {Number(l.grade).toFixed(1)}
+                            </span>
+                          </div>
+                        )}
                         {l.weight_percentage && (
                           <div className="mb-2">
                             <span className="text-muted-tf small d-block">Peso</span>
