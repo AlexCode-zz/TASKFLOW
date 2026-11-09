@@ -136,3 +136,22 @@ def test_laboratorio_realizado_updates_summary(client: TestClient):
     items_after = client.get(f"/api/subjects/{subject['id']}/academic-items").json()
     assert items_after["summary"]["completed_laboratorios"] == 1
     assert items_after["summary"]["completed_parciales"] == 0
+
+
+def test_laboratory_title_is_optional(client: TestClient):
+    """El título de un laboratorio es opcional: se usa 'Laboratorio' por defecto."""
+    _create_student(client)
+    subject = _create_subject(client)
+
+    response = client.post("/api/laboratories/", json={
+        "subject_id": subject["id"],
+        "title": None,
+        "status": "pendiente",
+    })
+    assert response.status_code == 201
+    assert response.json()["title"] == "Laboratorio"
+
+    lab_id = response.json()["id"]
+    update_resp = client.put(f"/api/laboratories/{lab_id}", json={"title": None})
+    assert update_resp.status_code == 200
+    assert update_resp.json()["title"] == "Laboratorio"
