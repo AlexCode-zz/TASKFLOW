@@ -281,8 +281,12 @@ const Laboratories = () => {
                 {labs.map((l) => (
                   <div key={l.id} className="col-12 col-md-6 col-lg-4">
                     <div
-                      className="card border-secondary shadow-sm h-100"
-                      style={{ backgroundColor: subject.color }}
+                      className="card lab-card shadow-sm h-100"
+                      style={{
+                        borderColor: subject.color,
+                        borderWidth: '2px',
+                        borderStyle: 'solid',
+                      }}
                     >
                       <div className="card-body p-3">
                         <div className="d-flex justify-content-between align-items-start mb-2">
