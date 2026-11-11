@@ -1,0 +1,167 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import useAssistantState from '../useAssistantState';
+import { ASSISTANT_STATES, IDLE_TIMEOUT_MS, SLEEP_TRANSITION_MS } from '../../utils/assistantMachine';
+
+describe('useAssistantState', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('arranca en idle con expresión normal', () => {
+    const { result } = renderHook(() => useAssistantState());
+    expect(result.current.state).toBe('idle');
+    expect(result.current.expression).toBe('normal');
+    expect(result.current.busy).toBe(false);
+  });
+
+  it('una consulta pasa a thinking (pensativa) y la herramienta a working', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('query_received'));
+    expect(result.current.state).toBe('thinking');
+    expect(result.current.expression).toBe('pensativa');
+
+    act(() => result.current.sendAgentEvent('tool_started'));
+    expect(result.current.state).toBe('working');
+    expect(result.current.expression).toBe('trabajando');
+  });
+
+  it('una operación exitosa activa feliz y luego vuelve a normal', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('query_received'));
+    act(() => result.current.sendAgentEvent('tool_started'));
+    act(() => result.current.sendAgentEvent('action_completed'));
+
+    expect(result.current.state).toBe('success');
+    expect(result.current.expression).toBe('feliz');
+
+    // Tras la duración mínima de success vuelve sola a idle
+    act(() => {
+      vi.advanceTimersByTime(ASSISTANT_STATES.success.minDurationMs + 10);
+    });
+    expect(result.current.state).toBe('idle');
+    expect(result.current.expression).toBe('normal');
+  });
+
+  it('un conflicto activa enojada', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('conflict_detected'));
+    expect(result.current.state).toBe('conflict');
+    expect(result.current.expression).toBe('enojada');
+  });
+
+  it('el agotamiento de cuota activa llorando aunque esté trabajando', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('query_received'));
+    act(() => result.current.sendAgentEvent('tool_started'));
+    act(() => result.current.sendAgentEvent('quota_exhausted'));
+
+    expect(result.current.state).toBe('quota_exhausted');
+    expect(result.current.expression).toBe('llorando');
+  });
+
+  it('el saludo activa guiño', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.greet());
+    expect(result.current.state).toBe('greeting');
+    expect(result.current.expression).toBe('guino');
+  });
+
+  it('se duerme tras 60s de inactividad pasando por durmiéndose', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    // Sin actividad durante el minuto completo
+    act(() => {
+      vi.advanceTimersByTime(IDLE_TIMEOUT_MS);
+    });
+    expect(result.current.expression).toBe('durmiendose');
+    expect(result.current.state).toBe('idle');
+
+    act(() => {
+      vi.advanceTimersByTime(SLEEP_TRANSITION_MS);
+    });
+    expect(result.current.state).toBe('sleeping');
+    expect(result.current.expression).toBe('durmiendo');
+  });
+
+  it('vuelve a normal al detectar actividad tras dormir', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => {
+      vi.advanceTimersByTime(IDLE_TIMEOUT_MS + SLEEP_TRANSITION_MS);
+    });
+    expect(result.current.state).toBe('sleeping');
+
+    act(() => result.current.notifyActivity());
+    expect(result.current.state).toBe('idle');
+    expect(result.current.expression).toBe('normal');
+  });
+
+  it('la actividad reinicia el temporizador de inactividad', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => {
+      vi.advanceTimersByTime(IDLE_TIMEOUT_MS - 1000);
+    });
+    act(() => result.current.notifyActivity());
+    act(() => {
+      vi.advanceTimersByTime(IDLE_TIMEOUT_MS - 1000);
+    });
+    expect(result.current.state).toBe('idle');
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.expression).toBe('durmiendose');
+  });
+
+  it('el temporizador de inactividad no interrumpe una operación en curso', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('query_received'));
+    act(() => result.current.sendAgentEvent('tool_started'));
+
+    act(() => {
+      vi.advanceTimersByTime(IDLE_TIMEOUT_MS * 2);
+    });
+    // Sigue trabajando: la operación tiene prioridad sobre el sueño
+    expect(result.current.state).toBe('working');
+    expect(result.current.expression).toBe('trabajando');
+  });
+
+  it('una expresión ocasional no interrumpe un estado importante', () => {
+    const { result } = renderHook(() => useAssistantState());
+
+    act(() => result.current.sendAgentEvent('query_received'));
+    act(() => result.current.sendAgentEvent('tool_started'));
+
+    let shown = null;
+    act(() => {
+      shown = result.current.showOccasional('avergonzada');
+    });
+    expect(shown).toBe(false);
+    expect(result.current.expression).toBe('trabajando');
+
+    // En reposo sí se permite
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+    act(() => result.current.sendAgentEvent('action_completed'));
+    act(() => {
+      vi.advanceTimersByTime(ASSISTANT_STATES.success.minDurationMs + 10);
+    });
+    expect(result.current.state).toBe('idle');
+    act(() => result.current.sendAgentEvent('informal'));
+    expect(result.current.expression).toBe('avergonzada');
+    expect(result.current.state).toBe('idle');
+  });
+});
