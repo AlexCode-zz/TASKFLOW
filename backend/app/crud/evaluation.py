@@ -32,7 +32,10 @@ def get_upcoming_evaluations(db: Session, student_id: int):
 
 
 def create_evaluation(db: Session, student_id: int, evaluation_in: EvaluationCreate):
-    db_evaluation = Evaluation(**evaluation_in.model_dump(), student_id=student_id)
+    data = evaluation_in.model_dump()
+    if not data.get("title"):
+        data["title"] = "Parcial"
+    db_evaluation = Evaluation(**data, student_id=student_id)
     db.add(db_evaluation)
     db.commit()
     db.refresh(db_evaluation)
@@ -44,6 +47,8 @@ def update_evaluation(db: Session, evaluation_id: int, evaluation_in: Evaluation
     if not db_evaluation:
         return None
     update_data = evaluation_in.model_dump(exclude_unset=True)
+    if update_data.get("title") is not None and not update_data["title"]:
+        update_data["title"] = "Parcial"
     for field, value in update_data.items():
         setattr(db_evaluation, field, value)
     db.commit()

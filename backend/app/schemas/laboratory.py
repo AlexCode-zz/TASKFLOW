@@ -5,7 +5,7 @@ from typing import Optional
 
 class LaboratoryBase(BaseModel):
     subject_id: int = Field(..., gt=0)
-    title: Optional[str] = Field(None, min_length=1, max_length=150)
+    title: Optional[str] = Field(None, max_length=150)
     date: Optional[date_type] = None
     start_time: Optional[str] = Field(None, max_length=5)  # HH:MM
     end_time: Optional[str] = Field(None, max_length=5)    # HH:MM
@@ -23,7 +23,7 @@ class LaboratoryCreate(LaboratoryBase):
 
 class LaboratoryUpdate(BaseModel):
     subject_id: Optional[int] = Field(None, gt=0)
-    title: Optional[str] = Field(None, min_length=1, max_length=150)
+    title: Optional[str] = Field(None, max_length=150)
     date: Optional[date_type] = None
     start_time: Optional[str] = Field(None, max_length=5)
     end_time: Optional[str] = Field(None, max_length=5)

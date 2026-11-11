@@ -9,7 +9,6 @@ import Laboratories from './pages/Laboratories';
 import Calendar from './pages/Calendar';
 import Parciales from './pages/Parciales';
 import Tasks from './pages/Tasks';
-import Projects from './pages/Projects';
 import Reports from './pages/Reports';
 import Assistant from './pages/Assistant';
 import Settings from './pages/Settings';
@@ -129,14 +128,6 @@ const App = () => {
             element={
               <ErrorBoundary>
                 <Tasks />
-              </ErrorBoundary>
-            }
-          />
-          <Route
-            path="/proyectos"
-            element={
-              <ErrorBoundary>
-                <Projects />
               </ErrorBoundary>
             }
           />

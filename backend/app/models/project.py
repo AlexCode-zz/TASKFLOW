@@ -20,3 +20,6 @@ class Project(Base):
 
     student = relationship("Student", back_populates="projects")
     subject = relationship("Subject")
+    tasks = relationship("Task", back_populates="project")
+
+

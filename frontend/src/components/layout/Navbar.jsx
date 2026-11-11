@@ -10,7 +10,6 @@ const TITLES = {
   '/calendario': 'Calendario',
   '/parciales': 'Parciales',
   '/tareas': 'Tareas y proyectos',
-  '/proyectos': 'Proyectos',
   '/informes': 'Informes',
   '/asistente-ia': 'Asistente IA',
   '/configuracion': 'Configuración',

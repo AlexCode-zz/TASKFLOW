@@ -155,3 +155,22 @@ def test_laboratory_title_is_optional(client: TestClient):
     update_resp = client.put(f"/api/laboratories/{lab_id}", json={"title": None})
     assert update_resp.status_code == 200
     assert update_resp.json()["title"] == "Laboratorio"
+
+
+def test_evaluation_title_is_optional(client: TestClient):
+    """El título de una evaluación es opcional: se usa 'Parcial' por defecto."""
+    _create_student(client)
+    subject = _create_subject(client)
+
+    response = client.post("/api/evaluations/", json={
+        "subject_id": subject["id"],
+        "evaluation_type": "parcial",
+        "status": "pendiente",
+    })
+    assert response.status_code == 201
+    assert response.json()["title"] == "Parcial"
+
+    evaluation_id = response.json()["id"]
+    update_resp = client.put(f"/api/evaluations/{evaluation_id}", json={"title": ""})
+    assert update_resp.status_code == 200
+    assert update_resp.json()["title"] == "Parcial"

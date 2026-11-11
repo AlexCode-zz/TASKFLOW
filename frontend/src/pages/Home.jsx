@@ -157,8 +157,7 @@ const Home = () => {
             { to: '/materias', icon: 'bi-book', label: 'Materias' },
             { to: '/laboratorios', icon: 'bi-flask', label: 'Laboratorios' },
             { to: '/parciales', icon: 'bi-clipboard-check', label: 'Parciales' },
-            { to: '/tareas', icon: 'bi-list-task', label: 'Tareas' },
-            { to: '/proyectos', icon: 'bi-folder-2-open', label: 'Proyectos' },
+            { to: '/tareas', icon: 'bi-list-task', label: 'Tareas y proyectos' },
           ].map((item) => (
             <div key={item.to} className="col-6 col-md-4 col-lg-2">
               <Link to={item.to} className="card h-100 text-decoration-none" style={{ color: 'var(--text)' }}>

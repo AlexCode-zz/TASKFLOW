@@ -5,7 +5,7 @@ from typing import Optional
 
 class EvaluationBase(BaseModel):
     subject_id: int = Field(..., gt=0)
-    title: str = Field(..., min_length=1, max_length=150)
+    title: Optional[str] = Field(None, max_length=150)
     evaluation_type: str = Field(..., max_length=30)  # parcial, final, quiz, practico, exposicion, proyecto, laboratorio, otro
     date: Optional[date_type] = None
     start_time: Optional[str] = Field(None, max_length=5)   # HH:MM
@@ -24,7 +24,7 @@ class EvaluationCreate(EvaluationBase):
 
 class EvaluationUpdate(BaseModel):
     subject_id: Optional[int] = Field(None, gt=0)
-    title: Optional[str] = Field(None, min_length=1, max_length=150)
+    title: Optional[str] = Field(None, max_length=150)
     evaluation_type: Optional[str] = Field(None, max_length=30)
     date: Optional[date_type] = None
     start_time: Optional[str] = Field(None, max_length=5)

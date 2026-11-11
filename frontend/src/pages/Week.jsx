@@ -103,6 +103,7 @@ const Week = () => {
 
       if (tasks.status === 'fulfilled') {
         tasks.value.data.forEach((t) => {
+          if (!t.due_date) return;
           const d = new Date(t.due_date);
           const dayIndex = d.getDay() || 7;
           allEvents.push({
@@ -447,11 +448,6 @@ const Week = () => {
           <div className="col-12 col-md-2">
             <Link to="/tareas" className="btn btn-outline-primary w-100 text-white">
               Tareas
-            </Link>
-          </div>
-          <div className="col-12 col-md-2">
-            <Link to="/proyectos" className="btn btn-outline-primary w-100 text-white">
-              Proyectos
             </Link>
           </div>
         </div>

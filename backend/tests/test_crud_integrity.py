@@ -33,6 +33,42 @@ def test_task_requires_existing_subject(client: TestClient):
     assert response.status_code in (400, 404, 409, 422)
 
 
+def test_task_checklist_without_subject_and_due_date(client: TestClient):
+    """Una tarea de checklist puede existir sin materia ni fecha de entrega."""
+    _setup_student_and_subject(client)
+    response = client.post("/api/tasks/", json={
+        "title": "Revisar apuntes",
+        "status": "pendiente",
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["title"] == "Revisar apuntes"
+    assert data["subject_id"] is None
+    assert data["due_date"] is None
+    assert data["project_id"] is None
+
+
+def test_task_can_belong_to_project_as_checklist(client: TestClient):
+    """Una tarea puede asignarse a un proyecto y crecer como checklist."""
+    _setup_student_and_subject(client)
+    project_resp = client.post("/api/projects/", json={
+        "subject_id": 1,
+        "name": "Proyecto Compilador",
+        "start_date": "2026-11-10",
+        "due_date": "2026-12-01",
+    })
+    assert project_resp.status_code == 201
+    project_id = project_resp.json()["id"]
+
+    task_resp = client.post("/api/tasks/", json={
+        "project_id": project_id,
+        "title": "Implementar lexer",
+        "status": "pendiente",
+    })
+    assert task_resp.status_code == 201
+    assert task_resp.json()["project_id"] == project_id
+
+
 def test_class_schedule_requires_existing_subject(client: TestClient):
     """Prueba que no se pueda crear clase con materia inexistente."""
     client.post("/api/students/", json={

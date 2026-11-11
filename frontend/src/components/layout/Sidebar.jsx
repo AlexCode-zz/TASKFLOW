@@ -19,7 +19,6 @@ const groups = [
       { to: '/laboratorios', label: 'Laboratorios', icon: 'bi-flask' },
       { to: '/parciales', label: 'Parciales', icon: 'bi-clipboard-check' },
       { to: '/tareas', label: 'Tareas y proyectos', icon: 'bi-list-task' },
-      { to: '/proyectos', label: 'Proyectos', icon: 'bi-folder-2-open' },
     ],
   },
   {

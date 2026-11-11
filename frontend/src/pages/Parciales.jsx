@@ -204,12 +204,11 @@ const Parciales = () => {
               </div>
               <div className="col-12 col-md-6">
                 <label className="form-label text-muted-tf small" htmlFor="parcial-title">
-                  Título <span className="text-danger">*</span>
+                  Título
                 </label>
                 <input
                   id="parcial-title"
                   type="text"
-                  required
                   maxLength={150}
                   className="form-control bg-surface border-secondary text-white"
                   value={form.title}
