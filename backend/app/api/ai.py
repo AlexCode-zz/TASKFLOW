@@ -508,15 +508,9 @@ def call_tool(
     """Ejecuta una herramienta controlada."""
     student = get_current_student(db)
 
-    # Verificar si la herramienta requiere confirmación
-    if tool_req.tool in MUTATING_TOOLS:
-        if not tool_req.parameters.get("confirmed"):
-            return ToolCallResponse(
-                tool=tool_req.tool,
-                success=False,
-                error=f"La herramienta '{tool_req.tool}' requiere confirmación explícita del usuario.",
-            )
-
+    # La verificación de confirmación la realiza AITools.execute():
+    # las herramientas que modifican datos existentes exigen el
+    # parámetro `confirmed: true` del usuario.
     tools = AITools(db, student.id)
     result = tools.execute(tool_req.tool, tool_req.parameters)
 
@@ -525,4 +519,6 @@ def call_tool(
         success=result.get("success", False),
         data=result.get("data", {}),
         error=result.get("error"),
+        requires_confirmation=result.get("requires_confirmation"),
+        conflict_detected=result.get("conflict_detected"),
     )

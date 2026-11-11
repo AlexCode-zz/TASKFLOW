@@ -1,7 +1,7 @@
 """Esquemas Pydantic para configuración de proveedores de IA."""
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List
+from typing import Any, Optional, List
 from datetime import datetime
 
 
@@ -156,5 +156,7 @@ class ToolCallResponse(BaseModel):
     """Respuesta de herramienta controlada."""
     tool: str
     success: bool
-    data: dict = {}
+    data: Any = {}
     error: Optional[str] = None
+    requires_confirmation: Optional[bool] = None
+    conflict_detected: Optional[bool] = None
