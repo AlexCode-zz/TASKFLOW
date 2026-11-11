@@ -283,7 +283,15 @@ const Tasks = () => {
     const list = projectTasks(project.id);
     const completed = list.filter((t) => t.status === 'completada').length;
     const percent = list.length > 0 ? Math.round((completed / list.length) * 100) : 0;
-    return { list, completed, percent };
+    const status =
+      list.length === 0
+        ? project.status || 'pendiente'
+        : completed === list.length
+          ? 'completada'
+          : completed > 0
+            ? 'en_progreso'
+            : 'pendiente';
+    return { list, completed, percent, status };
   };
 
   const renderTaskCard = (t) => {
@@ -298,7 +306,8 @@ const Tasks = () => {
             </div>
             <div className="mb-2">
               <span className="badge bg-dark text-white small me-2">{subject?.code || ''}</span>
-              <span className="badge bg-dark text-white small">{t.due_date}</span>
+              <span className="badge bg-dark text-white small">{t.due_date || 'Sin fecha'}</span>
+              {!t.project_id && <span className="badge bg-dark text-white small">Sin proyecto</span>}
             </div>
             <div className="text-muted-tf small mb-2">{subject ? subject.name : 'Materia'}</div>
             <p className="text-muted-tf small mb-3">{t.description}</p>
@@ -471,7 +480,7 @@ const Tasks = () => {
           <div className="row g-3 mb-4">
             {projects.map((p) => {
               const subject = subjects.find((s) => s.id === p.subject_id);
-              const { list, percent } = projectProgress(p);
+              const { list, percent, status } = projectProgress(p);
               const expanded = expandedProjectId === p.id;
               return (
                 <div
@@ -491,7 +500,7 @@ const Tasks = () => {
                     <div className="card-body p-3">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <h6 className="fw-semibold mb-0">{p.name}</h6>
-                        <StatusBadge status={p.status} />
+                        <StatusBadge status={status} />
                       </div>
                       <div className="mb-2">
                         <span className="badge bg-dark text-white small me-2">{subject?.code || ''}</span>
@@ -515,6 +524,7 @@ const Tasks = () => {
                           {list.length === 0 ? (
                             <p className="text-muted-tf small mb-2">Sin tareas todavía. Agrega la primera.</p>
                           ) : (
+                            <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
                             <ul className="list-unstyled mb-2">
                               {list.map((t) => (
                                 <li
@@ -537,6 +547,7 @@ const Tasks = () => {
                                 </li>
                               ))}
                             </ul>
+                            </div>
                           )}
                           <form
                             className="d-flex gap-2"
