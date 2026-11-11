@@ -4,6 +4,7 @@ import httpx
 from typing import Optional, Dict, Any, List
 
 from app.services.ai.base import AIProviderAdapter, ChatMessage, ChatResponse, ProviderCapabilities
+from app.services.ai.errors import classify_connection_error
 
 
 class BaseHTTPProvider(AIProviderAdapter):
@@ -19,6 +20,21 @@ class BaseHTTPProvider(AIProviderAdapter):
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(timeout=60.0)
         return self._client
+
+    async def _post_json(
+        self, url: str, *, params: Optional[Dict[str, Any]] = None, json: Optional[Any] = None
+    ) -> httpx.Response:
+        """Realiza un POST clasificando los fallos de conexión."""
+        client = await self._get_client()
+        try:
+            return await client.post(
+                url,
+                params=params,
+                headers=self._headers(),
+                json=json,
+            )
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException) as exc:
+            raise classify_connection_error(self.provider_name, exc)
 
     async def close(self):
         """Cierra el cliente HTTP."""

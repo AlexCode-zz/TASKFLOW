@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, List
 
 from app.services.ai.providers.base import BaseHTTPProvider
 from app.services.ai.base import ChatMessage, ChatResponse, ProviderCapabilities
+from app.services.ai.errors import classify_http_error
 
 
 class GeminiProvider(BaseHTTPProvider):
@@ -92,7 +93,6 @@ class GeminiProvider(BaseHTTPProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> ChatResponse:
-        client = await self._get_client()
         model_id = model or self.model or self.capabilities.default_model
 
         # Convertir mensajes al formato de Gemini
@@ -117,15 +117,14 @@ class GeminiProvider(BaseHTTPProvider):
         if system_instruction:
             payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
-        response = await client.post(
+        response = await self._post_json(
             f"{self.base_url}/models/{model_id}:generateContent",
             params=self._params(),
-            headers=self._headers(),
             json=payload,
         )
 
         if response.status_code != 200:
-            raise Exception(f"Gemini API error: {response.status_code} {response.text}")
+            raise classify_http_error(self.provider_name, response.status_code, response.text)
 
         data = response.json()
         candidates = data.get("candidates", [])
