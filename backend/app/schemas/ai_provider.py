@@ -212,3 +212,4 @@ class AgentConfirmResponse(BaseModel):
     events: List[Dict[str, Any]] = []
     error_code: Optional[str] = None
     conversation_id: Optional[int] = None
+    confirmation: Optional[Dict[str, Any]] = None

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import date
+import json
 
 from app.db.session import get_db
 from app.crud.student import get_latest_student
@@ -36,7 +37,13 @@ from app.schemas.ai_provider import (
 from app.services.ai.manager import ai_manager
 from app.services.ai.context import get_academic_context
 from app.services.ai.tools import AITools, get_available_tools, ALLOWED_READ_TOOLS, MUTATING_TOOLS, CONFIRMATION_REQUIRED_TOOLS
-from app.services.ai.agent import AcademicAgent, pending_actions, narrate_tool_result
+from app.services.ai.agent import (
+    AcademicAgent,
+    pending_actions,
+    narrate_tool_result,
+    action_hash,
+    build_system_prompt,
+)
 from app.services.ai.base import ChatMessage
 
 router = APIRouter(prefix="/ai", tags=["Asistente IA"])
@@ -779,22 +786,71 @@ def agent_confirm(
         else:
             message = fallback or result.get("error") or "No se pudo ejecutar la acción."
 
+    response_message = message
+    response_success = bool(result.get("success"))
+    response_events = events
+    response_confirmation = None
+    response_error_code = None
+
+    if req.decision == "accept" and result.get("success"):
+        # Tras una acción confirmada con éxito, el bucle continúa solo: el
+        # modelo puede proponer la siguiente acción (p. ej. el siguiente
+        # cambio de tarea) sin que el usuario tenga que escribir otro
+        # mensaje. Si la continuación devuelve otra acción pendiente, esa
+        # se entrega como la nueva confirmación a resolver.
+        try:
+            tool_result_text = (
+                f"<tool_result>{json.dumps(result, ensure_ascii=False, default=str)}</tool_result>\n"
+                "Resultado real de la herramienta. Redacta la respuesta al "
+                "estudiante con estos datos (texto plano) o pide otra "
+                "herramienta si falta información."
+            )
+            cont_agent = AcademicAgent(
+                db,
+                student.id,
+                context.get("provider_name") or "openrouter",
+                context.get("model"),
+            )
+            cont_messages = [ChatMessage(role="system", content=build_system_prompt(""))]
+            if conversation_id:
+                cont_messages.extend(
+                    ChatMessage(role=m.role, content=m.content)
+                    for m in ai_crud.get_messages_by_conversation(db, conversation_id, limit=6)
+                )
+            cont_messages.append(ChatMessage(role="user", content=tool_result_text))
+            continuation = asyncio.run(
+                cont_agent.run_turn(
+                    cont_messages,
+                    {action_hash(action["tool"], action.get("parameters") or {})},
+                )
+            )
+            response_message = continuation.get("message") or message
+            response_events = continuation.get("events") or events
+            response_success = bool(continuation.get("success", True))
+            response_confirmation = continuation.get("confirmation")
+            response_error_code = continuation.get("error_code")
+        except Exception:  # noqa: BLE001
+            response_message = message
+            response_events = events
+            response_success = bool(result.get("success"))
+
     if conversation_id:
         ai_crud.create_message(db, MessageCreate(
             conversation_id=conversation_id,
             role="assistant",
-            content=message,
+            content=response_message,
         ))
 
     return AgentConfirmResponse(
-        success=bool(result.get("success")),
+        success=response_success,
         cancelled=False,
         tool=tool_name,
-        message=message,
+        message=response_message,
         data=result.get("data", {}),
-        events=events,
-        error_code=None,
+        events=response_events,
+        error_code=response_error_code,
         conversation_id=conversation_id,
+        confirmation=response_confirmation,
     )
 
 

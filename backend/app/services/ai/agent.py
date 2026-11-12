@@ -344,7 +344,19 @@ class AcademicAgent:
         messages.extend(history or [])
         messages.append(ChatMessage(role="user", content=user_message))
 
-        executed_hashes: set = set()
+        return await self.run_turn(messages)
+
+    async def run_turn(
+        self,
+        messages: List[ChatMessage],
+        executed_hashes: Optional[set] = None,
+    ) -> Dict[str, Any]:
+        """Ejecuta un turno del bucle del agente sobre mensajes ya armados.
+
+        Un turno puede terminar en respuesta final, en acción pendiente
+        de confirmación o en agotar el límite de iteraciones.
+        """
+        executed = set() if executed_hashes is None else executed_hashes
         final_text = ""
 
         for _iteration in range(MAX_ITERATIONS):
@@ -388,7 +400,7 @@ class AcademicAgent:
             parameters.pop("confirmed", None)
 
             fingerprint = action_hash(tool_name, parameters)
-            if fingerprint in executed_hashes:
+            if fingerprint in executed:
                 # El modelo repite la misma acción: cortamos el loop para
                 # evitar una doble ejecución.
                 final_text = strip_action_json(content, action) or (
@@ -405,7 +417,7 @@ class AcademicAgent:
                     "error_code": None,
                     "tokens_used": self.tokens_used,
                 }
-            executed_hashes.add(fingerprint)
+            executed.add(fingerprint)
 
             self._add_event("tool_started", tool=tool_name)
             result = self.tools.execute(tool_name, parameters)

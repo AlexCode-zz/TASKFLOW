@@ -251,6 +251,63 @@ def test_agent_confirmation_flow_register_grade(student_client, monkeypatch):
     assert repeat.status_code == 404
 
 
+def test_agent_confirm_chains_next_pending_action(student_client, monkeypatch):
+    """Tras aceptar una acción, el bucle continúa solo.
+
+    Si la ejecución confirmada completa con éxito, el agente vuelve a
+    consultar al modelo para proponer la siguiente acción pendiente sin
+    que el usuario tenga que escribir otro mensaje. Así una petición tipo
+    "cambia los nombres de las tareas" avanza paso a paso con aprobaciones
+    sucesivas en las tarjetas, no con turnos de chat.
+    """
+    _create_subject(student_client, "Química")
+    _patch_provider(monkeypatch, [
+        json.dumps({
+            "tool": "register_grade",
+            "parameters": {
+                "subject": "Química",
+                "item_type": "parcial",
+                "item": "Parcial 1",
+                "grade": 75,
+            },
+        }),
+        "Registré tu nota 75 en Parcial 1.",
+        json.dumps({
+            "tool": "register_grade",
+            "parameters": {
+                "subject": "Química",
+                "item_type": "parcial",
+                "item": "Parcial 2",
+                "grade": 80,
+            },
+        }),
+    ])
+
+    response = _agent_chat(student_client, "registré 75 en el parcial 1 de química")
+    confirmation = response.json()["confirmation"]
+    assert confirmation is not None
+
+    accept = student_client.post("/api/ai/agent/confirm", json={
+        "action_id": confirmation["action_id"],
+        "decision": "accept",
+    })
+    assert accept.status_code == 200
+    body = accept.json()
+    assert body["success"] is True
+    # La continuación detectó la siguiente acción pendiente sin un nuevo
+    # mensaje del usuario.
+    assert body["confirmation"] is not None
+    assert body["confirmation"]["tool"] == "register_grade"
+    assert body["confirmation"]["parameters"]["grade"] == 80
+
+    # La segunda nota no se aplicó: sigue pendiente de confirmación.
+    cancel = student_client.post("/api/ai/agent/confirm", json={
+        "action_id": body["confirmation"]["action_id"],
+        "decision": "cancel",
+    })
+    assert cancel.status_code == 200
+
+
 def test_agent_confirmation_cancel_keeps_data(student_client, monkeypatch):
     """Cancelar la acción pendiente no modifica ningún dato."""
     subject_id = _create_subject(student_client, "Física I")

@@ -886,6 +886,13 @@ textarea.form-control:focus {
   animation: mel-fade-in 380ms ease both;
 }
 
+/* Resaltado: halo sutil detrás del avatar mientras Mel está activo */
+.mel-hero .mel-avatar {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 28px rgba(255, 255, 255, 0.1);
+}
+
 @keyframes mel-fade-in {
   from {
     opacity: 0;
@@ -1133,12 +1140,24 @@ textarea.form-control:focus {
 }
 
 .mel-message-list {
-  max-height: 55vh;
+  max-height: 60vh;
   min-height: 280px;
 }
 
 .mel-message-column {
   min-width: 0;
+  animation: mel-message-in 420ms ease both;
+}
+
+@keyframes mel-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mel-message-meta {

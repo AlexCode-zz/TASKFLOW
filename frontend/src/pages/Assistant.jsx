@@ -46,6 +46,7 @@ const Assistant = () => {
   const [providerChecked, setProviderChecked] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [error, setError] = useState('');
+  const [convOpen, setConvOpen] = useState(false);
 
   useEffect(() => {
     greet();
@@ -199,7 +200,7 @@ const Assistant = () => {
           content: data.message,
           created_at: new Date().toISOString(),
           tools: [],
-          confirmation: null,
+          confirmation: data.confirmation || null,
           confirmationResolved: null,
           errorCode: null,
         },
@@ -301,37 +302,33 @@ const Assistant = () => {
 
       {providerConfig && (
         <div className="row g-4">
-          {/* Panel lateral: historial de conversaciones */}
-          <div className="col-12 col-lg-3">
-            <ConversationList
-              conversations={conversations}
-              onSelect={selectConversation}
-              onDelete={(id) => {
-                setConversations(conversations.filter((c) => c.id !== id));
-                if (currentConversation?.id === id) {
-                  setCurrentConversation(null);
-                  setMessages([]);
-                }
-              }}
-              onNew={startNewConversation}
-            />
-          </div>
-
-          {/* Área principal de conversación */}
-          <div className="col-12 col-lg-9">
-            <div className="d-flex flex-column h-100 border-start border-secondary ps-lg-4">
-              <div className="d-flex justify-content-between align-items-center py-2">
-                <h5 className="fw-semibold mb-0">
+          {/* Área principal de conversación: ocupa todo el ancho salvo
+              cuando el menú de conversaciones está abierto. */}
+          <div className={convOpen ? 'col-12 col-lg-9' : 'col-12'}>
+            <div className={`d-flex flex-column h-100 ${convOpen ? 'border-start border-secondary ps-lg-4' : ''}`}>
+              <div className="d-flex justify-content-between align-items-center gap-2 py-2">
+                <h5 className="fw-semibold mb-0 text-truncate">
                   {currentConversation ? currentConversation.title : 'Conversación nueva'}
                 </h5>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm d-md-none"
-                  onClick={startNewConversation}
-                  disabled={sending}
-                >
-                  Nueva
-                </button>
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={startNewConversation}
+                    disabled={sending}
+                  >
+                    Nueva
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => setConvOpen((open) => !open)}
+                    aria-expanded={convOpen}
+                  >
+                    <i className={`bi ${convOpen ? 'bi-x-lg' : 'bi-list'} me-1`} aria-hidden="true" />
+                    Conversaciones
+                  </button>
+                </div>
               </div>
 
               <div className="flex-grow-1 overflow-hidden d-flex flex-column">
@@ -384,6 +381,23 @@ const Assistant = () => {
               />
             </div>
           </div>
+
+          {convOpen && (
+            <div className="col-12 col-lg-3">
+              <ConversationList
+                conversations={conversations}
+                onSelect={selectConversation}
+                onDelete={(id) => {
+                  setConversations(conversations.filter((c) => c.id !== id));
+                  if (currentConversation?.id === id) {
+                    setCurrentConversation(null);
+                    setMessages([]);
+                  }
+                }}
+                onNew={startNewConversation}
+              />
+            </div>
+          )}
         </div>
       )}
 

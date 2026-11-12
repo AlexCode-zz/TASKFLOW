@@ -300,4 +300,49 @@ describe('Assistant (Mel)', () => {
     const changeLink = await screen.findByRole('link', { name: 'Cambiar' });
     expect(changeLink).toHaveAttribute('href', '/proveedores-ia');
   });
+
+  it('abre el menu de conversaciones con el boton hamburguesa', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/ai/providers') return Promise.resolve({ data: [PROVIDER] });
+      if (url === '/ai/conversations') {
+        return Promise.resolve({
+          data: [
+            {
+              id: 2,
+              title: 'Cambio de nombres',
+              provider_name: 'openrouter',
+              model: 'openai/gpt-4o-mini',
+              updated_at: '2026-11-12T02:44:00.000Z',
+            },
+            {
+              id: 1,
+              title: '¿Qué tareas tengo pendientes?',
+              provider_name: 'openrouter',
+              model: 'openai/gpt-4o-mini',
+              updated_at: '2026-11-11T20:00:00.000Z',
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
+
+    // Sin el menu abierto, el chat ocupa todo el espacio.
+    expect(await screen.findByText('Cambio de nombres')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Conversaciones/i }));
+
+    // El menu muestra las conversaciones más recientes primero.
+    expect(await screen.findByText('¿Qué tareas tengo pendientes?')).toBeInTheDocument();
+    expect(screen.getAllByText('Cambio de nombres').length).toBeGreaterThan(0);
+
+    // No se muestra el proveedor dentro de cada conversación.
+    expect(screen.queryByText(/openai\/gpt-4o-mini/)).not.toBeInTheDocument();
+  });
 });
