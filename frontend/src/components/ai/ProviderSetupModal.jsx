@@ -26,7 +26,6 @@ export const PROVIDER_INFO = {
 const emptyForm = {
   provider_name: '',
   api_key: '',
-  model: '',
   is_active: true,
 };
 
@@ -35,14 +34,12 @@ const emptyForm = {
  *
  * Se usa tanto en la configuración inicial de Mel (cuando todavía no
  * hay ningún proveedor) como en la página de proveedores para añadir
- * más claves. Permite probar la conexión y elegir modelo antes de
- * guardar.
+ * más claves. Solo pide proveedor y API key: el modelo lo resuelve el
+ * proveedor con su valor predeterminado.
  */
 const ProviderSetupModal = ({ open, onClose, onSaved }) => {
   const [available, setAvailable] = useState([]);
   const [form, setForm] = useState(emptyForm);
-  const [models, setModels] = useState([]);
-  const [loadingModels, setLoadingModels] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,7 +49,6 @@ const ProviderSetupModal = ({ open, onClose, onSaved }) => {
   useEffect(() => {
     if (!open) return undefined;
     setForm(emptyForm);
-    setModels([]);
     setShowKey(false);
     setTestResult(null);
     setError('');
@@ -77,25 +73,8 @@ const ProviderSetupModal = ({ open, onClose, onSaved }) => {
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const handleProviderChange = (event) => {
-    update({ provider_name: event.target.value, model: '' });
-    setModels([]);
+    update({ provider_name: event.target.value });
     setTestResult(null);
-  };
-
-  const loadModels = async () => {
-    if (!form.provider_name || !form.api_key.trim()) return;
-    setLoadingModels(true);
-    try {
-      const response = await api.get(`/ai/providers/${form.provider_name}/models`, {
-        params: { api_key: form.api_key.trim() },
-      });
-      setModels(response.data || []);
-    } catch {
-      // Si el proveedor no expone la lista, se puede escribir el modelo.
-      setModels([]);
-    } finally {
-      setLoadingModels(false);
-    }
   };
 
   const handleTest = async () => {
@@ -107,10 +86,8 @@ const ProviderSetupModal = ({ open, onClose, onSaved }) => {
       const response = await api.post('/ai/providers/test', {
         provider_name: form.provider_name,
         api_key: form.api_key.trim(),
-        model: form.model.trim() || undefined,
       });
       setTestResult(response.data);
-      if (response.data?.success) await loadModels();
     } catch (err) {
       setTestResult({
         success: false,
@@ -131,7 +108,6 @@ const ProviderSetupModal = ({ open, onClose, onSaved }) => {
       const response = await api.post('/ai/providers/setup', {
         provider_name: form.provider_name,
         api_key: form.api_key.trim(),
-        model: form.model.trim() || undefined,
         is_active: form.is_active,
       });
       if (onSaved) onSaved(response.data);
@@ -201,40 +177,6 @@ const ProviderSetupModal = ({ open, onClose, onSaved }) => {
             >
               <i className={`bi ${showKey ? 'bi-eye-slash' : 'bi-eye'}`} aria-hidden="true" />
             </button>
-          </div>
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label text-muted-tf small" htmlFor="provider-model">
-            Modelo (opcional)
-          </label>
-          <div className="input-group">
-            <input
-              id="provider-model"
-              type="text"
-              className="form-control bg-surface border-secondary text-white"
-              placeholder="Predeterminado del proveedor"
-              value={form.model}
-              onChange={(event) => update({ model: event.target.value })}
-              list="provider-model-options"
-            />
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={loadModels}
-              disabled={loadingModels || !form.provider_name || !form.api_key.trim()}
-            >
-              {loadingModels ? 'Cargando...' : 'Ver modelos'}
-            </button>
-          </div>
-          <datalist id="provider-model-options">
-            {models.map((model) => (
-              <option key={model} value={model} />
-            ))}
-          </datalist>
-          <div className="text-muted-tf smaller mt-1">
-            Puedes dejarlo vacío para usar el modelo predeterminado o escribir
-            el identificador exacto.
           </div>
         </div>
 

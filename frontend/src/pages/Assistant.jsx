@@ -4,7 +4,7 @@ import api from '../services/api';
 import ConversationList from '../components/ai/ConversationList';
 import MessageList from '../components/ai/MessageList';
 import MessageInput from '../components/ai/MessageInput';
-import ProviderSetupModal from '../components/ai/ProviderSetupModal';
+import ProviderSetupModal, { PROVIDER_INFO } from '../components/ai/ProviderSetupModal';
 import AssistantAvatar from '../components/ai/AssistantAvatar';
 import useAssistantState from '../hooks/useAssistantState';
 import { replayAgentEvents, summarizeToolResult } from '../utils/agentEvents';
@@ -121,7 +121,6 @@ const Assistant = () => {
         message: text,
         conversation_id: currentConversation?.id || null,
         provider_name: providerConfig?.provider_name || undefined,
-        model: providerConfig?.model || undefined,
         use_academic_context: true,
       });
 
@@ -228,7 +227,7 @@ const Assistant = () => {
   };
 
   const providerLabel = providerConfig
-    ? `${providerConfig.provider_name} · ${providerConfig.model || 'modelo predeterminado'}`
+    ? PROVIDER_INFO[providerConfig.provider_name]?.name || providerConfig.provider_name
     : 'Sin proveedor configurado';
 
   return (

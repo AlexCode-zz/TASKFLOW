@@ -2,7 +2,7 @@
 
 TaskFlow es una aplicación local de organización académica universitaria diseñada para ayudar a estudiantes a organizar automáticamente sus materias, horarios de clases, laboratorios, tareas, proyectos, parciales y tiempo de estudio.
 
-Incluye un asistente de inteligencia artificial opcional y multi-proveedor, donde cada usuario puede configurar su propia API key y seleccionar el proveedor y modelo que prefiera.
+Incluye un asistente de inteligencia artificial opcional y multi-proveedor, donde cada usuario puede configurar su propia API key y elegir el proveedor que prefiera.
 
 **IMPORTANTE:** Esta aplicación se ejecuta exclusivamente de forma local. No es una aplicación web pública. El código fuente se aloja en GitHub como proyecto de portafolio. No se utiliza Supabase, Resend, ni ningún servicio de autenticación. Los datos se almacenan localmente en SQLite.
 
@@ -191,23 +191,24 @@ TaskFlow incluye un asistente de inteligencia artificial opcional y multi-provee
 
 ### Proveedores Soportados
 
-| Proveedor | Modelos Ejemplo | Costo |
-|-----------|----------------|-------|
-| OpenRouter | Múltiples modelos | Variable según modelo |
-| Anthropic | Claude 3 (Opus, Sonnet, Haiku) | Variable según modelo |
-| Google Gemini | Gemini 1.5 (Flash, Pro) | Variable según modelo |
-| OpenAI | GPT-4o, GPT-4o-mini, GPT-3.5-turbo | Variable según modelo |
+| Proveedor | Costo |
+|-----------|-------|
+| OpenRouter | Variable según uso |
+| Anthropic | Variable según uso |
+| Google Gemini | Variable según uso |
+| OpenAI | Variable según uso |
 
 ### Pasos para Configurar
 
 1. La primera vez, abre **Asistente IA** y pulsa **Configurar proveedor de IA**
 2. Selecciona el proveedor deseado
 3. Ingresa tu **API key** personal (obtenida del proveedor correspondiente)
-4. Selecciona o escribe el identificador del **modelo** (opcional)
-5. Haz clic en **Probar conexión** para verificar que funciona
-6. Haz clic en **Guardar proveedor**
+4. Haz clic en **Probar conexión** para verificar que funciona
+5. Haz clic en **Guardar proveedor**
 
-Para administrar varias claves, añadir proveedores o cambiar el que está activo, ve a **Proveedores IA** en el menú lateral (junto a Configuración). El proveedor activo es el que usa Mel; si uno agota su cuota o límite, activa otro sin volver a escribir la API key. También puedes cambiar el modelo de un proveedor guardado sin volver a introducir la clave.
+TaskFlow usa el modelo predeterminado de cada proveedor, así que no hace falta elegir ni escribir identificadores de modelo.
+
+Para administrar varias claves, añadir proveedores o cambiar el que está activo, ve a **Proveedores IA** en el menú lateral (junto a Configuración). El proveedor activo es el que usa Mel; si uno agota su cuota o límite, activa otro sin volver a escribir la API key.
 
 ### Seguridad de las API Keys
 
@@ -254,7 +255,7 @@ Mel es la asistente académica de TaskFlow. Su avatar reacciona al estado real d
 - Varias API keys guardadas a la vez, con cambio de proveedor activo en un clic
 - Si la IA falla o no hay proveedor configurado, el resto de TaskFlow sigue funcionando con datos locales
 - Historial de conversaciones persistente
-- Cambio de proveedor y modelo sin perder conversaciones
+- Cambio de proveedor sin perder conversaciones
 
 ### Respaldo de Datos
 - Exportar toda la información académica a JSON

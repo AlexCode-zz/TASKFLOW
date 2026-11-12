@@ -137,8 +137,8 @@ def classify_http_error(
 
     if status_code == 404 and "model" in body:
         return AIProviderError(
-            f"El modelo configurado no existe o ya no está disponible en "
-            f"{provider}. Elige otro modelo en Proveedores IA.",
+            f"El modelo del proveedor {provider} no existe o ya no está "
+            f"disponible. Prueba con otro proveedor en Proveedores IA.",
             error_code="invalid_model",
             provider=provider,
             status_code=status_code,
@@ -186,9 +186,9 @@ FRIENDLY_MESSAGES = {
         "Proveedores IA."
     ),
     "invalid_model": (
-        "El modelo configurado no existe o ya no está disponible en el "
-        "proveedor. Elige otro modelo en Proveedores IA; el resto de TaskFlow "
-        "sigue funcionando con tus datos reales."
+        "El modelo del proveedor ya no está disponible. Prueba con otro "
+        "proveedor en Proveedores IA; el resto de TaskFlow sigue funcionando "
+        "con tus datos reales."
     ),
     "connection_error": (
         "No se pudo conectar con el proveedor de IA. Verifica tu conexión a "

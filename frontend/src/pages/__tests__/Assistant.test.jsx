@@ -99,10 +99,10 @@ describe('Assistant (Mel)', () => {
     expect(screen.getByText('Tu asistente académica. Organiza materias, tareas, notas y tu semana.')).toBeInTheDocument();
     expect(container.querySelector('.mel-avatar')).toBeInTheDocument();
 
-    await screen.findByText('openrouter · openai/gpt-4o-mini');
+    await screen.findByText('OpenRouter');
     expect(container.querySelector('.mel-provider-chip')).toHaveAttribute(
       'title',
-      'openrouter · openai/gpt-4o-mini',
+      'OpenRouter',
     );
   });
 
@@ -123,7 +123,6 @@ describe('Assistant (Mel)', () => {
       expect.objectContaining({
         message: '¿Qué tareas tengo pendientes?',
         provider_name: 'openrouter',
-        model: 'openai/gpt-4o-mini',
         use_academic_context: true,
       }),
     );
@@ -288,7 +287,7 @@ describe('Assistant (Mel)', () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Proveedor')).toBeInTheDocument();
     expect(screen.getByLabelText('API key')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Modelo/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Modelo/)).not.toBeInTheDocument();
   });
 
   it('ofrece cambiar de proveedor desde la cabecera', async () => {

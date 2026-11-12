@@ -129,26 +129,3 @@ def test_default_models_are_current():
         AnthropicProvider(api_key="k").capabilities.default_model
         == "claude-3-5-haiku-latest"
     )
-
-
-def test_update_provider_model_keeps_api_key(student_client: TestClient, fake_keys):
-    assert _setup_provider(student_client, "gemini", "gemini-1.5-flash", True).status_code == 201
-
-    response = student_client.put(
-        "/api/ai/providers/gemini", json={"model": "gemini-2.5-flash"}
-    )
-    assert response.status_code == 200
-    assert response.json()["model"] == "gemini-2.5-flash"
-
-    providers = _providers_by_name(student_client)
-    assert providers["gemini"]["model"] == "gemini-2.5-flash"
-    assert providers["gemini"]["is_active"] is True
-    # La clave permanece intacta.
-    assert fake_keys["gemini"] == "key-gemini"
-
-
-def test_update_unknown_provider_returns_404(student_client: TestClient, fake_keys):
-    response = student_client.put(
-        "/api/ai/providers/openai", json={"model": "gpt-4o-mini"}
-    )
-    assert response.status_code == 404

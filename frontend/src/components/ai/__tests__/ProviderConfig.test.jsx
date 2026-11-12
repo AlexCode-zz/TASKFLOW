@@ -41,9 +41,6 @@ describe('ProviderConfig', () => {
       if (url === '/ai/providers/available') {
         return Promise.resolve({ data: ['openrouter', 'openai', 'gemini', 'anthropic'] });
       }
-      if (url === '/ai/providers/openai/models') {
-        return Promise.resolve({ data: ['gpt-4o-mini', 'gpt-4.1'] });
-      }
       return Promise.resolve({ data: [] });
     });
 
@@ -58,7 +55,6 @@ describe('ProviderConfig', () => {
       return Promise.resolve({ data: { success: true, message: 'ok' } });
     });
 
-    api.put.mockResolvedValue({ data: { provider_name: 'openai', model: 'gpt-4.1' } });
     api.delete.mockResolvedValue({ data: null });
   });
 
@@ -71,7 +67,8 @@ describe('ProviderConfig', () => {
 
     expect(await screen.findByText('OpenRouter')).toBeInTheDocument();
     expect(screen.getByText('OpenAI')).toBeInTheDocument();
-    expect(screen.getByText('openai/gpt-4o-mini')).toBeInTheDocument();
+    expect(screen.getAllByText('API key guardada')).toHaveLength(2);
+    expect(screen.queryByText('openai/gpt-4o-mini')).not.toBeInTheDocument();
     expect(screen.getByText('Activo')).toBeInTheDocument();
     expect(screen.getByText('Inactivo')).toBeInTheDocument();
   });
@@ -102,25 +99,7 @@ describe('ProviderConfig', () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Proveedor')).toBeInTheDocument();
     expect(screen.getByLabelText('API key')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Modelo/)).toBeInTheDocument();
-  });
-
-  it('permite cambiar el modelo sin volver a pedir la API key', async () => {
-    render(<ProviderConfig />);
-
-    await screen.findByText('OpenAI');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Cambiar modelo' })[1]);
-
-    const input = await screen.findByLabelText('Modelo');
-    fireEvent.change(input, { target: { value: 'gpt-4.1' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar modelo' }));
-
-    await waitFor(() =>
-      expect(api.put).toHaveBeenCalledWith('/ai/providers/openai', {
-        model: 'gpt-4.1',
-      }),
-    );
-    expect(await screen.findByText('Modelo actualizado.')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Modelo/)).not.toBeInTheDocument();
   });
 
   it('elimina un proveedor tras confirmar', async () => {
