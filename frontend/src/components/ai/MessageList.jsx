@@ -1,12 +1,21 @@
 import { ConfirmationCard, ToolResultsCard, AgentErrorBanner } from './AgentCards';
 import { formatProse } from '../../utils/prose';
+import AssistantAvatar from './AssistantAvatar';
 
 /**
  * Historial de mensajes del asistente. Además del texto, cada turno
  * puede incluir tarjetas de resultados de herramientas, una tarjeta de
  * confirmación de acción y avisos de error diferenciados.
  */
-const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null, manageProvidersHref = null }) => {
+const MessageList = ({
+  messages,
+  onConfirm,
+  onCancel,
+  confirmingId = null,
+  manageProvidersHref = null,
+  avatarExpression = 'normal',
+  avatarState = 'idle',
+}) => {
   return (
     <div className="mel-message-list p-3 overflow-y-auto flex-grow-1">
       {messages.length === 0 ? (
@@ -19,6 +28,11 @@ const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null, manag
             key={msg.id}
             className={`d-flex mb-3 ${msg.role === 'user' ? 'justify-content-end' : 'justify-content-start'}`}
           >
+            {msg.role !== 'user' && (
+              <div className="mel-message-avatar">
+                <AssistantAvatar expression={avatarExpression} state={avatarState} size={36} />
+              </div>
+            )}
             <div className="mel-message-column" style={{ maxWidth: '85%' }}>
               <div
                 className={`p-3 rounded-4 ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-surface text-white border border-secondary'}`}

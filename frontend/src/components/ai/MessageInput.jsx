@@ -16,7 +16,7 @@ const MessageInput = ({ onSend, disabled, placeholder, onActivity }) => {
   };
 
   return (
-    <div className="card-footer bg-transparent border-secondary pt-2 pb-2">
+    <div className="card-footer bg-transparent border-secondary pt-2 pb-2 mel-composer">
       <form onSubmit={handleSend} className="input-group">
         <input
           type="text"
