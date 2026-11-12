@@ -55,13 +55,15 @@ const ConversationList = ({ conversations, onSelect, onDelete, onNew }) => {
         onClick={() => onSelect(conv)}
       >
         <div className="flex-grow-1 text-truncate">
-          <div className="fw-medium text-white small text-truncate">{conv.title}</div>
+          <div className="fw-medium text-white small text-truncate">
+            {conv.title || 'Conversación sin título'}
+          </div>
         </div>
         <button
           type="button"
           className="btn btn-outline-danger btn-sm p-1"
           onClick={(e) => handleDelete(e, conv)}
-          aria-label={`Eliminar conversación ${conv.title}`}
+          aria-label={`Eliminar conversación ${conv.title || 'sin título'}`}
         >
           ×
         </button>
