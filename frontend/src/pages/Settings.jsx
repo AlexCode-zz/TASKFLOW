@@ -14,7 +14,7 @@ const Settings = () => {
     { id: 'horarios', label: 'Horarios y disponibilidad', icon: 'bi-clock' },
     { id: 'planificacion', label: 'Preferencias de planificación', icon: 'bi-list-checks' },
     { id: 'apariencia', label: 'Apariencia', icon: 'bi-palette' },
-    { id: 'ia', label: 'Asistente IA', icon: 'bi-robot' },
+    { id: 'ia', label: 'MEL', icon: 'bi-robot' },
     { id: 'respaldo', label: 'Respaldo', icon: 'bi-database-backup' },
   ];
 

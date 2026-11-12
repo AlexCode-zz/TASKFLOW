@@ -95,8 +95,10 @@ describe('Assistant (Mel)', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Mel' })).toBeInTheDocument();
-    expect(screen.getByText('Tu asistente académica. Organiza materias, tareas, notas y tu semana.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'MEL' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Organiza materias, tareas, notas y tu semana de estudio.'),
+    ).toBeInTheDocument();
     expect(container.querySelector('.mel-avatar')).toBeInTheDocument();
 
     await screen.findByText('OpenRouter');

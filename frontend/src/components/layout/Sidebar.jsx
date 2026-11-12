@@ -4,8 +4,8 @@ import { Link, useLocation } from 'react-router-dom';
 const groups = [
   {
     id: 'asistente',
-    label: 'Asistente',
-    items: [{ to: '/asistente-ia', label: 'Asistente IA', icon: 'bi-robot' }],
+    label: 'Mel',
+    items: [{ to: '/asistente-ia', label: 'MEL', icon: 'bi-robot' }],
   },
   {
     id: 'planificacion',

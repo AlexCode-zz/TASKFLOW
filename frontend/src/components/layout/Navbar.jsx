@@ -11,7 +11,7 @@ const TITLES = {
   '/parciales': 'Parciales',
   '/tareas': 'Tareas y proyectos',
   '/informes': 'Informes',
-  '/asistente-ia': 'Asistente IA',
+  '/asistente-ia': 'MEL',
   '/proveedores-ia': 'Proveedores IA',
   '/configuracion': 'Configuración',
 };

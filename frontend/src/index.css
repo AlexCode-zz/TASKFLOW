@@ -886,11 +886,33 @@ textarea.form-control:focus {
   animation: mel-fade-in 380ms ease both;
 }
 
-/* Resaltado: halo sutil detrás del avatar mientras Mel está activo */
+/* Resaltado: halo luminoso detrás del avatar, intensificándose según
+   el estado de la máquina (pensando, trabajando, conflicto, éxito...). */
 .mel-hero .mel-avatar {
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.22),
-    0 0 28px rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 44px rgba(255, 255, 255, 0.12);
+}
+
+.mel-hero.state-thinking .mel-avatar,
+.mel-hero.state-working .mel-avatar,
+.mel-hero.state-explaining .mel-avatar,
+.mel-hero.state-conflict .mel-avatar {
+  animation: mel-avatar-glow 2.6s ease-in-out infinite;
+}
+
+@keyframes mel-avatar-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      0 0 38px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.36),
+      0 0 64px rgba(255, 255, 255, 0.18);
+  }
 }
 
 @keyframes mel-fade-in {
@@ -1023,6 +1045,31 @@ textarea.form-control:focus {
   .mel-avatar-img-top {
     animation: none !important;
   }
+
+  .mel-hero.state-thinking .mel-avatar,
+  .mel-hero.state-working .mel-avatar,
+  .mel-hero.state-explaining .mel-avatar,
+  .mel-hero.state-conflict .mel-avatar {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mel-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-4);
+  }
+
+  .mel-hero-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mel-subtitle {
+    margin-bottom: 0;
+  }
 }
 
 /* ---------- Asistente IA: página y tarjetas del agente ---------- */
@@ -1030,29 +1077,38 @@ textarea.form-control:focus {
 .mel-hero {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  gap: var(--space-5);
+  padding: var(--space-5);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background-color: var(--surface-2);
+  background-image: radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.055), transparent 55%);
+  box-shadow: var(--shadow-md);
 }
 
 .mel-hero-info {
   min-width: 0;
 }
 
+/* Nombre MEL con tratamiento tipográfico propio: display, mayúsculas
+   y tracking ajustado, con leve halo luminoso para que destaque sobre el
+   fondo de puntos blancos. */
 .mel-name {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  text-transform: uppercase;
   margin: 0;
   color: var(--text);
+  text-shadow: 0 0 42px rgba(255, 255, 255, 0.16);
 }
 
 .mel-subtitle {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
-  margin: 0.25rem 0 0.5rem;
+  margin: 0.5rem 0 0;
+  max-width: 56ch;
 }
 
 .mel-chip-row {

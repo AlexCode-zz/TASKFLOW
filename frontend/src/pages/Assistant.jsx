@@ -234,12 +234,12 @@ const Assistant = () => {
   return (
     <div className="fade-in">
       {/* Presentación de Mel: avatar protagonista + estado + proveedor */}
-      <header className="mel-hero mb-4">
+      <header className={`mel-hero mb-4 state-${state}`}>
         <AssistantAvatar expression={expression} state={state} size={128} />
         <div className="mel-hero-info">
-          <h1 className="mel-name">Mel</h1>
+          <h1 className="mel-name">MEL</h1>
           <p className="mel-subtitle">
-            Tu asistente académica. Organiza materias, tareas, notas y tu semana.
+            Organiza materias, tareas, notas y tu semana de estudio.
           </p>
           <div className="mel-chip-row">
             <span className={statusChipClass(state)}>
