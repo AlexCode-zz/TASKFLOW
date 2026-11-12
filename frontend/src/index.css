@@ -1445,6 +1445,11 @@ textarea.form-control:focus {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
+.provider-model-editor {
+  width: 100%;
+  max-width: 320px;
+}
+
 .provider-empty {
   padding: var(--space-4);
   border: 1px dashed var(--border);

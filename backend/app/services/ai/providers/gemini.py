@@ -20,7 +20,7 @@ class GeminiProvider(BaseHTTPProvider):
             supports_streaming=True,
             supports_system_prompt=True,
             max_tokens=4096,
-            default_model="gemini-1.5-flash",
+            default_model="gemini-2.5-flash",
             available_models=[],
         )
 
@@ -156,7 +156,7 @@ class GeminiProvider(BaseHTTPProvider):
         except Exception:
             pass
         return [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-1.0-pro",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash-lite",
         ]

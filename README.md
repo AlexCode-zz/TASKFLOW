@@ -207,7 +207,7 @@ TaskFlow incluye un asistente de inteligencia artificial opcional y multi-provee
 5. Haz clic en **Probar conexión** para verificar que funciona
 6. Haz clic en **Guardar proveedor**
 
-Para administrar varias claves, añadir proveedores o cambiar el que está activo, ve a **Proveedores IA** en el menú lateral (junto a Configuración). El proveedor activo es el que usa Mel; si uno agota su cuota o límite, activa otro sin volver a escribir la API key.
+Para administrar varias claves, añadir proveedores o cambiar el que está activo, ve a **Proveedores IA** en el menú lateral (junto a Configuración). El proveedor activo es el que usa Mel; si uno agota su cuota o límite, activa otro sin volver a escribir la API key. También puedes cambiar el modelo de un proveedor guardado sin volver a introducir la clave.
 
 ### Seguridad de las API Keys
 

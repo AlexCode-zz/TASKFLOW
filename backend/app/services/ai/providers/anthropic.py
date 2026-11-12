@@ -20,7 +20,7 @@ class AnthropicProvider(BaseHTTPProvider):
             supports_streaming=True,
             supports_system_prompt=True,
             max_tokens=4096,
-            default_model="claude-3-haiku-20240307",
+            default_model="claude-3-5-haiku-latest",
             available_models=[],
         )
 
@@ -139,10 +139,7 @@ class AnthropicProvider(BaseHTTPProvider):
         # Anthropic no expone lista pública de modelos sin autenticación completa
         # Devolvemos modelos conocidos
         return [
-            "claude-3-opus-20240229",
-            "claude-3-sonnet-20240229",
-            "claude-3-haiku-20240307",
-            "claude-2.1",
-            "claude-2.0",
-            "claude-instant-1.2",
+            "claude-3-7-sonnet-latest",
+            "claude-3-5-sonnet-latest",
+            "claude-3-5-haiku-latest",
         ]

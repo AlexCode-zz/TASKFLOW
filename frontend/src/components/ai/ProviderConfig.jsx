@@ -18,6 +18,9 @@ const ProviderConfig = ({ onConfigChange }) => {
   const [setupOpen, setSetupOpen] = useState(false);
   const [busyProvider, setBusyProvider] = useState(null);
   const [testResults, setTestResults] = useState({});
+  const [editingModel, setEditingModel] = useState(null);
+  const [modelDraft, setModelDraft] = useState('');
+  const [modelOptions, setModelOptions] = useState([]);
 
   useEffect(() => {
     loadProviders();
@@ -83,6 +86,38 @@ const ProviderConfig = ({ onConfigChange }) => {
     } finally {
       setBusyProvider(null);
       await loadProviders();
+    }
+  };
+
+  const startEditModel = async (provider) => {
+    setEditingModel(provider.provider_name);
+    setModelDraft(provider.model || '');
+    setModelOptions([]);
+    try {
+      const response = await api.get(`/ai/providers/${provider.provider_name}/models`);
+      setModelOptions(response.data || []);
+    } catch {
+      // Si el proveedor no expone la lista, se puede escribir el modelo.
+      setModelOptions([]);
+    }
+  };
+
+  const handleSaveModel = async (provider) => {
+    setBusyProvider(provider.provider_name);
+    setError('');
+    try {
+      await api.put(`/ai/providers/${provider.provider_name}`, {
+        model: modelDraft.trim() || null,
+      });
+      await loadProviders();
+      setEditingModel(null);
+      notify('Modelo actualizado.');
+    } catch (err) {
+      setError(
+        err.response?.data?.detail || 'No se pudo actualizar el modelo.',
+      );
+    } finally {
+      setBusyProvider(null);
     }
   };
 
@@ -182,9 +217,52 @@ const ProviderConfig = ({ onConfigChange }) => {
                 <div className="d-flex justify-content-between align-items-start gap-2">
                   <div className="min-w-0">
                     <div className="fw-semibold text-white">{info.name}</div>
-                    <div className="text-muted-tf smaller">
-                      {provider.model || 'Modelo predeterminado del proveedor'}
-                    </div>
+                    {editingModel === provider.provider_name ? (
+                      <div className="provider-model-editor mt-2">
+                        <label
+                          className="form-label text-muted-tf smaller mb-1"
+                          htmlFor={`model-${provider.provider_name}`}
+                        >
+                          Modelo
+                        </label>
+                        <input
+                          id={`model-${provider.provider_name}`}
+                          type="text"
+                          className="form-control form-control-sm bg-surface border-secondary text-white"
+                          placeholder="Modelo predeterminado del proveedor"
+                          value={modelDraft}
+                          list={`models-${provider.provider_name}`}
+                          onChange={(event) => setModelDraft(event.target.value)}
+                        />
+                        <datalist id={`models-${provider.provider_name}`}>
+                          {modelOptions.map((model) => (
+                            <option key={model} value={model} />
+                          ))}
+                        </datalist>
+                        <div className="d-flex gap-2 mt-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleSaveModel(provider)}
+                            loading={busy}
+                          >
+                            Guardar modelo
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setEditingModel(null)}
+                            disabled={busy}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-muted-tf smaller">
+                        {provider.model || 'Modelo predeterminado del proveedor'}
+                      </div>
+                    )}
                   </div>
                   <span
                     className={`badge ${provider.is_active ? 'bg-primary' : 'bg-secondary'} text-white`}
@@ -204,6 +282,16 @@ const ProviderConfig = ({ onConfigChange }) => {
                       loading={busy}
                     >
                       Activar
+                    </Button>
+                  )}
+                  {editingModel !== provider.provider_name && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => startEditModel(provider)}
+                      disabled={busy}
+                    >
+                      Cambiar modelo
                     </Button>
                   )}
                   <Button

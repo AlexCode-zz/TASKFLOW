@@ -226,6 +226,30 @@ def activate_provider(
     return activated
 
 
+@router.put(
+    "/providers/{provider_name}",
+    response_model=AIProviderConfigResponse,
+)
+def update_provider(
+    provider_name: str,
+    config_in: AIProviderConfigUpdate,
+    db: Session = Depends(get_db),
+):
+    """Actualiza el modelo u otros ajustes de un proveedor ya guardado.
+
+    No toca la API key: permite corregir un modelo retirado sin volver a
+    escribir la clave.
+    """
+    if not ai_crud.get_ai_provider_config(db, provider_name):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Proveedor {provider_name} no configurado",
+        )
+
+    updated = ai_crud.update_ai_provider_config(db, provider_name, config_in)
+    return updated
+
+
 @router.delete("/providers/{provider_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_provider(
     provider_name: str,

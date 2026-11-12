@@ -20,7 +20,7 @@ class OpenAIProvider(BaseHTTPProvider):
             supports_streaming=True,
             supports_system_prompt=True,
             max_tokens=4096,
-            default_model="gpt-3.5-turbo",
+            default_model="gpt-4o-mini",
             available_models=[],
         )
 
@@ -136,6 +136,6 @@ class OpenAIProvider(BaseHTTPProvider):
         return [
             "gpt-4o",
             "gpt-4o-mini",
-            "gpt-4-turbo",
-            "gpt-3.5-turbo",
+            "gpt-4.1",
+            "gpt-4.1-mini",
         ]

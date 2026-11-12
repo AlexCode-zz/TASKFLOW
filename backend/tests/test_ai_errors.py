@@ -63,6 +63,19 @@ class TestClassifyHttpError:
         err = classify_http_error("openrouter", 408, "Request timeout")
         assert err.error_code == "connection_error"
 
+    def test_404_de_modelo_inexistente_es_modelo_invalido(self):
+        err = classify_http_error(
+            "gemini",
+            404,
+            "models/gemini-1.5-flash is not found for API version v1beta",
+        )
+        assert err.error_code == "invalid_model"
+        assert "modelo" in err.message.lower()
+
+    def test_404_sin_modelo_es_error_del_proveedor(self):
+        err = classify_http_error("openai", 404, "Not found")
+        assert err.error_code == "provider_error"
+
     def test_otros_codigos_son_error_del_proveedor(self):
         err = classify_http_error("openai", 400, "Bad request")
         assert err.error_code == "provider_error"
@@ -102,6 +115,7 @@ class TestFriendlyMessages:
             "quota_exhausted",
             "rate_limit",
             "invalid_api_key",
+            "invalid_model",
             "connection_error",
             "provider_error",
             "unexpected_error",
@@ -111,6 +125,9 @@ class TestFriendlyMessages:
         message = friendly_message(code)
         assert len(message) > 20
         assert code.replace("_", " ") or True  # solo verifica que no explote
+
+    def test_mensaje_de_modelo_invalido_indica_proveedores_ia(self):
+        assert "Proveedores IA" in friendly_message("invalid_model")
 
     def test_codigo_desconocido_usa_mensaje_generico(self):
         assert friendly_message("desconocido") == friendly_message("unexpected_error")

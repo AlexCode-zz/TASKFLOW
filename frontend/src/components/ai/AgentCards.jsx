@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 
 /**
@@ -153,11 +154,15 @@ const ERROR_TITLES = {
   quota_exhausted: 'Cuota de IA agotada',
   rate_limit: 'Límite de solicitudes',
   invalid_api_key: 'API key inválida',
+  invalid_model: 'Modelo no disponible',
   connection_error: 'Sin conexión con el proveedor',
   provider_error: 'Error del proveedor de IA',
   provider_unavailable: 'Proveedor no disponible',
   unexpected_error: 'Error inesperado de la IA',
 };
+
+/** Códigos que se resuelven cambiando de proveedor o de modelo. */
+const PROVIDER_ISSUES = new Set(['quota_exhausted', 'invalid_api_key', 'invalid_model']);
 
 /**
  * Aviso de error diferenciado: la cuota agotada y el rate limit se
@@ -169,6 +174,7 @@ export function AgentErrorBanner({ errorCode, message, manageHref = null }) {
 
   const title = ERROR_TITLES[errorCode] || ERROR_TITLES.unexpected_error;
   const isQuota = errorCode === 'quota_exhausted';
+  const canManage = PROVIDER_ISSUES.has(errorCode);
 
   return (
     <div className={`mel-error-banner ${isQuota ? 'is-quota' : ''}`} role="alert">
@@ -177,16 +183,16 @@ export function AgentErrorBanner({ errorCode, message, manageHref = null }) {
         <strong>{title}</strong>
       </div>
       <p className="mb-1 small">{message}</p>
-      {isQuota && (
+      {canManage && (
         <>
           <p className="mb-2 smaller text-muted-tf">
             Tus materias, tareas y horarios siguen disponibles: TaskFlow funciona
             sin la IA.
           </p>
           {manageHref && (
-            <a href={manageHref} className="mel-error-action">
+            <Link to={manageHref} className="mel-error-action">
               Cambiar de proveedor
-            </a>
+            </Link>
           )}
         </>
       )}

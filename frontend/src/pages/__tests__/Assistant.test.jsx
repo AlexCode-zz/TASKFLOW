@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Assistant from '../Assistant';
 import api from '../../services/api';
 import { replayAgentEvents } from '../../utils/agentEvents';
@@ -88,7 +89,11 @@ describe('Assistant (Mel)', () => {
   });
 
   it('presenta a Mel con su avatar, estado y proveedor activo', async () => {
-    const { container } = render(<Assistant />);
+    const { container } = render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByRole('heading', { name: 'Mel' })).toBeInTheDocument();
     expect(screen.getByText('Tu asistente académica. Organiza materias, tareas, notas y tu semana.')).toBeInTheDocument();
@@ -103,7 +108,11 @@ describe('Assistant (Mel)', () => {
 
   it('envía la consulta al endpoint del agente y muestra la respuesta real', async () => {
     api.post.mockResolvedValue({ data: CHAT_RESPONSE });
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
 
     await sendMessage('¿Qué tareas tengo pendientes?');
 
@@ -136,7 +145,11 @@ describe('Assistant (Mel)', () => {
       .mockResolvedValueOnce({ data: CHAT_WITH_CONFIRMATION })
       .mockResolvedValueOnce({ data: CONFIRM_RESPONSE });
 
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
     await sendMessage('Actualiza mi nota de Cálculo');
 
     await screen.findByText('Necesito tu confirmación');
@@ -164,7 +177,11 @@ describe('Assistant (Mel)', () => {
         data: { ...CONFIRM_RESPONSE, message: 'No cambié nada.' },
       });
 
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
     await sendMessage('Actualiza mi nota de Cálculo');
 
     await screen.findByText('Necesito tu confirmación');
@@ -190,7 +207,11 @@ describe('Assistant (Mel)', () => {
       },
     });
 
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
     await sendMessage('Dame mi informe académico');
 
     await screen.findByText('Cuota de IA agotada');
@@ -202,7 +223,11 @@ describe('Assistant (Mel)', () => {
       response: { status: 500, data: { detail: 'Error interno del servidor' } },
     });
 
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
     const input = await screen.findByPlaceholderText('Escribe tu consulta académica...');
     fireEvent.change(input, { target: { value: 'Dame mi informe académico' } });
     // El rechazo de la petición resuelve en un microtask: se espera dentro
@@ -224,7 +249,11 @@ describe('Assistant (Mel)', () => {
 
   it('sin proveedor configurado muestra el botón de configuración inicial', async () => {
     mockInitialLoad([]);
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
 
     await screen.findByText('Conecta a Mel con un proveedor de IA');
     expect(
@@ -244,7 +273,11 @@ describe('Assistant (Mel)', () => {
       return Promise.resolve({ data: [] });
     });
 
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
 
     fireEvent.click(
       await screen.findByRole('button', { name: 'Configurar proveedor de IA' }),
@@ -259,7 +292,11 @@ describe('Assistant (Mel)', () => {
   });
 
   it('ofrece cambiar de proveedor desde la cabecera', async () => {
-    render(<Assistant />);
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
 
     const changeLink = await screen.findByRole('link', { name: 'Cambiar' });
     expect(changeLink).toHaveAttribute('href', '/proveedores-ia');

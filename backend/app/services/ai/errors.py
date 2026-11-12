@@ -8,6 +8,7 @@ avatar) reaccione de forma correcta:
 - ``rate_limit``: límite de solicitudes alcanzado (429 con mensajes de
   rate/rpm/tpm). Hay que esperar antes de reintentar.
 - ``invalid_api_key``: error de autenticación (401/403).
+- ``invalid_model``: el modelo configurado ya no existe (404 con "model").
 - ``connection_error``: no se pudo conectar con el proveedor.
 - ``provider_error``: error interno del proveedor (5xx, otros códigos).
 - ``unexpected_error``: cualquier fallo no clasificable.
@@ -134,6 +135,15 @@ def classify_http_error(
             status_code=status_code,
         )
 
+    if status_code == 404 and "model" in body:
+        return AIProviderError(
+            f"El modelo configurado no existe o ya no está disponible en "
+            f"{provider}. Elige otro modelo en Proveedores IA.",
+            error_code="invalid_model",
+            provider=provider,
+            status_code=status_code,
+        )
+
     if status_code >= 500:
         return AIProviderError(
             f"Error interno de {provider} (HTTP {status_code}).",
@@ -173,7 +183,12 @@ FRIENDLY_MESSAGES = {
     ),
     "invalid_api_key": (
         "La API key del proveedor no es válida o expiró. Revísala en "
-        "Ajustes > Asistente IA."
+        "Proveedores IA."
+    ),
+    "invalid_model": (
+        "El modelo configurado no existe o ya no está disponible en el "
+        "proveedor. Elige otro modelo en Proveedores IA; el resto de TaskFlow "
+        "sigue funcionando con tus datos reales."
     ),
     "connection_error": (
         "No se pudo conectar con el proveedor de IA. Verifica tu conexión a "

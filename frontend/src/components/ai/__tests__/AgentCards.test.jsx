@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import {
   ConfirmationCard,
   ToolResultsCard,
@@ -169,5 +170,37 @@ describe('AgentErrorBanner', () => {
   it('usa un título genérico para códigos desconocidos', () => {
     render(<AgentErrorBanner errorCode="algo_raro" message="Falla" />);
     expect(screen.getByText('Error inesperado de la IA')).toBeInTheDocument();
+  });
+
+  it('explica el modelo no disponible y ofrece cambiar de proveedor', () => {
+    render(
+      <MemoryRouter>
+        <AgentErrorBanner
+          errorCode="invalid_model"
+          message="El modelo configurado no existe."
+          manageHref="/proveedores-ia"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Modelo no disponible')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cambiar de proveedor' })).toHaveAttribute(
+      'href',
+      '/proveedores-ia',
+    );
+  });
+
+  it('ofrece cambiar de proveedor cuando la API key no es válida', () => {
+    render(
+      <MemoryRouter>
+        <AgentErrorBanner
+          errorCode="invalid_api_key"
+          message="La API key no es válida."
+          manageHref="/proveedores-ia"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Cambiar de proveedor' })).toBeInTheDocument();
   });
 });

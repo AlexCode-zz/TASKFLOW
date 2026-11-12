@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import ConversationList from '../components/ai/ConversationList';
 import MessageList from '../components/ai/MessageList';
@@ -249,9 +250,9 @@ const Assistant = () => {
               {providerLabel}
             </span>
             {providerConfig && (
-              <a href="/proveedores-ia" className="mel-provider-link">
+              <Link to="/proveedores-ia" className="mel-provider-link">
                 Cambiar
-              </a>
+              </Link>
             )}
           </div>
         </div>
