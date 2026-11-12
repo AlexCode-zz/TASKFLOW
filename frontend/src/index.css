@@ -888,16 +888,16 @@ textarea.form-control:focus {
 
 /* Resaltado: halo luminoso detrás del avatar, intensificándose según
    el estado de la máquina (pensando, trabajando, conflicto, éxito...). */
-.mel-hero .mel-avatar {
+.mel-floating-box .mel-avatar {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.2),
     0 0 44px rgba(255, 255, 255, 0.12);
 }
 
-.mel-hero.state-thinking .mel-avatar,
-.mel-hero.state-working .mel-avatar,
-.mel-hero.state-explaining .mel-avatar,
-.mel-hero.state-conflict .mel-avatar {
+.mel-floating-box.state-thinking .mel-avatar,
+.mel-floating-box.state-working .mel-avatar,
+.mel-floating-box.state-explaining .mel-avatar,
+.mel-floating-box.state-conflict .mel-avatar {
   animation: mel-avatar-glow 2.6s ease-in-out infinite;
 }
 
@@ -1046,22 +1046,22 @@ textarea.form-control:focus {
     animation: none !important;
   }
 
-  .mel-hero.state-thinking .mel-avatar,
-  .mel-hero.state-working .mel-avatar,
-  .mel-hero.state-explaining .mel-avatar,
-  .mel-hero.state-conflict .mel-avatar {
+  .mel-floating-box.state-thinking .mel-avatar,
+  .mel-floating-box.state-working .mel-avatar,
+  .mel-floating-box.state-explaining .mel-avatar,
+  .mel-floating-box.state-conflict .mel-avatar {
     animation: none !important;
   }
 }
 
 @media (max-width: 767.98px) {
-  .mel-hero {
+  .mel-floating-box {
     flex-direction: column;
     text-align: center;
     gap: var(--space-4);
   }
 
-  .mel-hero-info {
+  .mel-floating-box-info {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1072,9 +1072,9 @@ textarea.form-control:focus {
   }
 }
 
-/* ---------- Asistente IA: página y tarjetas del agente ---------- */
+/* ---------- Asistente IA: cuadro flotante de Mel dentro del chat ---------- */
 
-.mel-hero {
+.mel-floating-box {
   display: flex;
   align-items: center;
   gap: var(--space-5);
@@ -1084,9 +1084,39 @@ textarea.form-control:focus {
   background-color: var(--surface-2);
   background-image: radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.055), transparent 55%);
   box-shadow: var(--shadow-md);
+  animation: mel-floating-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.mel-hero-info {
+/* Entrada suave del cuadro: desliza y escala desde abajo sin tapar el chat */
+@keyframes mel-floating-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Flotación continua: el cuadro respira ligeramente de forma orgánica */
+@keyframes mel-floating-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.mel-floating-box.is-live {
+  animation:
+    mel-floating-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    mel-floating-breathe 7s ease-in-out 1.2s infinite;
+}
+
+.mel-floating-box-info {
   min-width: 0;
 }
 
@@ -1195,9 +1225,34 @@ textarea.form-control:focus {
   cursor: not-allowed;
 }
 
+/* El historial crece dentro del chat: ocupa todo el espacio que
+   queda entre el cuadro flotante y el compositor de escritura. */
 .mel-message-list {
-  max-height: 60vh;
-  min-height: 280px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Avatar pequeño de Mel junto al mensaje (estilo Messenger). */
+.mel-message-avatar {
+  display: flex;
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-right: var(--space-2);
+}
+
+/* Compositor estilo Messenger: input redondeado tipo pastilla. */
+.mel-composer .input-group {
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mel-composer .form-control {
+  border-radius: 999px;
+}
+
+.mel-composer .btn {
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
 }
 
 .mel-message-column {

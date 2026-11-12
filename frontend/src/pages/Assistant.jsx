@@ -231,43 +231,12 @@ const Assistant = () => {
     ? PROVIDER_INFO[providerConfig.provider_name]?.name || providerConfig.provider_name
     : 'Sin proveedor configurado';
 
-  return (
-    <div className="fade-in">
-      {/* Presentación de Mel: avatar protagonista + estado + proveedor */}
-      <header className={`mel-hero mb-4 state-${state}`}>
-        <AssistantAvatar expression={expression} state={state} size={128} />
-        <div className="mel-hero-info">
-          <h1 className="mel-name">MEL</h1>
-          <p className="mel-subtitle">
-            Organiza materias, tareas, notas y tu semana de estudio.
-          </p>
-          <div className="mel-chip-row">
-            <span className={statusChipClass(state)}>
-              <span className="mel-status-dot" aria-hidden="true" />
-              {status}
-            </span>
-            <span className="mel-provider-chip" title={providerLabel}>
-              {providerLabel}
-            </span>
-            {providerConfig && (
-              <Link to="/proveedores-ia" className="mel-provider-link">
-                Cambiar
-              </Link>
-            )}
-          </div>
-        </div>
-        <div className="ms-auto d-none d-md-block">
-          <button
-            type="button"
-            className="btn btn-outline-primary btn-sm"
-            onClick={startNewConversation}
-            disabled={sending}
-          >
-            Nueva conversación
-          </button>
-        </div>
-      </header>
+  // El cuadro flotante respira solo mientras Mel está activo (no duerme
+  // ni está en cuota agotada).
+  const isLive = state !== 'sleeping' && state !== 'quota_exhausted';
 
+  return (
+    <div className="fade-in d-flex flex-column flex-grow-1">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
           {error}
@@ -301,11 +270,44 @@ const Assistant = () => {
       )}
 
       {providerConfig && (
-        <div className="row g-4">
-          {/* Área principal de conversación: ocupa todo el ancho salvo
-              cuando el menú de conversaciones está abierto. */}
+        <div className="row g-4 flex-grow-1">
+          {/* Área principal de conversación: ocupa todo el espacio
+              disponible de la sección, salvo cuando el menú de
+              conversaciones está abierto. */}
           <div className={convOpen ? 'col-12 col-lg-9' : 'col-12'}>
-            <div className={`d-flex flex-column h-100 ${convOpen ? 'border-start border-secondary ps-lg-4' : ''}`}>
+            <div
+              className={`d-flex flex-column ${convOpen ? 'border-start border-secondary ps-lg-4' : ''}`}
+              style={{ minHeight: 0 }}
+            >
+              {/* Cuadro flotante de Mel: integrado al chat, no tapa los
+                  mensajes ni los controles de escritura. */}
+              <section
+                className={`mel-floating-box mb-3 state-${state} ${isLive ? 'is-live' : ''}`}
+                aria-label="Estado de Mel"
+              >
+                <AssistantAvatar expression={expression} state={state} size={160} />
+                <div className="mel-floating-box-info">
+                  <h1 className="mel-name">MEL</h1>
+                  <p className="mel-subtitle">
+                    Organiza materias, tareas, notas y tu semana de estudio.
+                  </p>
+                  <div className="mel-chip-row">
+                    <span className={statusChipClass(state)}>
+                      <span className="mel-status-dot" aria-hidden="true" />
+                      {status}
+                    </span>
+                    <span className="mel-provider-chip" title={providerLabel}>
+                      {providerLabel}
+                    </span>
+                    {providerConfig && (
+                      <Link to="/proveedores-ia" className="mel-provider-link">
+                        Cambiar
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </section>
+
               <div className="d-flex justify-content-between align-items-center gap-2 py-2">
                 <h5 className="fw-semibold mb-0 text-truncate">
                   {currentConversation ? currentConversation.title : 'Conversación nueva'}
@@ -338,6 +340,8 @@ const Assistant = () => {
                   manageProvidersHref="/proveedores-ia"
                   onConfirm={(msg) => resolveConfirmation(msg, 'accept')}
                   onCancel={(msg) => resolveConfirmation(msg, 'cancel')}
+                  avatarExpression={expression}
+                  avatarState={state}
                 />
 
                 {sending && (

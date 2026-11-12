@@ -95,7 +95,7 @@ describe('Assistant (Mel)', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: 'MEL' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'MEL' })).toBeInTheDocument();
     expect(
       screen.getByText('Organiza materias, tareas, notas y tu semana de estudio.'),
     ).toBeInTheDocument();
