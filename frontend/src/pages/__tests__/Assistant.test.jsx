@@ -1,0 +1,235 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import Assistant from '../Assistant';
+import api from '../../services/api';
+import { replayAgentEvents } from '../../utils/agentEvents';
+
+vi.mock('../../services/api', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock('../../utils/agentEvents', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, replayAgentEvents: vi.fn(() => Promise.resolve()) };
+});
+
+const PROVIDER = {
+  provider_name: 'openrouter',
+  model: 'openai/gpt-4o-mini',
+  is_configured: true,
+  is_active: true,
+};
+
+const CHAT_RESPONSE = {
+  conversation_id: 'conv-1',
+  message_id: 'msg-1',
+  message: 'Tienes 2 tareas pendientes.',
+  provider_name: 'openrouter',
+  model: 'openai/gpt-4o-mini',
+  events: [
+    { type: 'query_received' },
+    { type: 'tool_started', tool: 'list_tasks' },
+    { type: 'tool_result', tool: 'list_tasks', success: true },
+    { type: 'explanation' },
+  ],
+  tools_executed: [{ tool: 'list_tasks', success: true, data: [{}, {}] }],
+  confirmation: null,
+  error_code: null,
+};
+
+const CONFIRMATION = {
+  action_id: 'act-1',
+  tool: 'update_subject',
+  description: 'Actualizar la materia Cálculo',
+  parameters: { subject: 'Cálculo', grade: 82, confirmed: true },
+};
+
+const CHAT_WITH_CONFIRMATION = {
+  ...CHAT_RESPONSE,
+  message: 'Puedo actualizar la materia si me confirmas.',
+  tools_executed: [],
+  confirmation: CONFIRMATION,
+};
+
+const CONFIRM_RESPONSE = {
+  conversation_id: 'conv-1',
+  message: 'Listo, actualicé la materia.',
+  success: true,
+  events: [{ type: 'action_completed' }],
+  tools_executed: [],
+  confirmation: null,
+  error_code: null,
+};
+
+/** Simula la carga inicial de proveedores y conversaciones. */
+function mockInitialLoad(providers = [PROVIDER]) {
+  api.get.mockImplementation((url) => {
+    if (url === '/ai/providers') return Promise.resolve({ data: providers });
+    return Promise.resolve({ data: [] });
+  });
+}
+
+/** Escribe y envía un mensaje en el cuadro de texto. */
+async function sendMessage(text, placeholder = 'Escribe tu consulta académica...') {
+  const input = await screen.findByPlaceholderText(placeholder);
+  fireEvent.change(input, { target: { value: text } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+}
+
+describe('Assistant (Mel)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockInitialLoad();
+  });
+
+  it('presenta a Mel con su avatar, estado y proveedor activo', async () => {
+    const { container } = render(<Assistant />);
+
+    expect(screen.getByRole('heading', { name: 'Mel' })).toBeInTheDocument();
+    expect(screen.getByText('Tu asistente académica. Organiza materias, tareas, notas y tu semana.')).toBeInTheDocument();
+    expect(container.querySelector('.mel-avatar')).toBeInTheDocument();
+
+    await screen.findByText('openrouter · openai/gpt-4o-mini');
+    expect(container.querySelector('.mel-provider-chip')).toHaveAttribute(
+      'title',
+      'openrouter · openai/gpt-4o-mini',
+    );
+  });
+
+  it('envía la consulta al endpoint del agente y muestra la respuesta real', async () => {
+    api.post.mockResolvedValue({ data: CHAT_RESPONSE });
+    render(<Assistant />);
+
+    await sendMessage('¿Qué tareas tengo pendientes?');
+
+    await screen.findByText('Tienes 2 tareas pendientes.');
+
+    expect(api.post).toHaveBeenCalledWith(
+      '/ai/agent/chat',
+      expect.objectContaining({
+        message: '¿Qué tareas tengo pendientes?',
+        provider_name: 'openrouter',
+        model: 'openai/gpt-4o-mini',
+        use_academic_context: true,
+      }),
+    );
+
+    // Los eventos se reproducen con pacing para animar a Mel.
+    expect(replayAgentEvents).toHaveBeenCalledWith(
+      CHAT_RESPONSE.events,
+      expect.any(Function),
+    );
+
+    // La tarjeta resume la herramienta ejecutada con datos reales.
+    expect(screen.getByText('Acción ejecutada')).toBeInTheDocument();
+    expect(screen.getByText('list_tasks')).toBeInTheDocument();
+    expect(screen.getByText('2 elemento(s)')).toBeInTheDocument();
+  });
+
+  it('aceptar una confirmación ejecuta la acción solo una vez', async () => {
+    api.post
+      .mockResolvedValueOnce({ data: CHAT_WITH_CONFIRMATION })
+      .mockResolvedValueOnce({ data: CONFIRM_RESPONSE });
+
+    render(<Assistant />);
+    await sendMessage('Actualiza mi nota de Cálculo');
+
+    await screen.findByText('Necesito tu confirmación');
+    expect(screen.getByText('Actualizar la materia Cálculo')).toBeInTheDocument();
+    expect(screen.getByText('82')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+
+    await screen.findByText('Acción confirmada.');
+    await screen.findByText('Listo, actualicé la materia.');
+
+    expect(api.post).toHaveBeenNthCalledWith(
+      2,
+      '/ai/agent/confirm',
+      expect.objectContaining({ action_id: 'act-1', decision: 'accept' }),
+    );
+    expect(api.post).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('button', { name: 'Aceptar' })).not.toBeInTheDocument();
+  });
+
+  it('cancelar una confirmación no ejecuta la acción', async () => {
+    api.post
+      .mockResolvedValueOnce({ data: CHAT_WITH_CONFIRMATION })
+      .mockResolvedValueOnce({
+        data: { ...CONFIRM_RESPONSE, message: 'No cambié nada.' },
+      });
+
+    render(<Assistant />);
+    await sendMessage('Actualiza mi nota de Cálculo');
+
+    await screen.findByText('Necesito tu confirmación');
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await screen.findByText('Acción cancelada.');
+    await screen.findByText('No cambié nada.');
+
+    expect(api.post).toHaveBeenNthCalledWith(
+      2,
+      '/ai/agent/confirm',
+      expect.objectContaining({ action_id: 'act-1', decision: 'cancel' }),
+    );
+  });
+
+  it('muestra el aviso de cuota agotada sin ocultar que la app funciona sin IA', async () => {
+    api.post.mockResolvedValue({
+      data: {
+        ...CHAT_RESPONSE,
+        message: 'No pude consultar al proveedor.',
+        tools_executed: [],
+        error_code: 'quota_exhausted',
+      },
+    });
+
+    render(<Assistant />);
+    await sendMessage('Dame mi informe académico');
+
+    await screen.findByText('Cuota de IA agotada');
+    expect(screen.getByText(/TaskFlow funciona\s+sin la IA/)).toBeInTheDocument();
+  });
+
+  it('informa un error del backend sin inventar una respuesta', async () => {
+    api.post.mockRejectedValue({
+      response: { status: 500, data: { detail: 'Error interno del servidor' } },
+    });
+
+    render(<Assistant />);
+    const input = await screen.findByPlaceholderText('Escribe tu consulta académica...');
+    fireEvent.change(input, { target: { value: 'Dame mi informe académico' } });
+    // El rechazo de la petición resuelve en un microtask: se espera dentro
+    // de act para que las actualizaciones de estado queden cubiertas.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    });
+
+    await screen.findByText('Error interno del servidor');
+    expect(screen.queryByText(/Listo/)).not.toBeInTheDocument();
+
+    // Espera a que termine el envío para no dejar actualizaciones pendientes.
+    await waitFor(() =>
+      expect(
+        screen.getByPlaceholderText('Escribe tu consulta académica...'),
+      ).not.toBeDisabled(),
+    );
+  });
+
+  it('sin proveedor configurado avisa y deshabilita el envío', async () => {
+    mockInitialLoad([]);
+    render(<Assistant />);
+
+    await screen.findByText(/Configura un proveedor de IA/);
+    expect(
+      screen.getByPlaceholderText('Configura un proveedor para comenzar'),
+    ).toBeDisabled();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+});

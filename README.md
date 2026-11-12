@@ -242,9 +242,14 @@ Motor determinista que:
 - Genera explicaciones de sus decisiones
 
 ### Asistente IA
-- Conversación contextualizada con información académica
+Mel es la asistente académica de TaskFlow. Su avatar reacciona al estado real de la conversación (pensando, trabajando, conflicto, éxito, error) y se duerme tras 60 segundos de inactividad.
+
+- Conversación contextualizada con información académica real
 - Herramientas controladas para consultar datos (solo lectura por defecto)
-- Operaciones que modifican datos requieren confirmación explícita
+- Operaciones que modifican datos requieren confirmación explícita y se ejecutan una sola vez
+- El planificador determinista sigue siendo el único que valida y construye horarios; la IA solo interpreta y propone
+- Errores de proveedor diferenciados: cuota agotada, límite de solicitudes, API key inválida, conexión y error interno
+- Si la IA falla o no hay proveedor configurado, el resto de TaskFlow sigue funcionando con datos locales
 - Historial de conversaciones persistente
 - Cambio de proveedor y modelo sin perder conversaciones
 
