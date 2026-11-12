@@ -1,7 +1,12 @@
 import { useState } from 'react';
 
-const MessageInput = ({ onSend, disabled, placeholder }) => {
+const MessageInput = ({ onSend, disabled, placeholder, onActivity }) => {
   const [input, setInput] = useState('');
+
+  const handleChange = (event) => {
+    setInput(event.target.value);
+    if (onActivity) onActivity();
+  };
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -18,8 +23,8 @@ const MessageInput = ({ onSend, disabled, placeholder }) => {
           className="form-control bg-surface border-secondary text-white"
           placeholder={placeholder || 'Escribe tu mensaje...'}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
+          onChange={handleChange}
+          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
           disabled={disabled}
         />
         <button
