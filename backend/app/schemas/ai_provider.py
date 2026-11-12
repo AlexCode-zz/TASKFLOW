@@ -1,7 +1,7 @@
 """Esquemas Pydantic para configuración de proveedores de IA."""
 
 from pydantic import BaseModel, Field, validator
-from typing import Any, Optional, List
+from typing import Any, Dict, Optional, List
 from datetime import datetime
 
 
@@ -160,3 +160,55 @@ class ToolCallResponse(BaseModel):
     error: Optional[str] = None
     requires_confirmation: Optional[bool] = None
     conflict_detected: Optional[bool] = None
+
+
+# ── Agente interactivo ──────────────────────────────────────────────
+
+
+class AgentChatRequest(BaseModel):
+    """Solicitud de chat al agente con ejecución de herramientas."""
+    message: str = Field(..., min_length=1, max_length=4000)
+    conversation_id: Optional[int] = None
+    provider_name: Optional[str] = None
+    model: Optional[str] = None
+    use_academic_context: bool = True
+
+
+class AgentChatResponse(BaseModel):
+    """Respuesta del agente: mensaje final, eventos y confirmaciones."""
+    success: bool
+    message: str
+    conversation_id: int
+    message_id: Optional[int] = None
+    provider_name: Optional[str] = None
+    model: Optional[str] = None
+    events: List[Dict[str, Any]] = []
+    tools_executed: List[Any] = []
+    confirmation: Optional[Dict[str, Any]] = None
+    error_code: Optional[str] = None
+    tokens_used: Optional[int] = None
+
+
+class AgentConfirmRequest(BaseModel):
+    """Decisión del usuario sobre una acción pendiente del agente."""
+    action_id: str = Field(..., min_length=1)
+    decision: str = Field(..., pattern="^(accept|cancel)$")
+    conversation_id: Optional[int] = None
+
+
+class AgentCancelRequest(BaseModel):
+    """Cancelación explícita de una acción pendiente."""
+    action_id: str = Field(..., min_length=1)
+    conversation_id: Optional[int] = None
+
+
+class AgentConfirmResponse(BaseModel):
+    """Resultado de la decisión sobre una acción pendiente."""
+    success: bool
+    cancelled: bool = False
+    tool: Optional[str] = None
+    message: str
+    data: Any = {}
+    events: List[Dict[str, Any]] = []
+    error_code: Optional[str] = None
+    conversation_id: Optional[int] = None

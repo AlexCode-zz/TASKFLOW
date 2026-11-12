@@ -26,11 +26,17 @@ from app.schemas.ai_provider import (
     ToolCallRequest,
     ToolCallResponse,
     AIModelSuggestion,
+    AgentChatRequest,
+    AgentChatResponse,
+    AgentConfirmRequest,
+    AgentConfirmResponse,
+    AgentCancelRequest,
 )
 
 from app.services.ai.manager import ai_manager
 from app.services.ai.context import get_academic_context
-from app.services.ai.tools import AITools, get_available_tools, ALLOWED_READ_TOOLS, MUTATING_TOOLS
+from app.services.ai.tools import AITools, get_available_tools, ALLOWED_READ_TOOLS, MUTATING_TOOLS, CONFIRMATION_REQUIRED_TOOLS
+from app.services.ai.agent import AcademicAgent, pending_actions, narrate_tool_result
 from app.services.ai.base import ChatMessage
 
 router = APIRouter(prefix="/ai", tags=["Asistente IA"])
@@ -521,4 +527,268 @@ def call_tool(
         error=result.get("error"),
         requires_confirmation=result.get("requires_confirmation"),
         conflict_detected=result.get("conflict_detected"),
+    )
+
+
+# ── Agente interactivo ─────────────────────────────────────────────
+
+
+def _resolve_agent_provider(db: Session, provider_name: Optional[str], model: Optional[str]):
+    """Resuelve el proveedor activo si no se especificó uno."""
+    if not provider_name:
+        active = ai_crud.get_active_ai_provider(db)
+        if active:
+            provider_name = active.provider_name
+            model = model or active.model
+    if not provider_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No hay proveedor de IA configurado. Configure uno en Ajustes > Asistente IA.",
+        )
+    return provider_name, model
+
+
+@router.post("/agent/chat", response_model=AgentChatResponse)
+def agent_chat(
+    req: AgentChatRequest,
+    db: Session = Depends(get_db),
+):
+    """Conversa con el agente ejecutando herramientas controladas.
+
+    El modelo responde con acciones JSON que el backend valida y
+    ejecuta; las modificaciones de datos existentes quedan como
+    acciones pendientes que el usuario confirma explícitamente.
+    """
+    import asyncio
+
+    student = get_current_student(db)
+    provider_name, model = _resolve_agent_provider(db, req.provider_name, req.model)
+
+    # Obtener o crear la conversación
+    if req.conversation_id:
+        conv = ai_crud.get_conversation(db, req.conversation_id)
+        if not conv:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversación no encontrada",
+            )
+        conversation_id = conv.id
+    else:
+        title = (req.message or "Conversación").strip()[:60]
+        new_conv = ai_crud.create_conversation(db, ConversationCreate(
+            title=title,
+            provider_name=provider_name,
+            model=model,
+        ))
+        conversation_id = new_conv.id
+
+    # Historial previo (sin el mensaje nuevo, que el agente agrega al final)
+    history = [
+        ChatMessage(role=m.role, content=m.content)
+        for m in ai_crud.get_messages_by_conversation(db, conversation_id, limit=10)
+    ]
+
+    ai_crud.create_message(db, MessageCreate(
+        conversation_id=conversation_id,
+        role="user",
+        content=req.message,
+    ))
+
+    context_text = ""
+    if req.use_academic_context:
+        ctx = get_academic_context(db, student.id)
+        context_text = ctx.format_context_for_prompt(ctx.get_full_context())
+
+    agent = AcademicAgent(db, student.id, provider_name, model)
+    result = asyncio.run(agent.run(req.message, history, context_text))
+
+    # Anotar la conversación en la acción pendiente para que la
+    # confirmación pueda persistir y narrar con el historial correcto.
+    confirmation = result.get("confirmation")
+    if confirmation and confirmation.get("action_id"):
+        pending_actions.set_context(
+            confirmation["action_id"],
+            conversation_id=conversation_id,
+            student_id=student.id,
+        )
+
+    assistant_msg = None
+    if result.get("message"):
+        assistant_msg = ai_crud.create_message(db, MessageCreate(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=result["message"],
+        ))
+
+    return AgentChatResponse(
+        success=result.get("success", False),
+        message=result.get("message", ""),
+        conversation_id=conversation_id,
+        message_id=assistant_msg.id if assistant_msg else None,
+        provider_name=provider_name,
+        model=model,
+        events=result.get("events", []),
+        tools_executed=result.get("tools_executed", []),
+        confirmation=confirmation,
+        error_code=result.get("error_code"),
+        tokens_used=result.get("tokens_used"),
+    )
+
+
+@router.post("/agent/confirm", response_model=AgentConfirmResponse)
+def agent_confirm(
+    req: AgentConfirmRequest,
+    db: Session = Depends(get_db),
+):
+    """Aplica la decisión del usuario sobre una acción pendiente.
+
+    El consumo de la acción es único: no puede ejecutarse dos veces.
+    """
+    import asyncio
+
+    get_current_student(db)
+    action = pending_actions.consume(req.action_id)
+    if not action:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "La acción ya no está disponible: fue confirmada, cancelada "
+                "o expiró. Vuelve a pedírselo al asistente."
+            ),
+        )
+
+    context = action.get("context") or {}
+    conversation_id = req.conversation_id or context.get("conversation_id")
+
+    if req.decision == "cancel":
+        message = "Acción cancelada: no se modificó ningún dato."
+        if conversation_id:
+            ai_crud.create_message(db, MessageCreate(
+                conversation_id=conversation_id,
+                role="assistant",
+                content=message,
+            ))
+        return AgentConfirmResponse(
+            success=True,
+            cancelled=True,
+            message=message,
+            events=[{"type": "action_cancelled", "tool": action["tool"]}],
+            conversation_id=conversation_id,
+        )
+
+    tool_name = action["tool"]
+    parameters = dict(action.get("parameters") or {})
+    # Solo aquí, con la decisión real del usuario, se activa confirmed.
+    parameters["confirmed"] = True
+
+    events: List[Dict[str, Any]] = [{"type": "tool_started", "tool": tool_name}]
+    student = get_current_student(db)
+    tools = AITools(db, student.id)
+    result = tools.execute(tool_name, parameters)
+
+    if result.get("conflict_detected"):
+        events.append({
+            "type": "conflict_detected",
+            "tool": tool_name,
+            "conflicts": result.get("data", {}).get("conflicts", []),
+        })
+
+    fallback = None
+    data = result.get("data")
+    if isinstance(data, dict):
+        fallback = data.get("message")
+
+    if result.get("success"):
+        events.append({
+            "type": "tool_result",
+            "tool": tool_name,
+            "success": True,
+        })
+        if tool_name in CONFIRMATION_REQUIRED_TOOLS:
+            events.append({"type": "action_completed", "tool": tool_name})
+    else:
+        events.append({
+            "type": "tool_result",
+            "tool": tool_name,
+            "success": False,
+            "error": result.get("error"),
+        })
+
+    # Redacción: se intenta con el modelo narrador y si falla se usa el
+    # mensaje verificado del propio resultado de la herramienta.
+    message = None
+    provider_name = context.get("provider_name")
+    if result.get("success") and provider_name:
+        history = []
+        if conversation_id:
+            history = [
+                ChatMessage(role=m.role, content=m.content)
+                for m in ai_crud.get_messages_by_conversation(db, conversation_id, limit=6)
+            ]
+        try:
+            message = asyncio.run(
+                narrate_tool_result(
+                    provider_name,
+                    context.get("model"),
+                    history,
+                    result,
+                )
+            )
+        except Exception:  # noqa: BLE001
+            message = None
+    if not message:
+        if result.get("success"):
+            message = fallback or "Acción ejecutada correctamente."
+        else:
+            message = fallback or result.get("error") or "No se pudo ejecutar la acción."
+
+    if conversation_id:
+        ai_crud.create_message(db, MessageCreate(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=message,
+        ))
+
+    return AgentConfirmResponse(
+        success=bool(result.get("success")),
+        cancelled=False,
+        tool=tool_name,
+        message=message,
+        data=result.get("data", {}),
+        events=events,
+        error_code=None,
+        conversation_id=conversation_id,
+    )
+
+
+@router.post("/agent/cancel", response_model=AgentConfirmResponse)
+def agent_cancel(
+    req: AgentCancelRequest,
+    db: Session = Depends(get_db),
+):
+    """Cancela una acción pendiente sin ejecutar nada."""
+    get_current_student(db)
+    action = pending_actions.consume(req.action_id)
+    if not action:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La acción ya no está disponible.",
+        )
+
+    conversation_id = req.conversation_id or (action.get("context") or {}).get("conversation_id")
+    message = "Acción cancelada: no se modificó ningún dato."
+    if conversation_id:
+        ai_crud.create_message(db, MessageCreate(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=message,
+        ))
+
+    return AgentConfirmResponse(
+        success=True,
+        cancelled=True,
+        tool=action["tool"],
+        message=message,
+        events=[{"type": "action_cancelled", "tool": action["tool"]}],
+        conversation_id=conversation_id,
     )
