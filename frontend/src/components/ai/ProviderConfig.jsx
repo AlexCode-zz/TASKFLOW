@@ -1,28 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import Button from '../ui/Button';
+import ProviderSetupModal, { PROVIDER_INFO } from './ProviderSetupModal';
 
-const PROVIDER_INFO = {
-  openrouter: { name: 'OpenRouter', description: 'Acceso a múltiples modelos a través de OpenRouter' },
-  anthropic: { name: 'Anthropic Claude', description: 'Modelos Claude de Anthropic' },
-  gemini: { name: 'Google Gemini', description: 'Modelos Gemini de Google' },
-  openai: { name: 'OpenAI', description: 'Modelos GPT de OpenAI' },
-};
-
+/**
+ * Gestor de proveedores de IA.
+ *
+ * Lista las claves configuradas, permite añadir nuevas y activar la que
+ * se quiera usar. Al agotarse la cuota de un proveedor basta con
+ * activar otro: no hace falta volver a escribir la API key.
+ */
 const ProviderConfig = ({ onConfigChange }) => {
   const [providers, setProviders] = useState([]);
-  const [configured, setConfigured] = useState([]);
-  const [availableProviders, setAvailableProviders] = useState([]);
-  const [form, setForm] = useState({
-    provider_name: '',
-    api_key: '',
-    model: '',
-    is_active: false,
-  });
-  const [testResult, setTestResult] = useState(null);
-  const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [showKey, setShowKey] = useState(false);
-  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [busyProvider, setBusyProvider] = useState(null);
+  const [testResults, setTestResults] = useState({});
 
   useEffect(() => {
     loadProviders();
@@ -30,310 +25,215 @@ const ProviderConfig = ({ onConfigChange }) => {
 
   const loadProviders = async () => {
     try {
-      const [providersRes, availableRes, configuredRes] = await Promise.all([
-        api.get('/ai/providers'),
-        api.get('/ai/providers/available'),
-        api.get('/ai/providers/configured'),
-      ]);
-      setProviders(providersRes.data);
-      setAvailableProviders(availableRes.data);
-      setConfigured(configuredRes.data);
+      const response = await api.get('/ai/providers');
+      setProviders(response.data || []);
+      setError('');
     } catch {
-      // Silenciar error de carga de proveedores
-    }
-  };
-
-  const fetchModels = async (provider) => {
-    try {
-      const response = await api.get(`/ai/providers/${provider}/models`);
-      setModels(response.data);
-    } catch {
-      // Los modelos pueden no estar disponibles sin clave, ignorar silenciosamente
-      setModels([]);
-    }
-  };
-
-  const handleProviderChange = (e) => {
-    const provider = e.target.value;
-    setForm({ ...form, provider_name: provider });
-    if (provider && models.length === 0) {
-      fetchModels(provider);
-    }
-  };
-
-  const handleTestConnection = async (e) => {
-    e.preventDefault();
-    setTesting(true);
-    setTestResult(null);
-    try {
-      const response = await api.post('/ai/providers/test', {
-        provider_name: form.provider_name,
-        api_key: form.api_key,
-        model: form.model || undefined,
-      });
-      setTestResult(response.data);
-      if (response.data.success) {
-        try {
-          const modelsRes = await api.get(`/ai/providers/${form.provider_name}/models`);
-          setModels(modelsRes.data);
-        } catch {
-          // Ignorar
-        }
-      }
-    } catch (err) {
-      setTestResult({
-        success: false,
-        provider_name: form.provider_name,
-        status: 'error',
-        message: err.response?.data?.detail || err.message,
-        error_code: 'error',
-      });
+      setError('No se pudieron cargar los proveedores de IA.');
     } finally {
-      setTesting(false);
+      setLoading(false);
     }
   };
 
-  const persistProvider = async (formData) => {
-    setSaving(true);
+  const notify = (text) => {
+    setMessage(text);
+    setTimeout(() => setMessage(''), 4000);
+  };
+
+  const handleSaved = async (config) => {
+    setSetupOpen(false);
+    await loadProviders();
+    if (onConfigChange && config) onConfigChange(config);
+    notify('Proveedor guardado.');
+  };
+
+  const handleActivate = async (provider) => {
+    setBusyProvider(provider.provider_name);
+    setError('');
     try {
-      const response = await api.post('/ai/providers/setup', {
-        provider_name: formData.provider_name,
-        api_key: formData.api_key,
-        model: formData.model || undefined,
-        is_active: formData.is_active,
-      });
-      onConfigChange(response.data);
+      const response = await api.post(`/ai/providers/${provider.provider_name}/activate`);
       await loadProviders();
-      setForm({
-        provider_name: '',
-        api_key: '',
-        model: '',
-        is_active: false,
-      });
-      setModels([]);
+      if (onConfigChange) onConfigChange(response.data);
+      const label = PROVIDER_INFO[provider.provider_name]?.name || provider.provider_name;
+      notify(`Mel ahora usa ${label}.`);
     } catch (err) {
-      console.error('Error guardando proveedor:', err.message);
+      setError(
+        err.response?.data?.detail || 'No se pudo activar el proveedor.',
+      );
     } finally {
-      setSaving(false);
+      setBusyProvider(null);
     }
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    await persistProvider(form);
-  };
-
-  const handleDeleteProvider = async (providerName) => {
-    if (!window.confirm(`¿Eliminar la configuración de ${providerName}?`)) return;
+  const handleTest = async (provider) => {
+    const name = provider.provider_name;
+    setBusyProvider(name);
+    setTestResults((prev) => ({ ...prev, [name]: null }));
     try {
-      await api.delete(`/ai/providers/${providerName}`);
+      const response = await api.post(`/ai/providers/${name}/test`);
+      setTestResults((prev) => ({ ...prev, [name]: response.data }));
+    } catch (err) {
+      setTestResults((prev) => ({
+        ...prev,
+        [name]: {
+          success: false,
+          message: err.response?.data?.detail || 'No se pudo probar la conexión.',
+        },
+      }));
+    } finally {
+      setBusyProvider(null);
       await loadProviders();
-    } catch {
-      // Error al eliminar proveedor
     }
+  };
+
+  const handleDelete = async (provider) => {
+    const label = PROVIDER_INFO[provider.provider_name]?.name || provider.provider_name;
+    if (!window.confirm(`¿Eliminar la configuración de ${label}?`)) return;
+
+    setBusyProvider(provider.provider_name);
+    setError('');
+    try {
+      await api.delete(`/ai/providers/${provider.provider_name}`);
+      setTestResults((prev) => {
+        const next = { ...prev };
+        delete next[provider.provider_name];
+        return next;
+      });
+      await loadProviders();
+      notify(`Se eliminó ${label}.`);
+    } catch {
+      setError('No se pudo eliminar el proveedor.');
+    } finally {
+      setBusyProvider(null);
+    }
+  };
+
+  const renderStatus = (provider) => {
+    const result = testResults[provider.provider_name];
+    if (result) {
+      return (
+        <div
+          className={`provider-test-result ${result.success ? 'is-ok' : 'is-error'}`}
+          role="status"
+        >
+          {result.success ? 'Conexión correcta. ' : 'No se pudo conectar. '}
+          {result.message}
+        </div>
+      );
+    }
+    if (provider.connection_status === 'ok') {
+      return <div className="provider-test-result is-ok">Conectado</div>;
+    }
+    if (provider.connection_status === 'error') {
+      return <div className="provider-test-result is-error">Última prueba falló</div>;
+    }
+    return null;
   };
 
   return (
-    <div className="card border-secondary shadow-sm">
-      <div className="card-header bg-transparent border-secondary">
-        <h6 className="fw-semibold mb-0">Configuración de Proveedores IA</h6>
-      </div>
-      <div className="card-body p-3">
-        <div className="mb-4">
-          <h6 className="fw-medium text-white mb-3">Agregar proveedor</h6>
-          <form onSubmit={handleSave}>
-            <div className="row g-3">
-              <div className="col-12 col-md-4">
-                <label className="form-label text-muted-tf small">Proveedor <span className="text-danger">*</span></label>
-                <select
-                  className="form-select bg-surface border-secondary text-white"
-                  value={form.provider_name}
-                  onChange={handleProviderChange}
-                >
-                  <option value="">Seleccionar proveedor</option>
-                  {availableProviders.map((p) => {
-                    const info = PROVIDER_INFO[p] || { name: p, description: '' };
-                    return (
-                      <option key={p} value={p}>
-                        {info.name}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-              <div className="col-12 col-md-4">
-                <label className="form-label text-muted-tf small">API key <span className="text-danger">*</span></label>
-                <div className="input-group">
-                  <input
-                    type={showKey ? 'text' : 'password'}
-                    className="form-control bg-surface border-secondary text-white"
-                    value={form.api_key}
-                    onChange={(e) => setForm({ ...form, api_key: e.target.value })}
-                    placeholder="sk-or-..."
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowKey(!showKey)}
-                  >
-                    {showKey ? <i className="bi bi-eye-slash" aria-hidden="true" /> : <i className="bi bi-eye" aria-hidden="true" />}
-                  </button>
-                </div>
-              </div>
-              <div className="col-12 col-md-4">
-                <label className="form-label text-muted-tf small">Modelo</label>
-                <select
-                  className="form-select bg-surface border-secondary text-white"
-                  value={form.model}
-                  onChange={(e) => setForm({ ...form, model: e.target.value })}
-                >
-                  <option value="">Seleccionar modelo</option>
-                  {models.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-12">
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={form.is_active}
-                    onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                  />
-                  <label className="form-check-label text-muted-tf small">
-                    Establecer como proveedor activo
-                  </label>
-                </div>
-              </div>
-              <div className="col-12 d-flex gap-2 mt-3">
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm"
-                  onClick={handleTestConnection}
-                  disabled={testing || !form.provider_name || !form.api_key}
-                >
-                  {testing ? 'Probando...' : 'Probar conexión'}
-                </button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={saving || !form.provider_name || !form.api_key}>
-                  {saving ? 'Guardando...' : 'Guardar proveedor'}
-                </button>
-              </div>
-            </div>
-          </form>
+    <div className="provider-manager">
+      <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h6 className="fw-semibold mb-1">Proveedores configurados</h6>
+          <p className="text-muted-tf small mb-0">
+            Añade varias claves y activa la que quieras usar. Si un proveedor
+            agota su cuota o límite, cambia a otro sin volver a escribir la clave.
+          </p>
         </div>
+        <Button variant="primary" size="sm" onClick={() => setSetupOpen(true)}>
+          <i className="bi bi-plus-lg me-1" aria-hidden="true" />
+          Agregar proveedor
+        </Button>
+      </div>
 
-        {testResult && (
-          <div className={`alert mb-3 ${testResult.success ? 'alert-success text-white border-success' : 'alert-danger text-white border-danger'}`}>
-            <strong>
-              {testResult.success ? (
-                <>
-                  <i className="bi bi-check2" aria-hidden="true" /> Éxito
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-x-lg" aria-hidden="true" /> Error
-                </>
-              )}
-              :
-            </strong>{' '}
-            {testResult.message}
-          </div>
-        )}
+      {message && (
+        <div className="alert alert-success text-white border-secondary py-2 small" role="status">
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="alert alert-danger text-white border-secondary py-2 small" role="alert">
+          {error}
+        </div>
+      )}
 
-        <div className="mt-4">
-          <h6 className="fw-medium text-white mb-3">Proveedores configurados</h6>
-          {providers.length === 0 ? (
-            <div className="text-muted-tf small text-center py-3">
-              No hay proveedores configurados
-            </div>
-          ) : (
-            providers.map((p) => {
-              const info = PROVIDER_INFO[p.provider_name] || { name: p.provider_name, description: '' };
-              const isConfigured = configured.includes(p.provider_name);
-              return (
-                <div key={p.provider_name} className="card border-secondary bg-surface mb-2">
-                  <div className="card-body p-3">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <div>
-                        <div className="fw-medium text-white">{info.name}</div>
-                        <div className="text-muted-tf small">{info.description}</div>
-                      </div>
-                      <div className="text-end">
-                        <span className={`badge ${p.is_active ? 'bg-primary' : 'bg-secondary'} text-white`}>
-                          {p.is_active ? 'Activo' : 'Inactivo'}
-                        </span>
-                        <span className={`badge ${p.connection_status === 'ok' ? 'bg-success' : p.connection_status === 'error' ? 'bg-danger' : 'bg-secondary'} text-white ms-2`}>
-                          {p.connection_status === 'ok' ? 'Conectado' : p.connection_status === 'error' ? 'Error' : 'No probado'}
-                        </span>
-                      </div>
-                    </div>
-                    {isConfigured && (
-                      <div className="mb-2">
-                        <label className="form-label text-muted-tf small">Modelo</label>
-                        <input
-                          type="text"
-                          className="form-control bg-surface border-secondary text-white"
-                          value={p.model || ''}
-                          readOnly
-                        />
-                      </div>
-                    )}
-                    <div className="d-flex gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => {
-                          setForm({
-                            provider_name: p.provider_name,
-                            api_key: '',
-                            model: p.model || '',
-                            is_active: p.is_active,
-                          });
-                          fetchModels(p.provider_name);
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleDeleteProvider(p.provider_name)}
-                      >
-                        Eliminar
-                      </button>
-                      {!p.is_active && (
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm"
-                          onClick={() => {
-                            setForm({
-                              provider_name: p.provider_name,
-                              api_key: '',
-                              model: p.model || '',
-                              is_active: true,
-                            });
-                            persistProvider({
-                              provider_name: p.provider_name,
-                              api_key: '',
-                              model: p.model || '',
-                              is_active: true,
-                            });
-                          }}
-                        >
-                          Activar
-                        </button>
-                      )}
+      {loading ? (
+        <div className="text-muted-tf small py-3">Cargando proveedores...</div>
+      ) : providers.length === 0 ? (
+        <div className="provider-empty">
+          <p className="mb-2">Todavía no hay ningún proveedor configurado.</p>
+          <Button variant="primary" size="sm" onClick={() => setSetupOpen(true)}>
+            Configurar mi primer proveedor
+          </Button>
+        </div>
+      ) : (
+        <div className="provider-list">
+          {providers.map((provider) => {
+            const info = PROVIDER_INFO[provider.provider_name] || {
+              name: provider.provider_name,
+            };
+            const busy = busyProvider === provider.provider_name;
+
+            return (
+              <div
+                key={provider.provider_name}
+                className={`provider-card ${provider.is_active ? 'is-active' : ''}`}
+              >
+                <div className="d-flex justify-content-between align-items-start gap-2">
+                  <div className="min-w-0">
+                    <div className="fw-semibold text-white">{info.name}</div>
+                    <div className="text-muted-tf smaller">
+                      {provider.model || 'Modelo predeterminado del proveedor'}
                     </div>
                   </div>
+                  <span
+                    className={`badge ${provider.is_active ? 'bg-primary' : 'bg-secondary'} text-white`}
+                  >
+                    {provider.is_active ? 'Activo' : 'Inactivo'}
+                  </span>
                 </div>
-              );
-            })
-          )}
+
+                {renderStatus(provider)}
+
+                <div className="d-flex flex-wrap gap-2 mt-3">
+                  {!provider.is_active && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleActivate(provider)}
+                      loading={busy}
+                    >
+                      Activar
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleTest(provider)}
+                    disabled={busy}
+                  >
+                    Probar conexión
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDelete(provider)}
+                    disabled={busy}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
+
+      <ProviderSetupModal
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onSaved={handleSaved}
+      />
     </div>
   );
 };

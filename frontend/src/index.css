@@ -1344,3 +1344,144 @@ textarea.form-control:focus {
     animation: none !important;
   }
 }
+
+/* ---------- Asistente IA: configuración inicial y proveedores ---------- */
+
+.mel-provider-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text);
+  text-decoration: none;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.mel-provider-link:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.mel-setup-card {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-2);
+}
+
+.mel-setup-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1.4rem;
+  color: var(--text);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.mel-setup-body {
+  min-width: 0;
+}
+
+.mel-setup-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+}
+
+.mel-setup-text {
+  max-width: 56ch;
+  margin: 0 0 var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.mel-error-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid rgba(234, 179, 8, 0.6);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.mel-error-action:hover {
+  color: var(--text);
+  background-color: rgba(234, 179, 8, 0.16);
+}
+
+.provider-manager {
+  min-width: 0;
+}
+
+.provider-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+
+.provider-card {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-2);
+}
+
+.provider-card.is-active {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.provider-empty {
+  padding: var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.provider-test-result {
+  margin-top: var(--space-2);
+  font-size: 0.78rem;
+}
+
+.provider-test-result.is-ok {
+  color: var(--success);
+}
+
+.provider-test-result.is-error {
+  color: var(--danger);
+}
+
+.provider-help-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+@media (max-width: 576px) {
+  .mel-setup-card {
+    flex-direction: column;
+  }
+}

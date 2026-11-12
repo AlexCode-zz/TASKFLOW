@@ -11,6 +11,7 @@ import Parciales from './pages/Parciales';
 import Tasks from './pages/Tasks';
 import Reports from './pages/Reports';
 import Assistant from './pages/Assistant';
+import Providers from './pages/Providers';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import ConfigurationWizard from './components/wizard/ConfigurationWizard';
@@ -144,6 +145,14 @@ const App = () => {
             element={
               <ErrorBoundary>
                 <Assistant />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/proveedores-ia"
+            element={
+              <ErrorBoundary>
+                <Providers />
               </ErrorBoundary>
             }
           />

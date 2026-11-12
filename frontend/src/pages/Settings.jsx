@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import ProviderConfig from '../components/ai/ProviderConfig';
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState('perfil');
@@ -393,19 +393,16 @@ const Settings = () => {
               )}
 
               {activeSection === 'ia' && (
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="card border-secondary shadow-sm">
-                      <div className="card-header bg-transparent border-secondary">
-                        <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-robot text-primary fs-5" aria-hidden="true" />
-                          <h6 className="fw-semibold mb-0">Configuración del asistente IA</h6>
-                        </div>
-                      </div>
-                      <div className="card-body p-0">
-                        <ProviderConfig onConfigChange={() => {}} />
-                      </div>
-                    </div>
+                <div>
+                  <p className="text-muted-tf small">
+                    Mel usa el proveedor activo. Puedes guardar varias claves
+                    (OpenRouter, OpenAI, Gemini, Anthropic) y cambiar de
+                    proveedor cuando uno agote su cuota o límite.
+                  </p>
+                  <div className="d-flex flex-wrap gap-2 mt-3">
+                    <Link to="/proveedores-ia" className="btn btn-primary">
+                      Ir a Proveedores IA
+                    </Link>
                   </div>
                 </div>
               )}

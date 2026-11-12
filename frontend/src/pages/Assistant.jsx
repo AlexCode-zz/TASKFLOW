@@ -3,7 +3,7 @@ import api from '../services/api';
 import ConversationList from '../components/ai/ConversationList';
 import MessageList from '../components/ai/MessageList';
 import MessageInput from '../components/ai/MessageInput';
-import ProviderConfig from '../components/ai/ProviderConfig';
+import ProviderSetupModal from '../components/ai/ProviderSetupModal';
 import AssistantAvatar from '../components/ai/AssistantAvatar';
 import useAssistantState from '../hooks/useAssistantState';
 import { replayAgentEvents, summarizeToolResult } from '../utils/agentEvents';
@@ -43,6 +43,7 @@ const Assistant = () => {
   const [confirmingId, setConfirmingId] = useState(null);
   const [providerConfig, setProviderConfig] = useState(null);
   const [providerChecked, setProviderChecked] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -219,8 +220,10 @@ const Assistant = () => {
     }
   };
 
-  const handleConfigChange = (config) => {
+  const handleProviderSaved = (config) => {
     setProviderConfig(config);
+    setSetupOpen(false);
+    setError('');
   };
 
   const providerLabel = providerConfig
@@ -245,6 +248,11 @@ const Assistant = () => {
             <span className="mel-provider-chip" title={providerLabel}>
               {providerLabel}
             </span>
+            {providerConfig && (
+              <a href="/proveedores-ia" className="mel-provider-link">
+                Cambiar
+              </a>
+            )}
           </div>
         </div>
         <div className="ms-auto d-none d-md-block">
@@ -266,16 +274,35 @@ const Assistant = () => {
       )}
 
       {providerChecked && !providerConfig && (
-        <div className="alert alert-warning text-white border-secondary mb-3" role="alert">
-          <strong>Configura un proveedor de IA</strong> en el panel lateral para
-          conversar con Mel. El resto de TaskFlow funciona con tus datos reales.
-        </div>
+        <section className="mel-setup-card mb-4">
+          <div className="mel-setup-icon" aria-hidden="true">
+            <i className="bi bi-key" />
+          </div>
+          <div className="mel-setup-body">
+            <h2 className="mel-setup-title">Conecta a Mel con un proveedor de IA</h2>
+            <p className="mel-setup-text">
+              Elige un proveedor y pega tu API key. Después podrás guardar más
+              claves y cambiar entre ellas cuando quieras.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setSetupOpen(true)}
+            >
+              Configurar proveedor de IA
+            </button>
+            <p className="text-muted-tf smaller mb-0 mt-3">
+              TaskFlow funciona sin IA: tus materias, tareas y horarios siguen
+              disponibles.
+            </p>
+          </div>
+        </section>
       )}
 
-      <div className="row g-4">
-        {/* Panel lateral: conversaciones y configuración */}
-        <div className="col-12 col-lg-3">
-          <div className="d-flex flex-column h-100">
+      {providerConfig && (
+        <div className="row g-4">
+          {/* Panel lateral: historial de conversaciones */}
+          <div className="col-12 col-lg-3">
             <ConversationList
               conversations={conversations}
               onSelect={selectConversation}
@@ -288,83 +315,83 @@ const Assistant = () => {
               }}
               onNew={startNewConversation}
             />
-            <div className="mt-4">
-              <ProviderConfig onConfigChange={handleConfigChange} />
-            </div>
           </div>
-        </div>
 
-        {/* Área principal de conversación */}
-        <div className="col-12 col-lg-9">
-          <div className="d-flex flex-column h-100 border-start border-secondary ps-lg-4">
-            <div className="d-flex justify-content-between align-items-center py-2">
-              <h5 className="fw-semibold mb-0">
-                {currentConversation ? currentConversation.title : 'Conversación nueva'}
-              </h5>
-              <button
-                type="button"
-                className="btn btn-outline-primary btn-sm d-md-none"
-                onClick={startNewConversation}
-                disabled={sending}
-              >
-                Nueva
-              </button>
-            </div>
+          {/* Área principal de conversación */}
+          <div className="col-12 col-lg-9">
+            <div className="d-flex flex-column h-100 border-start border-secondary ps-lg-4">
+              <div className="d-flex justify-content-between align-items-center py-2">
+                <h5 className="fw-semibold mb-0">
+                  {currentConversation ? currentConversation.title : 'Conversación nueva'}
+                </h5>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm d-md-none"
+                  onClick={startNewConversation}
+                  disabled={sending}
+                >
+                  Nueva
+                </button>
+              </div>
 
-            <div className="flex-grow-1 overflow-hidden d-flex flex-column">
-              <MessageList
-                messages={messages}
-                confirmingId={confirmingId}
-                onConfirm={(msg) => resolveConfirmation(msg, 'accept')}
-                onCancel={(msg) => resolveConfirmation(msg, 'cancel')}
-              />
+              <div className="flex-grow-1 overflow-hidden d-flex flex-column">
+                <MessageList
+                  messages={messages}
+                  confirmingId={confirmingId}
+                  manageProvidersHref="/proveedores-ia"
+                  onConfirm={(msg) => resolveConfirmation(msg, 'accept')}
+                  onCancel={(msg) => resolveConfirmation(msg, 'cancel')}
+                />
 
-              {sending && (
-                <div className="mel-typing px-3 pb-2">
-                  Mel está pensando
-                  <span className="mel-typing-dots" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </span>
-                </div>
-              )}
-
-              {messages.length === 0 && (
-                <div className="px-3 pb-3">
-                  <p className="text-muted-tf small mb-2">
-                    Prueba con una de estas preguntas:
-                  </p>
-                  <div className="mel-suggestions">
-                    {SUGGESTIONS.map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        type="button"
-                        className="mel-suggestion"
-                        onClick={() => handleSend(suggestion)}
-                        disabled={sending || !providerConfig}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
+                {sending && (
+                  <div className="mel-typing px-3 pb-2">
+                    Mel está pensando
+                    <span className="mel-typing-dots" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            <MessageInput
-              onSend={handleSend}
-              onActivity={notifyActivity}
-              disabled={sending || !providerConfig}
-              placeholder={
-                providerConfig
-                  ? 'Escribe tu consulta académica...'
-                  : 'Configura un proveedor para comenzar'
-              }
-            />
+                {messages.length === 0 && (
+                  <div className="px-3 pb-3">
+                    <p className="text-muted-tf small mb-2">
+                      Prueba con una de estas preguntas:
+                    </p>
+                    <div className="mel-suggestions">
+                      {SUGGESTIONS.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          className="mel-suggestion"
+                          onClick={() => handleSend(suggestion)}
+                          disabled={sending}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <MessageInput
+                onSend={handleSend}
+                onActivity={notifyActivity}
+                disabled={sending}
+                placeholder="Escribe tu consulta académica..."
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      <ProviderSetupModal
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onSaved={handleProviderSaved}
+      />
     </div>
   );
 };

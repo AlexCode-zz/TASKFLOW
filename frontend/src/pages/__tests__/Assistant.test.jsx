@@ -222,14 +222,46 @@ describe('Assistant (Mel)', () => {
     );
   });
 
-  it('sin proveedor configurado avisa y deshabilita el envío', async () => {
+  it('sin proveedor configurado muestra el botón de configuración inicial', async () => {
     mockInitialLoad([]);
     render(<Assistant />);
 
-    await screen.findByText(/Configura un proveedor de IA/);
+    await screen.findByText('Conecta a Mel con un proveedor de IA');
     expect(
-      screen.getByPlaceholderText('Configura un proveedor para comenzar'),
-    ).toBeDisabled();
+      screen.getByRole('button', { name: 'Configurar proveedor de IA' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText('Escribe tu consulta académica...'),
+    ).not.toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('abre el modal para agregar proveedor y API key', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/ai/providers/available') {
+        return Promise.resolve({ data: ['openrouter', 'openai'] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    render(<Assistant />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Configurar proveedor de IA' }),
+    );
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Agregar proveedor de IA' }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Proveedor')).toBeInTheDocument();
+    expect(screen.getByLabelText('API key')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Modelo/)).toBeInTheDocument();
+  });
+
+  it('ofrece cambiar de proveedor desde la cabecera', async () => {
+    render(<Assistant />);
+
+    const changeLink = await screen.findByRole('link', { name: 'Cambiar' });
+    expect(changeLink).toHaveAttribute('href', '/proveedores-ia');
   });
 });

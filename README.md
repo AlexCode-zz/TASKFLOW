@@ -200,12 +200,14 @@ TaskFlow incluye un asistente de inteligencia artificial opcional y multi-provee
 
 ### Pasos para Configurar
 
-1. Abre TaskFlow y ve a **Configuración > Asistente IA**
+1. La primera vez, abre **Asistente IA** y pulsa **Configurar proveedor de IA**
 2. Selecciona el proveedor deseado
 3. Ingresa tu **API key** personal (obtenida del proveedor correspondiente)
-4. Selecciona o ingresa el identificador del **modelo**
+4. Selecciona o escribe el identificador del **modelo** (opcional)
 5. Haz clic en **Probar conexión** para verificar que funciona
 6. Haz clic en **Guardar proveedor**
+
+Para administrar varias claves, añadir proveedores o cambiar el que está activo, ve a **Proveedores IA** en el menú lateral (junto a Configuración). El proveedor activo es el que usa Mel; si uno agota su cuota o límite, activa otro sin volver a escribir la API key.
 
 ### Seguridad de las API Keys
 
@@ -249,6 +251,7 @@ Mel es la asistente académica de TaskFlow. Su avatar reacciona al estado real d
 - Operaciones que modifican datos requieren confirmación explícita y se ejecutan una sola vez
 - El planificador determinista sigue siendo el único que valida y construye horarios; la IA solo interpreta y propone
 - Errores de proveedor diferenciados: cuota agotada, límite de solicitudes, API key inválida, conexión y error interno
+- Varias API keys guardadas a la vez, con cambio de proveedor activo en un clic
 - Si la IA falla o no hay proveedor configurado, el resto de TaskFlow sigue funcionando con datos locales
 - Historial de conversaciones persistente
 - Cambio de proveedor y modelo sin perder conversaciones

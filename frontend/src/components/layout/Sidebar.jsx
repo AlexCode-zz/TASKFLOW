@@ -3,6 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 
 const groups = [
   {
+    id: 'asistente',
+    label: 'Asistente',
+    items: [{ to: '/asistente-ia', label: 'Asistente IA', icon: 'bi-robot' }],
+  },
+  {
     id: 'planificacion',
     label: 'Planificación',
     items: [
@@ -26,7 +31,7 @@ const groups = [
     label: 'Herramientas',
     items: [
       { to: '/informes', label: 'Informes', icon: 'bi-bar-chart' },
-      { to: '/asistente-ia', label: 'Asistente IA', icon: 'bi-robot' },
+      { to: '/proveedores-ia', label: 'Proveedores IA', icon: 'bi-key' },
       { to: '/configuracion', label: 'Configuración', icon: 'bi-gear' },
     ],
   },

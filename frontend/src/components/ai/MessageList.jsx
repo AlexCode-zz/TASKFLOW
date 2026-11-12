@@ -5,7 +5,7 @@ import { ConfirmationCard, ToolResultsCard, AgentErrorBanner } from './AgentCard
  * puede incluir tarjetas de resultados de herramientas, una tarjeta de
  * confirmación de acción y avisos de error diferenciados.
  */
-const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null }) => {
+const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null, manageProvidersHref = null }) => {
   return (
     <div className="mel-message-list p-3 overflow-y-auto flex-grow-1">
       {messages.length === 0 ? (
@@ -39,7 +39,11 @@ const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null }) => 
               {msg.role !== 'user' && (
                 <div className="mel-message-meta">
                   {msg.errorCode && (
-                    <AgentErrorBanner errorCode={msg.errorCode} message={msg.errorMessage || msg.content} />
+                    <AgentErrorBanner
+                      errorCode={msg.errorCode}
+                      message={msg.errorMessage || msg.content}
+                      manageHref={manageProvidersHref}
+                    />
                   )}
                   {msg.tools && msg.tools.length > 0 && <ToolResultsCard tools={msg.tools} />}
                   {msg.confirmation && (

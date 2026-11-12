@@ -164,7 +164,7 @@ const ERROR_TITLES = {
  * explican de forma distinta, y siempre se recuerda que el resto de la
  * app sigue funcionando con datos reales.
  */
-export function AgentErrorBanner({ errorCode, message }) {
+export function AgentErrorBanner({ errorCode, message, manageHref = null }) {
   if (!errorCode && !message) return null;
 
   const title = ERROR_TITLES[errorCode] || ERROR_TITLES.unexpected_error;
@@ -178,10 +178,17 @@ export function AgentErrorBanner({ errorCode, message }) {
       </div>
       <p className="mb-1 small">{message}</p>
       {isQuota && (
-        <p className="mb-0 smaller text-muted-tf">
-          Tus materias, tareas y horarios siguen disponibles: TaskFlow funciona
-          sin la IA.
-        </p>
+        <>
+          <p className="mb-2 smaller text-muted-tf">
+            Tus materias, tareas y horarios siguen disponibles: TaskFlow funciona
+            sin la IA.
+          </p>
+          {manageHref && (
+            <a href={manageHref} className="mel-error-action">
+              Cambiar de proveedor
+            </a>
+          )}
+        </>
       )}
     </div>
   );

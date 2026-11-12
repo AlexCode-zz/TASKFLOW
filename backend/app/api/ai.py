@@ -194,6 +194,38 @@ def test_configured_provider(
         )
 
 
+@router.post(
+    "/providers/{provider_name}/activate",
+    response_model=AIProviderConfigResponse,
+)
+def activate_provider(
+    provider_name: str,
+    db: Session = Depends(get_db),
+):
+    """Activa un proveedor ya configurado sin volver a pedir la API key.
+
+    Permite cambiar de proveedor cuando el activo agota su cuota o
+    alcanza su límite de solicitudes.
+    """
+    from app.services.ai.key_manager import key_manager as km
+
+    config = ai_crud.get_ai_provider_config(db, provider_name)
+    if not config:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Proveedor {provider_name} no configurado",
+        )
+
+    if not km.get_key(provider_name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"No hay API key configurada para {provider_name}",
+        )
+
+    activated = ai_crud.set_active_provider(db, provider_name)
+    return activated
+
+
 @router.delete("/providers/{provider_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_provider(
     provider_name: str,
@@ -218,14 +250,19 @@ def delete_provider(
 @router.get("/providers/{provider_name}/models", response_model=List[str])
 def get_provider_models(
     provider_name: str,
+    api_key: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Obtiene los modelos disponibles para un proveedor."""
+    """Obtiene los modelos disponibles para un proveedor.
+
+    Acepta una API key temporal para poder listar modelos antes de
+    guardar el proveedor; si no se envía, usa la clave almacenada.
+    """
     import asyncio
 
     from app.services.ai.key_manager import key_manager as km
-    api_key = km.get_key(provider_name)
-    if not api_key:
+    resolved_key = api_key or km.get_key(provider_name)
+    if not resolved_key:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"No hay API key configurada para {provider_name}",
@@ -233,7 +270,7 @@ def get_provider_models(
 
     try:
         models = asyncio.run(
-            ai_manager.get_available_models(provider_name, api_key=api_key)
+            ai_manager.get_available_models(provider_name, api_key=resolved_key)
         )
         return models
     except Exception as e:
