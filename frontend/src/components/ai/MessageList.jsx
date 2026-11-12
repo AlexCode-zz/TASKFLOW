@@ -1,4 +1,5 @@
 import { ConfirmationCard, ToolResultsCard, AgentErrorBanner } from './AgentCards';
+import { formatProse } from '../../utils/prose';
 
 /**
  * Historial de mensajes del asistente. Además del texto, cada turno
@@ -20,7 +21,7 @@ const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null, manag
           >
             <div className="mel-message-column" style={{ maxWidth: '85%' }}>
               <div
-                className={`p-3 rounded-3 ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-surface text-white border border-secondary'}`}
+                className={`p-3 rounded-4 ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-surface text-white border border-secondary'}`}
                 style={{ wordBreak: 'break-word' }}
               >
                 <div className="d-flex justify-content-between align-items-start mb-1">
@@ -33,7 +34,9 @@ const MessageList = ({ messages, onConfirm, onCancel, confirmingId = null, manag
                       : ''}
                   </span>
                 </div>
-                <div className="small">{msg.content}</div>
+                <div className="small" style={{ wordBreak: 'break-word' }}>
+                  {msg.role === 'assistant' ? formatProse(msg.content) : msg.content}
+                </div>
               </div>
 
               {msg.role !== 'user' && (
