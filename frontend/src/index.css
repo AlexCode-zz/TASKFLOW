@@ -1255,6 +1255,15 @@ textarea.form-control:focus {
   padding: 0.5rem 1.25rem;
 }
 
+/* Panel de calendario académico dentro de la sección del chat. */
+.mel-calendar-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-2);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-md);
+}
+
 .mel-message-column {
   min-width: 0;
   animation: mel-message-in 420ms ease both;
