@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import AssistantAvatar from '../AssistantAvatar';
 import { expressionSrc } from '../expressions';
+
+const css = readFileSync('src/index.css', 'utf8');
 
 /** Devuelve la capa visible (la última imagen apilada) del avatar. */
 const topImg = (container) => {
@@ -28,27 +31,44 @@ describe('AssistantAvatar', () => {
     );
   });
 
-  it('aplica la animación de trabajo cuando el estado es working', () => {
-    const { container } = render(<AssistantAvatar expression="trabajando" state="working" />);
-    const motion = container.querySelector('.mel-avatar-motion');
-    expect(motion).toHaveClass('mel-anim-working');
-    expect(motion).not.toHaveClass('mel-anim-breathe');
-  });
-
-  it('aplica respiración en reposo y parpadeo fuera del sueño', () => {
-    const { container } = render(<AssistantAvatar expression="normal" state="idle" />);
+  it('mantiene a Mel quieta en todos los estados', () => {
+    const { container, rerender } = render(
+      <AssistantAvatar expression="trabajando" state="working" />
+    );
     const motion = container.querySelector('.mel-avatar-motion');
     const inner = container.querySelector('.mel-avatar-inner');
-    expect(motion).toHaveClass('mel-anim-breathe');
-    expect(inner).toHaveClass('mel-anim-blink');
+    expect(motion.className).not.toMatch(/mel-anim-/);
+    expect(inner.className).not.toMatch(/mel-anim-/);
+
+    rerender(<AssistantAvatar expression="dormida" state="sleeping" />);
+
+    expect(container.querySelector('.mel-avatar')).toHaveAttribute(
+      'data-state',
+      'sleeping'
+    );
+    expect(container.querySelector('.mel-avatar-motion').className).not.toMatch(
+      /mel-anim-/
+    );
+    expect(container.querySelector('.mel-avatar-inner').className).not.toMatch(
+      /mel-anim-/
+    );
   });
 
-  it('desactiva el parpadeo mientras duerme y aplica el balanceo', () => {
-    const { container } = render(<AssistantAvatar expression="dormida" state="sleeping" />);
-    const motion = container.querySelector('.mel-avatar-motion');
-    const inner = container.querySelector('.mel-avatar-inner');
-    expect(motion).toHaveClass('mel-anim-sleep');
-    expect(inner).not.toHaveClass('mel-anim-blink');
+  it('no define animaciones de movimiento para Mel en el CSS', () => {
+    [
+      'mel-anim-',
+      'mel-breathe',
+      'mel-blink',
+      'mel-working',
+      'mel-greet',
+      'mel-sleep',
+      'mel-success',
+      'mel-avatar-glow',
+      'mel-cover-float',
+      'mel-portrait-pulse',
+    ].forEach((name) => {
+      expect(css).not.toContain(name);
+    });
   });
 
   it('cambia la imagen al cambiar la expresión con fundido cruzado', async () => {

@@ -135,8 +135,8 @@ const Assistant = () => {
       const data = response.data;
       sessionConversationIdRef.current = data.conversation_id;
 
-      // Reproducir los eventos del backend con pausas para que las
-      // animaciones de Mel se vean naturales.
+      // Reproducir los eventos del backend con pausas para que los
+      // cambios de estado de Mel se aprecien sin saltos.
       await replayAgentEvents(data.events, sendAgentEvent);
 
       const assistantMsg = {
@@ -282,7 +282,7 @@ const Assistant = () => {
               </section>
             </aside>
 
-            {/* Mel flota sobre el fondo: sin tarjeta ni marco alrededor. */}
+            {/* Mel se integra en el fondo: sin tarjeta ni marco alrededor. */}
             <section className="mel-center" aria-label="Mel">
               <div className="mel-portrait-wrap">
                 <div className="mel-portrait-halo" aria-hidden="true" />

@@ -2,9 +2,9 @@
  * Reproducción temporizada de los eventos del agente.
  *
  * El backend devuelve todos los eventos de un turno en la respuesta
- * HTTP; para que las animaciones de Mel se vean naturales se
- * reproducen uno a uno con una pequeña pausa entre ellos. La lógica es
- * pura y recibe `sleep` inyectable para poder probarla sin esperas.
+ * HTTP; para que la secuencia de estados de Mel se aprecie sin saltos
+ * se reproducen uno a uno con una pequeña pausa entre ellos. La lógica
+ * es pura y recibe `sleep` inyectable para poder probarla sin esperas.
  */
 
 /** Pausa por defecto entre eventos del agente (ms). */

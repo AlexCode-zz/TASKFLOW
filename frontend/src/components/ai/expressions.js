@@ -5,8 +5,8 @@
  * personaje, cada una con su PNG original en `public/assets/mel/`.
  * La ilustración grande de portada (`05_principal.png`) se mantiene como
  * un recurso independiente. Las expresiones se intercambian mostrando
- * la imagen correspondiente; las animaciones (respiración, parpadeo,
- * rebote, etc.) se aplican por CSS y nunca dibujan caras nuevas.
+ * la imagen correspondiente con un fundido de opacidad; Mel permanece
+ * quieta y el CSS nunca dibuja caras nuevas.
  */
 
 export const AVATAR_NAME = 'Mel';

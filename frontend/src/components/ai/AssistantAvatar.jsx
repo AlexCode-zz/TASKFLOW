@@ -1,33 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { expressionSrc, isValidExpression, AVATAR_NAME } from './expressions';
 
-/**
- * Animación de movimiento que aplica cada estado de la máquina del
- * asistente. Solo mueve la imagen (CSS), nunca redibuja la cara.
- */
-const STATE_ANIMATION = {
-  idle: 'mel-anim-breathe',
-  greeting: 'mel-anim-greet',
-  thinking: 'mel-anim-breathe',
-  working: 'mel-anim-working',
-  explaining: 'mel-anim-breathe',
-  success: 'mel-anim-success',
-  conflict: 'mel-anim-breathe',
-  error: 'mel-anim-breathe',
-  sleeping: 'mel-anim-sleep',
-  quota_exhausted: 'mel-anim-breathe',
-};
-
 /** Duración del fundido cruzado entre dos expresiones (ms). */
 const CROSSFADE_MS = 380;
 
 /**
- * Avatar de Mel con expresiones intercambiables y animaciones suaves.
+ * Avatar de Mel con expresiones intercambiables.
  *
- * La expresión se cambia reemplazando el PNG (fundido cruzado entre la
- * imagen saliente y la entrante). El estado controla la animación de
- * movimiento: respiración, parpadeo, rebote de saludo, bob vertical al
- * trabajar, balanceo al dormir y pop discreto al completar acciones.
+ * Mel permanece quieta: el estado de la máquina solo se expone como
+ * ``data-state`` y la expresión se cambia reemplazando el PNG con un
+ * fundido cruzado de opacidad. No hay respiración, parpadeo, rebote ni
+ * balanceo.
  *
  * @param {object} props
  * @param {string} props.expression expresión actual (clave de EXPRESSIONS)
@@ -61,18 +44,16 @@ const AssistantAvatar = ({
     return () => clearTimeout(timer);
   }, [expression]);
 
-  const movementClass = STATE_ANIMATION[state] || STATE_ANIMATION.idle;
-  const blinkClass = state === 'sleeping' ? '' : ' mel-anim-blink';
-
   return (
     <div
       className={`mel-avatar ${className}`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`${alt} — ${expression}`}
+      data-state={state}
     >
-      <div className={`mel-avatar-motion ${movementClass}`}>
-        <div className={`mel-avatar-inner${blinkClass}`}>
+      <div className="mel-avatar-motion">
+        <div className="mel-avatar-inner">
           {layers.map((layer, index) => (
             <img
               key={layer.key}
