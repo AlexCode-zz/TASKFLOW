@@ -11,8 +11,8 @@ const topImg = (container) => {
 
 describe('AssistantAvatar', () => {
   it('muestra la imagen de la expresión indicada', () => {
-    const { container } = render(<AssistantAvatar expression="pensativa" state="idle" />);
-    expect(topImg(container)).toHaveAttribute('src', expressionSrc('pensativa'));
+    const { container } = render(<AssistantAvatar expression="trabajando" state="idle" />);
+    expect(topImg(container)).toHaveAttribute('src', expressionSrc('trabajando'));
   });
 
   it('usa la expresión normal por defecto', () => {
@@ -21,10 +21,10 @@ describe('AssistantAvatar', () => {
   });
 
   it('expone el nombre del personaje y la expresión de forma accesible', () => {
-    const { container } = render(<AssistantAvatar expression="seria" state="explaining" />);
+    const { container } = render(<AssistantAvatar expression="enojada" state="explaining" />);
     expect(container.querySelector('.mel-avatar')).toHaveAttribute(
       'aria-label',
-      'Mel — seria'
+      'Mel — enojada'
     );
   });
 
@@ -44,7 +44,7 @@ describe('AssistantAvatar', () => {
   });
 
   it('desactiva el parpadeo mientras duerme y aplica el balanceo', () => {
-    const { container } = render(<AssistantAvatar expression="durmiendo" state="sleeping" />);
+    const { container } = render(<AssistantAvatar expression="dormida" state="sleeping" />);
     const motion = container.querySelector('.mel-avatar-motion');
     const inner = container.querySelector('.mel-avatar-inner');
     expect(motion).toHaveClass('mel-anim-sleep');

@@ -30,25 +30,27 @@ describe('assistantMachine: definición de estados', () => {
     expect(STATE_KEYS).toHaveLength(10);
   });
 
-  it('asigna expresiones válidas y distintas por estado', () => {
-    const expressions = STATE_KEYS.map((k) => ASSISTANT_STATES[k].expression);
-    expect(new Set(expressions).size).toBe(STATE_KEYS.length);
+  it('asigna expresiones válidas y coherentes por estado', () => {
     STATE_KEYS.forEach((k) => {
       expect(ASSISTANT_STATES[k].expression).toBeTruthy();
       expect(typeof ASSISTANT_STATES[k].priority).toBe('number');
     });
+    // Pensar y trabajar son el mismo momento del personaje: comparten
+    // la expresión "trabajando" del catálogo de los 7 PNG.
+    expect(ASSISTANT_STATES.thinking.expression).toBe('trabajando');
+    expect(ASSISTANT_STATES.working.expression).toBe('trabajando');
   });
 
   it('mapea cada estado a la expresión requerida', () => {
     expect(ASSISTANT_STATES.idle.expression).toBe('normal');
     expect(ASSISTANT_STATES.greeting.expression).toBe('guino');
-    expect(ASSISTANT_STATES.thinking.expression).toBe('pensativa');
+    expect(ASSISTANT_STATES.thinking.expression).toBe('trabajando');
     expect(ASSISTANT_STATES.working.expression).toBe('trabajando');
-    expect(ASSISTANT_STATES.explaining.expression).toBe('seria');
+    expect(ASSISTANT_STATES.explaining.expression).toBe('enojada');
     expect(ASSISTANT_STATES.success.expression).toBe('feliz');
     expect(ASSISTANT_STATES.conflict.expression).toBe('enojada');
-    expect(ASSISTANT_STATES.error.expression).toBe('triste');
-    expect(ASSISTANT_STATES.sleeping.expression).toBe('durmiendo');
+    expect(ASSISTANT_STATES.error.expression).toBe('enojada');
+    expect(ASSISTANT_STATES.sleeping.expression).toBe('dormida');
     expect(ASSISTANT_STATES.quota_exhausted.expression).toBe('llorando');
   });
 
@@ -137,7 +139,7 @@ describe('assistantMachine: eventos del agente', () => {
     expect(mapEventToState('conflict_detected').state).toBe('conflict');
   });
 
-  it('una explicación importante activa explaining (seria)', () => {
+  it('una explicación importante activa explaining (enojada)', () => {
     expect(mapEventToState('explanation').state).toBe('explaining');
   });
 
@@ -152,11 +154,12 @@ describe('assistantMachine: eventos del agente', () => {
 
   it('los eventos ocasionales no cambian el estado principal', () => {
     expect(mapEventToState('informal')).toBeNull();
-    expect(mapEventToOccasional('informal')).toBe('avergonzada');
-    expect(mapEventToOccasional('ambiguous_query')).toBe('confundida');
-    expect(mapEventToOccasional('unexpected_query')).toBe('sorprendida');
-    expect(mapEventToOccasional('overload_detected')).toBe('molesta');
-    expect(mapEventToOccasional('backend_unavailable')).toBe('asustada');
+    expect(mapEventToOccasional('informal')).toBe('guino');
+    expect(mapEventToOccasional('ambiguous_query')).toBe('normal');
+    expect(mapEventToOccasional('unexpected_query')).toBe('feliz');
+    expect(mapEventToOccasional('overload_detected')).toBe('enojada');
+    expect(mapEventToOccasional('tool_recovered')).toBe('feliz');
+    expect(mapEventToOccasional('backend_unavailable')).toBe('enojada');
   });
 
   it('las expresiones ocasionales solo se permiten en estados tranquilos', () => {

@@ -19,12 +19,12 @@ describe('useAssistantState', () => {
     expect(result.current.busy).toBe(false);
   });
 
-  it('una consulta pasa a thinking (pensativa) y la herramienta a working', () => {
+  it('una consulta pasa a thinking y la herramienta a working', () => {
     const { result } = renderHook(() => useAssistantState());
 
     act(() => result.current.sendAgentEvent('query_received'));
     expect(result.current.state).toBe('thinking');
-    expect(result.current.expression).toBe('pensativa');
+    expect(result.current.expression).toBe('trabajando');
 
     act(() => result.current.sendAgentEvent('tool_started'));
     expect(result.current.state).toBe('working');
@@ -76,21 +76,21 @@ describe('useAssistantState', () => {
     expect(result.current.expression).toBe('guino');
   });
 
-  it('se duerme tras 60s de inactividad pasando por durmiéndose', () => {
+  it('se duerme tras 60s de inactividad con la expresión dormida', () => {
     const { result } = renderHook(() => useAssistantState());
 
     // Sin actividad durante el minuto completo
     act(() => {
       vi.advanceTimersByTime(IDLE_TIMEOUT_MS);
     });
-    expect(result.current.expression).toBe('durmiendose');
+    expect(result.current.expression).toBe('dormida');
     expect(result.current.state).toBe('idle');
 
     act(() => {
       vi.advanceTimersByTime(SLEEP_TRANSITION_MS);
     });
     expect(result.current.state).toBe('sleeping');
-    expect(result.current.expression).toBe('durmiendo');
+    expect(result.current.expression).toBe('dormida');
   });
 
   it('vuelve a normal al detectar actividad tras dormir', () => {
@@ -121,7 +121,7 @@ describe('useAssistantState', () => {
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expect(result.current.expression).toBe('durmiendose');
+    expect(result.current.expression).toBe('dormida');
   });
 
   it('el temporizador de inactividad no interrumpe una operación en curso', () => {
@@ -146,7 +146,7 @@ describe('useAssistantState', () => {
 
     let shown = null;
     act(() => {
-      shown = result.current.showOccasional('avergonzada');
+      shown = result.current.showOccasional('feliz');
     });
     expect(shown).toBe(false);
     expect(result.current.expression).toBe('trabajando');
@@ -161,7 +161,7 @@ describe('useAssistantState', () => {
     });
     expect(result.current.state).toBe('idle');
     act(() => result.current.sendAgentEvent('informal'));
-    expect(result.current.expression).toBe('avergonzada');
+    expect(result.current.expression).toBe('guino');
     expect(result.current.state).toBe('idle');
   });
 });

@@ -25,7 +25,7 @@ export const OCCASIONAL_DEFAULT_MS = 2200;
 /** Estados de la máquina: expresión, prioridad, duración mínima y retorno a idle. */
 export const ASSISTANT_STATES = {
   sleeping: {
-    expression: 'durmiendo',
+    expression: 'dormida',
     priority: 1,
     minDurationMs: 0,
     label: 'Durmiendo',
@@ -46,14 +46,14 @@ export const ASSISTANT_STATES = {
     autoReturn: true,
   },
   explaining: {
-    expression: 'seria',
+    expression: 'enojada',
     priority: 4,
     minDurationMs: 4000,
     label: 'Explicando información importante',
     autoReturn: true,
   },
   thinking: {
-    expression: 'pensativa',
+    expression: 'trabajando',
     priority: 5,
     minDurationMs: 0,
     label: 'Pensando tu consulta',
@@ -74,7 +74,7 @@ export const ASSISTANT_STATES = {
     autoReturn: true,
   },
   error: {
-    expression: 'triste',
+    expression: 'enojada',
     priority: 7,
     minDurationMs: 3200,
     label: 'Algo salió mal',
@@ -177,16 +177,16 @@ export const EVENT_STATE_MAP = {
 
 /**
  * Eventos que muestran una expresión ocasional sin interrumpir el
- * estado importante en curso (avergonzada, confundida, sorprendida,
- * molesta, asustada).
+ * estado importante en curso. Se reutilizan las expresiones oficiales
+ * del catálogo de los 7 PNG disponibles.
  */
 export const EVENT_OCCASIONAL_MAP = {
-  informal: 'avergonzada',
-  ambiguous_query: 'confundida',
-  unexpected_query: 'sorprendida',
-  overload_detected: 'molesta',
-  tool_recovered: 'avergonzada',
-  backend_unavailable: 'asustada',
+  informal: 'guino',
+  ambiguous_query: 'normal',
+  unexpected_query: 'feliz',
+  overload_detected: 'enojada',
+  tool_recovered: 'feliz',
+  backend_unavailable: 'enojada',
 };
 
 /**

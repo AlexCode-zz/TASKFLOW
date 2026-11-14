@@ -18,10 +18,10 @@ import {
  * - transiciones con prioridad y duración mínima entre estados,
  * - retorno automático a `idle` de los estados efímeros,
  * - temporizador de inactividad: tras 60s sin actividad Mel se duerme
- *   (pasando por la transición visual "durmiéndose" y volviendo a
+ *   (pasando por la transición visual "dormida" y volviendo a
  *   `normal` con cualquier interacción),
- * - expresiones ocasionales (avergonzada, confundida, ...) que no
- *   interrumpen estados importantes.
+ * - expresiones ocasionales (guino, normal, feliz, enojada, ...) que
+ *   no interrumpen estados importantes.
  *
  * El temporizador de inactividad nunca duerme al agente mientras esté
  * ocupado (`thinking`/`working`), y toda interacción del usuario lo
@@ -59,8 +59,8 @@ const useAssistantState = ({ idleTimeoutMs = IDLE_TIMEOUT_MS } = {}) => {
     clearTimer('idle');
     timers.current.idle = setTimeout(() => {
       if (stateRef.current.state !== 'idle') return;
-      // Transición visual previa: durmiéndose -> durmiendo.
-      setOccasional('durmiendose');
+      // Transición visual previa: dormida -> durmiendo (dormida).
+      setOccasional('dormida');
       clearTimer('sleep');
       timers.current.sleep = setTimeout(() => {
         if (stateRef.current.state !== 'idle') return;
