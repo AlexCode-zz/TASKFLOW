@@ -16,6 +16,15 @@ const SUGGESTIONS = [
   '¿Cómo van mis notas?',
 ];
 
+/** Accesos rápidos del rail lateral del escritorio de Mel. */
+const RAIL_LINKS = [
+  { to: '/', label: 'Inicio', icon: 'bi-house' },
+  { to: '/semana', label: 'Mi semana', icon: 'bi-calendar-week' },
+  { to: '/materias', label: 'Materias', icon: 'bi-book' },
+  { to: '/tareas', label: 'Tareas', icon: 'bi-list-task' },
+  { to: '/informes', label: 'Informes', icon: 'bi-bar-chart' },
+];
+
 /** Clase del chip de estado según el estado de la máquina. */
 function statusChipClass(state) {
   if (state === 'thinking' || state === 'working') return 'mel-status-chip is-busy';
@@ -25,6 +34,36 @@ function statusChipClass(state) {
   }
   return 'mel-status-chip';
 }
+
+/**
+ * Reloj del escritorio: hora y fecha actuales, actualizadas cada medio
+ * minuto. Solo decorativo, consultable de un vistazo.
+ */
+const MelClock = () => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30 * 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const time = now.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const date = now.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+  });
+
+  return (
+    <div className="mel-clock">
+      <div className="mel-clock-time">{time}</div>
+      <div className="mel-clock-date text-capitalize">{date}</div>
+    </div>
+  );
+};
 
 const Assistant = () => {
   const {
@@ -52,19 +91,6 @@ const Assistant = () => {
     checkProvider();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // La sección no guarda historial: los mensajes se descartan 5 minutos
-  // después de la última interacción si no se escribe otra cosa.
-  useEffect(() => {
-    if (messages.length === 0) return undefined;
-    const timer = setTimeout(() => {
-      setMessages([]);
-      // Al expirar la conversación temporal, la sesión queda lista
-      // para una nueva interacción sin contexto previo.
-      sessionConversationIdRef.current = null;
-    }, 5 * 60 * 1000);
-    return () => clearTimeout(timer);
-  }, [messages]);
 
   const checkProvider = async () => {
     try {
@@ -210,9 +236,10 @@ const Assistant = () => {
     : 'Sin proveedor configurado';
 
   return (
-    <div className="fade-in d-flex flex-column flex-grow-1">
+    <div className="fade-in mel-page">
       {error && (
         <div className="alert alert-danger text-white border-secondary mb-3" role="alert">
+          <i className="bi bi-exclamation-triangle me-2" aria-hidden="true" />
           {error}
         </div>
       )}
@@ -244,117 +271,162 @@ const Assistant = () => {
       )}
 
       {providerConfig && (
-        <div className="row g-4 flex-grow-1">
-          {/* Calendario académico: lado izquierdo en escritorio. */}
-          <div className="col-12 col-lg-4 order-3 order-lg-1">
-            <section
-              className="mel-glass-panel mel-calendar-panel h-100"
-              aria-label="Calendario académico"
-            >
-              <MelCalendar />
-            </section>
-          </div>
+        <div className="mel-desktop">
+          <div className="mel-desktop-glow" aria-hidden="true" />
 
-          {/* Mel: lado central, protagonista de la sección. */}
-          <div className="col-12 col-lg-4 order-1 order-lg-2">
-            <section className="mel-glass-panel mel-center-panel h-100" aria-label="Estado de Mel">
-              <div className="mel-center-stage">
-                <img
-                  src="/assets/mel/05_principal.png"
-                  alt="Ilustración de Mel"
-                  className="mel-cover-img"
-                />
+          <div className="mel-desktop-body">
+            {/* Rail de accesos rápidos: guiño al escritorio de la referencia. */}
+            <nav className="mel-rail" aria-label="Accesos rápidos de TaskFlow">
+              <Link to="/" className="mel-rail-brand" aria-label="Ir al inicio">
+                T
+              </Link>
+              <div className="mel-rail-group">
+                {RAIL_LINKS.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="mel-rail-link"
+                    aria-label={item.label}
+                    title={item.label}
+                  >
+                    <i className={`bi ${item.icon}`} aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+              <Link
+                to="/configuracion"
+                className="mel-rail-link mel-rail-bottom"
+                aria-label="Configuración"
+                title="Configuración"
+              >
+                <i className="bi bi-gear" aria-hidden="true" />
+              </Link>
+            </nav>
+
+            <div className="mel-stage">
+              {/* Lado izquierdo: reloj y calendario minimalista. */}
+              <aside className="mel-side mel-side-left">
+                <section className="mel-glass-panel mel-clock-panel" aria-label="Hora actual">
+                  <MelClock />
+                </section>
+
+                <section
+                  className="mel-glass-panel mel-calendar-panel"
+                  aria-label="Calendario académico"
+                >
+                  <div className="mel-panel-head">
+                    <span className="mel-panel-eyebrow">Calendario</span>
+                    <span className="mel-panel-badge">Mes</span>
+                  </div>
+                  <MelCalendar />
+                </section>
+
+                <section className="mel-glass-panel mel-session-panel" aria-label="Sesión de Mel">
+                  <div className="mel-session-row">
+                    <span className={statusChipClass(state)}>
+                      <span className="mel-status-dot" aria-hidden="true" />
+                      {status}
+                    </span>
+                  </div>
+                  <div className="mel-session-row mel-session-provider">
+                    <span className="mel-provider-chip" title={providerLabel}>
+                      {providerLabel}
+                    </span>
+                    <Link to="/proveedores-ia" className="mel-provider-link">
+                      Cambiar
+                    </Link>
+                  </div>
+                </section>
+              </aside>
+
+              {/* Centro: Mel como protagonista de la sección. */}
+              <section className="mel-glass-panel mel-center-panel" aria-label="Estado de Mel">
+                <div className="mel-portrait-wrap">
+                  <div className="mel-portrait-glow" aria-hidden="true" />
+                  <img
+                    src="/assets/mel/05_principal.png"
+                    alt="Ilustración de Mel"
+                    className="mel-cover-img"
+                  />
+                </div>
                 <div className="mel-center-info">
                   <h1 className="mel-name">MEL</h1>
                   <p className="mel-subtitle">
                     Organiza materias, tareas, notas y tu semana de estudio.
                   </p>
-                  <div className="mel-chip-row">
-                    <span className={statusChipClass(state)}>
-                      <span className="mel-status-dot" aria-hidden="true" />
-                      {status}
-                    </span>
-                    <span className="mel-provider-chip" title={providerLabel}>
-                      {providerLabel}
-                    </span>
-                    {providerConfig && (
-                      <Link to="/proveedores-ia" className="mel-provider-link">
-                        Cambiar
-                      </Link>
-                    )}
-                  </div>
                 </div>
-              </div>
-            </section>
-          </div>
+              </section>
 
-          {/* Conversación: lado derecho, con la respuesta de Mel y la barra
-              de escritura al final. */}
-          <div className="col-12 col-lg-4 order-2 order-lg-3">
-            <section className="mel-glass-panel mel-chat-panel h-100" aria-label="Conversación con Mel">
-              <div className="mel-chat-head d-flex justify-content-between align-items-center gap-2 pb-2">
-                <h2 className="h6 fw-semibold text-white mb-0">Conversación nueva</h2>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm"
-                  onClick={startNewConversation}
-                  disabled={sending}
-                >
-                  Nueva
-                </button>
-              </div>
-
-              <div className="mel-chat-body flex-grow-1 overflow-hidden d-flex flex-column">
-                <MessageList
-                  messages={messages}
-                  confirmingId={confirmingId}
-                  manageProvidersHref="/proveedores-ia"
-                  onConfirm={(msg) => resolveConfirmation(msg, 'accept')}
-                  onCancel={(msg) => resolveConfirmation(msg, 'cancel')}
-                  avatarExpression={expression}
-                  avatarState={state}
-                />
-
-                {sending && (
-                  <div className="mel-typing px-3 pb-2">
-                    Mel está pensando
-                    <span className="mel-typing-dots" aria-hidden="true">
-                      <span />
-                      <span />
-                      <span />
-                    </span>
+              {/* Lado derecho: interacción con Mel. */}
+              <section className="mel-glass-panel mel-chat-panel" aria-label="Conversación con Mel">
+                <div className="mel-chat-head">
+                  <div className="mel-chat-heading">
+                    <span className="mel-panel-eyebrow">Conversación</span>
+                    <h2 className="mel-chat-title">Habla con Mel</h2>
                   </div>
-                )}
+                  <button
+                    type="button"
+                    className="mel-new-btn"
+                    onClick={startNewConversation}
+                    disabled={sending}
+                  >
+                    <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+                    <span>Nueva</span>
+                  </button>
+                </div>
 
-                {messages.length === 0 && (
-                  <div className="px-3 pb-3">
-                    <p className="text-muted-tf small mb-2">
-                      Prueba con una de estas preguntas:
-                    </p>
-                    <div className="mel-suggestions">
-                      {SUGGESTIONS.map((suggestion) => (
-                        <button
-                          key={suggestion}
-                          type="button"
-                          className="mel-suggestion"
-                          onClick={() => handleSend(suggestion)}
-                          disabled={sending}
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
+                <div className="mel-chat-body">
+                  <MessageList
+                    messages={messages}
+                    confirmingId={confirmingId}
+                    manageProvidersHref="/proveedores-ia"
+                    onConfirm={(msg) => resolveConfirmation(msg, 'accept')}
+                    onCancel={(msg) => resolveConfirmation(msg, 'cancel')}
+                    avatarExpression={expression}
+                    avatarState={state}
+                  />
+
+                  {sending && (
+                    <div className="mel-typing" role="status">
+                      Mel está pensando
+                      <span className="mel-typing-dots" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                      </span>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
 
-              <MessageInput
-                onSend={handleSend}
-                onActivity={notifyActivity}
-                disabled={sending}
-                placeholder="Escribe tu consulta académica..."
-              />
-            </section>
+                  {messages.length === 0 && !sending && (
+                    <div className="mel-suggestions-wrap">
+                      <p className="text-muted-tf smaller mb-2">
+                        Prueba con una de estas preguntas:
+                      </p>
+                      <div className="mel-suggestions">
+                        {SUGGESTIONS.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            className="mel-suggestion"
+                            onClick={() => handleSend(suggestion)}
+                            disabled={sending}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <MessageInput
+                  onSend={handleSend}
+                  onActivity={notifyActivity}
+                  disabled={sending}
+                  placeholder="Escribe tu consulta académica..."
+                />
+              </section>
+            </div>
           </div>
         </div>
       )}
