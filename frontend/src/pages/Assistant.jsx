@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import Calendar from '../pages/Calendar';
+import MelCalendar from '../components/ai/MelCalendar';
 import MessageList from '../components/ai/MessageList';
 import MessageInput from '../components/ai/MessageInput';
 import ProviderSetupModal, { PROVIDER_INFO } from '../components/ai/ProviderSetupModal';
-import AssistantAvatar from '../components/ai/AssistantAvatar';
 import useAssistantState from '../hooks/useAssistantState';
 import { replayAgentEvents, summarizeToolResult } from '../utils/agentEvents';
 
@@ -39,6 +38,9 @@ const Assistant = () => {
 
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
+  // Contexto conversacional de la sesión actual: se reutiliza durante la
+  // sesión para que Mel conserve el hilo, sin persistir historial.
+  const sessionConversationIdRef = useRef(null);
   const [confirmingId, setConfirmingId] = useState(null);
   const [providerConfig, setProviderConfig] = useState(null);
   const [providerChecked, setProviderChecked] = useState(false);
@@ -57,6 +59,9 @@ const Assistant = () => {
     if (messages.length === 0) return undefined;
     const timer = setTimeout(() => {
       setMessages([]);
+      // Al expirar la conversación temporal, la sesión queda lista
+      // para una nueva interacción sin contexto previo.
+      sessionConversationIdRef.current = null;
     }, 5 * 60 * 1000);
     return () => clearTimeout(timer);
   }, [messages]);
@@ -78,6 +83,7 @@ const Assistant = () => {
 
   const startNewConversation = () => {
     notifyActivity();
+    sessionConversationIdRef.current = null;
     setMessages([]);
     setError('');
   };
@@ -96,19 +102,21 @@ const Assistant = () => {
       content: text,
       created_at: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+    // Mensajes temporales: solo se muestra el último intercambio activo.
+    setMessages([userMsg]);
 
     try {
       const response = await api.post('/ai/agent/chat', {
         message: text,
-        // Esta sección no persiste historial: cada interacción es
-        // independiente y se descarta al cumplirse el tiempo.
-        conversation_id: null,
+        // Contexto de la sesión actual: se reutiliza mientras dure la
+        // sesión; no hay historial persistente entre sesiones.
+        conversation_id: sessionConversationIdRef.current,
         provider_name: providerConfig?.provider_name || undefined,
         use_academic_context: true,
       });
 
       const data = response.data;
+      sessionConversationIdRef.current = data.conversation_id;
 
       // Reproducir los eventos del backend con pausas para que las
       // animaciones de Mel se vean naturales.
@@ -124,12 +132,13 @@ const Assistant = () => {
         confirmationResolved: null,
         errorCode: data.error_code || null,
       };
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages([userMsg, assistantMsg]);
     } catch (err) {
       const detail =
         err.response?.data?.detail || err.message || 'Error al enviar el mensaje';
       setError(detail);
       sendAgentEvent(err.response?.status >= 500 ? 'backend_error' : 'provider_error');
+      setMessages([userMsg]);
     } finally {
       setSending(false);
     }
@@ -147,7 +156,7 @@ const Assistant = () => {
       const response = await api.post('/ai/agent/confirm', {
         action_id: confirmation.action_id,
         decision,
-        conversation_id: null,
+        conversation_id: sessionConversationIdRef.current,
       });
       const data = response.data;
 
@@ -236,25 +245,26 @@ const Assistant = () => {
 
       {providerConfig && (
         <div className="row g-4 flex-grow-1">
-          {/* Calendario académico: lado izquierdo. */}
-          <div className="col-12 col-lg-4">
-            <section className="mel-calendar-panel" aria-label="Calendario académico">
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="bi bi-calendar-week text-white" aria-hidden="true" />
-                <h2 className="h6 fw-semibold text-white mb-0">Calendario</h2>
-              </div>
-              <Calendar />
+          {/* Calendario académico: lado izquierdo en escritorio. */}
+          <div className="col-12 col-lg-4 order-3 order-lg-1">
+            <section
+              className="mel-glass-panel mel-calendar-panel h-100"
+              aria-label="Calendario académico"
+            >
+              <MelCalendar />
             </section>
           </div>
 
-          {/* Área de chat: lado derecho, con el cuadro flotante de Mel. */}
-          <div className="col-12 col-lg-8">
-            <div className="d-flex flex-column" style={{ minHeight: 0 }}>
-              {/* Mel ya no va dentro de un cuadro: el personaje aparece a
-                  pantalla completa dentro del area de chat, con su estado. */}
-              <div className="mel-avatar-stage mb-3" aria-label="Estado de Mel">
-                <AssistantAvatar expression={expression} state={state} size={240} />
-                <div className="mel-avatar-stage-info">
+          {/* Mel: lado central, protagonista de la sección. */}
+          <div className="col-12 col-lg-4 order-1 order-lg-2">
+            <section className="mel-glass-panel mel-center-panel h-100" aria-label="Estado de Mel">
+              <div className="mel-center-stage">
+                <img
+                  src="/assets/mel/05_principal.png"
+                  alt="Ilustración de Mel"
+                  className="mel-cover-img"
+                />
+                <div className="mel-center-info">
                   <h1 className="mel-name">MEL</h1>
                   <p className="mel-subtitle">
                     Organiza materias, tareas, notas y tu semana de estudio.
@@ -275,22 +285,26 @@ const Assistant = () => {
                   </div>
                 </div>
               </div>
+            </section>
+          </div>
 
-              <div className="d-flex justify-content-between align-items-center gap-2 py-2">
-                <h5 className="fw-semibold mb-0 text-truncate">Conversación nueva</h5>
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={startNewConversation}
-                    disabled={sending}
-                  >
-                    Nueva
-                  </button>
-                </div>
+          {/* Conversación: lado derecho, con la respuesta de Mel y la barra
+              de escritura al final. */}
+          <div className="col-12 col-lg-4 order-2 order-lg-3">
+            <section className="mel-glass-panel mel-chat-panel h-100" aria-label="Conversación con Mel">
+              <div className="mel-chat-head d-flex justify-content-between align-items-center gap-2 pb-2">
+                <h2 className="h6 fw-semibold text-white mb-0">Conversación nueva</h2>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={startNewConversation}
+                  disabled={sending}
+                >
+                  Nueva
+                </button>
               </div>
 
-              <div className="flex-grow-1 overflow-hidden d-flex flex-column">
+              <div className="mel-chat-body flex-grow-1 overflow-hidden d-flex flex-column">
                 <MessageList
                   messages={messages}
                   confirmingId={confirmingId}
@@ -340,9 +354,8 @@ const Assistant = () => {
                 disabled={sending}
                 placeholder="Escribe tu consulta académica..."
               />
-            </div>
+            </section>
           </div>
-
         </div>
       )}
 

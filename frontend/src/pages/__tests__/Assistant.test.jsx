@@ -99,7 +99,9 @@ describe('Assistant (Mel)', () => {
     expect(
       screen.getByText('Organiza materias, tareas, notas y tu semana de estudio.'),
     ).toBeInTheDocument();
-    expect(container.querySelector('.mel-avatar')).toBeInTheDocument();
+
+    const cover = container.querySelector('.mel-cover-img');
+    expect(cover).toHaveAttribute('src', '/assets/mel/05_principal.png');
 
     await screen.findByText('OpenRouter');
     expect(container.querySelector('.mel-provider-chip')).toHaveAttribute(
@@ -139,6 +141,52 @@ describe('Assistant (Mel)', () => {
     expect(screen.getByText('Acción ejecutada')).toBeInTheDocument();
     expect(screen.getByText('list_tasks')).toBeInTheDocument();
     expect(screen.getByText('2 elemento(s)')).toBeInTheDocument();
+  });
+
+  it('solo muestra el último intercambio: el anterior desaparece al enviar una nueva consulta', async () => {
+    api.post
+      .mockResolvedValueOnce({ data: CHAT_RESPONSE })
+      .mockResolvedValueOnce({ data: { ...CHAT_RESPONSE, message: 'Tarea creada correctamente.' } });
+
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
+
+    await sendMessage('¿Qué tareas tengo pendientes?');
+    await screen.findByText('Tienes 2 tareas pendientes.');
+
+    await sendMessage('Crea una tarea de programación');
+
+    await screen.findByText('Tarea creada correctamente.');
+    expect(screen.queryByText('Tienes 2 tareas pendientes.')).not.toBeInTheDocument();
+  });
+
+  it('reutiliza el conversation_id de la sesión en el siguiente envío', async () => {
+    api.post.mockResolvedValue({ data: CHAT_RESPONSE });
+
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
+
+    await sendMessage('¿Qué tareas tengo pendientes?');
+    await screen.findByText('Tienes 2 tareas pendientes.');
+    expect(api.post).toHaveBeenNthCalledWith(
+      1,
+      '/ai/agent/chat',
+      expect.objectContaining({ conversation_id: null }),
+    );
+
+    await sendMessage('Dame mi informe académico');
+    await screen.findByText('Tienes 2 tareas pendientes.');
+    expect(api.post).toHaveBeenNthCalledWith(
+      2,
+      '/ai/agent/chat',
+      expect.objectContaining({ conversation_id: 'conv-1' }),
+    );
   });
 
   it('aceptar una confirmación ejecuta la acción solo una vez', async () => {
