@@ -189,6 +189,49 @@ describe('Assistant (Mel)', () => {
     );
   });
 
+  it('reinicia el intercambio y el contexto de la sesión con Nueva', async () => {
+    api.post.mockResolvedValue({ data: CHAT_RESPONSE });
+
+    render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
+
+    await sendMessage('¿Qué tareas tengo pendientes?');
+    await screen.findByText('Tienes 2 tareas pendientes.');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nueva' }));
+
+    expect(screen.queryByText('Tienes 2 tareas pendientes.')).not.toBeInTheDocument();
+    expect(screen.getByText('Tu conversación con Mel')).toBeInTheDocument();
+
+    await sendMessage('Dame mi informe académico');
+    expect(api.post).toHaveBeenNthCalledWith(
+      2,
+      '/ai/agent/chat',
+      expect.objectContaining({ conversation_id: null }),
+    );
+  });
+
+  it('compone el escritorio con rail, reloj y calendario alrededor de Mel', async () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Assistant />
+      </MemoryRouter>,
+    );
+
+    await screen.findByRole('heading', { name: 'MEL' });
+
+    expect(
+      screen.getByRole('navigation', { name: 'Accesos rápidos de TaskFlow' }),
+    ).toBeInTheDocument();
+    expect(container.querySelector('.mel-clock-time').textContent).toMatch(/\d{1,2}:\d{2}/);
+    expect(container.querySelector('.mel-calendar-panel')).toBeInTheDocument();
+    expect(container.querySelector('.mel-center-panel')).toBeInTheDocument();
+    expect(container.querySelector('.mel-chat-panel')).toBeInTheDocument();
+  });
+
   it('aceptar una confirmación ejecuta la acción solo una vez', async () => {
     api.post
       .mockResolvedValueOnce({ data: CHAT_WITH_CONFIRMATION })
