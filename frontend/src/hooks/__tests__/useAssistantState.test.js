@@ -1,5 +1,6 @@
+import { StrictMode, createElement, useEffect } from 'react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { render, renderHook, screen, act } from '@testing-library/react';
 import useAssistantState from '../useAssistantState';
 import { ASSISTANT_STATES, IDLE_TIMEOUT_MS, SLEEP_TRANSITION_MS } from '../../utils/assistantMachine';
 
@@ -74,6 +75,24 @@ describe('useAssistantState', () => {
     act(() => result.current.greet());
     expect(result.current.state).toBe('greeting');
     expect(result.current.expression).toBe('guino');
+  });
+
+  it('el saludo vuelve solo a normal tras el doble montaje de StrictMode', () => {
+    const Harness = () => {
+      const { state, greet } = useAssistantState();
+      useEffect(() => {
+        greet();
+      }, [greet]);
+      return createElement('span', { 'data-testid': 'state' }, state);
+    };
+
+    render(createElement(StrictMode, null, createElement(Harness)));
+    expect(screen.getByTestId('state')).toHaveTextContent('greeting');
+
+    act(() => {
+      vi.advanceTimersByTime(ASSISTANT_STATES.greeting.minDurationMs + 10);
+    });
+    expect(screen.getByTestId('state')).toHaveTextContent('idle');
   });
 
   it('se duerme tras 60s de inactividad con la expresión dormida', () => {

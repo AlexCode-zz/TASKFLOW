@@ -71,11 +71,34 @@ const useAssistantState = ({ idleTimeoutMs = IDLE_TIMEOUT_MS } = {}) => {
     }, idleTimeoutMs);
   }, [clearTimer, idleTimeoutMs]);
 
+  /** Programa el retorno automático a idle de un estado efímero. */
+  const scheduleAutoReturn = useCallback((target) => {
+    const definition = ASSISTANT_STATES[target];
+    if (!definition?.autoReturn) return;
+
+    clearTimer('autoReturn');
+    timers.current.autoReturn = setTimeout(() => {
+      if (stateRef.current.state === target) {
+        stateRef.current = { state: 'idle', since: Date.now() };
+        setState('idle');
+        scheduleIdleTimer();
+      }
+    }, definition.minDurationMs);
+  }, [clearTimer, scheduleIdleTimer]);
+
   /** Intenta una transición de estado respetando prioridad y duración. */
   const attemptTransition = useCallback((target, { force = false } = {}) => {
     const current = stateRef.current;
     const next = resolveState(current.state, current.since, target, Date.now(), { force });
-    if (next === current.state) return false;
+    if (next === current.state) {
+      // StrictMode limpia los temporizadores entre sus dos montajes de
+      // desarrollo sin reiniciar el estado. Si el estado efímero sigue
+      // activo y su retorno automático se perdió, se reprograma aquí.
+      if (ASSISTANT_STATES[next]?.autoReturn && !timers.current.autoReturn) {
+        scheduleAutoReturn(next);
+      }
+      return false;
+    }
 
     clearTimer('sleep');
     clearTimer('occasional');
@@ -85,17 +108,9 @@ const useAssistantState = ({ idleTimeoutMs = IDLE_TIMEOUT_MS } = {}) => {
     stateRef.current = { state: next, since: Date.now() };
     setState(next);
 
-    const definition = ASSISTANT_STATES[next];
-
     // Retorno automático a idle para los estados efímeros.
-    if (definition.autoReturn) {
-      timers.current.autoReturn = setTimeout(() => {
-        if (stateRef.current.state === next) {
-          stateRef.current = { state: 'idle', since: Date.now() };
-          setState('idle');
-          scheduleIdleTimer();
-        }
-      }, definition.minDurationMs);
+    if (ASSISTANT_STATES[next].autoReturn) {
+      scheduleAutoReturn(next);
     }
 
     // El temporizador de inactividad solo corre en reposo: nunca
@@ -107,7 +122,7 @@ const useAssistantState = ({ idleTimeoutMs = IDLE_TIMEOUT_MS } = {}) => {
     }
 
     return true;
-  }, [clearTimer, scheduleIdleTimer]);
+  }, [clearTimer, scheduleIdleTimer, scheduleAutoReturn]);
 
   /**
    * Registra actividad del usuario: reinicia el temporizador de

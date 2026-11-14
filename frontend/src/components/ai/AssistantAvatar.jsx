@@ -15,7 +15,9 @@ const CROSSFADE_MS = 380;
  * @param {object} props
  * @param {string} props.expression expresión actual (clave de EXPRESSIONS)
  * @param {string} props.state estado de la máquina (idle, working, ...)
- * @param {number} props.size tamaño del contenedor en px
+ * @param {number} props.size tamaño del contenedor en px (variante avatar)
+ * @param {'avatar'|'stage'} props.variant `stage` muestra a Mel a lo grande,
+ *   sin marco ni fondo, con el tamaño gobernado por CSS
  * @param {string} props.className clases extra
  * @param {string} props.alt nombre accesible del personaje
  */
@@ -23,12 +25,14 @@ const AssistantAvatar = ({
   expression = 'normal',
   state = 'idle',
   size = 96,
+  variant = 'avatar',
   className = '',
   alt = AVATAR_NAME,
 }) => {
   const [layers, setLayers] = useState(() => [{ expression, key: 0 }]);
   const counter = useRef(0);
   const lastExpression = useRef(expression);
+  const isStage = variant === 'stage';
 
   // Fundido cruzado: al cambiar la expresión se apila la nueva imagen
   // encima de la anterior y se retira la vieja al terminar la transición.
@@ -46,8 +50,8 @@ const AssistantAvatar = ({
 
   return (
     <div
-      className={`mel-avatar ${className}`}
-      style={{ width: size, height: size }}
+      className={`mel-avatar ${isStage ? 'mel-avatar-stage' : ''} ${className}`.trim()}
+      style={isStage ? undefined : { width: size, height: size }}
       role="img"
       aria-label={`${alt} — ${expression}`}
       data-state={state}

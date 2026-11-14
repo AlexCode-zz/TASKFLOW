@@ -916,6 +916,30 @@ textarea.form-control:focus {
   animation: mel-fade-in 380ms ease both;
 }
 
+/*
+  Variante de escenario: Mel a lo grande y sin marco. El tamaño lo
+  gobierna el CSS para adaptarse al alto disponible; la expresión se
+  sigue cambiando con el mismo fundido cruzado.
+*/
+.mel-avatar-stage {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: min(100%, 62vh, 600px);
+  aspect-ratio: 1;
+  margin: 0 auto 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.mel-avatar-stage .mel-avatar-img {
+  filter:
+    drop-shadow(0 30px 55px rgba(0, 0, 0, 0.65))
+    drop-shadow(0 0 34px rgba(90, 130, 255, 0.18));
+}
+
 /* Resaltado estático detrás del avatar. */
 .mel-floating-box .mel-avatar {
   box-shadow:
@@ -947,10 +971,6 @@ textarea.form-control:focus {
 
   .mel-glass-panel {
     padding: var(--space-3);
-  }
-
-  .mel-cover-img {
-    max-height: 220px;
   }
 
   .mel-calendar-day {
@@ -990,16 +1010,6 @@ textarea.form-control:focus {
   text-align: center;
   flex: 1 1 auto;
   justify-content: center;
-}
-
-.mel-cover-img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-height: 320px;
-  max-width: 100%;
-  object-fit: contain;
-  margin: 0 auto;
 }
 
 .mel-center-info {
@@ -2358,21 +2368,6 @@ textarea.form-control::placeholder {
   pointer-events: none;
 }
 
-.mel-cover-img {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: min(62vh, 600px);
-  object-fit: contain;
-  margin: 0 auto 12px;
-  filter:
-    drop-shadow(0 30px 55px rgba(0, 0, 0, 0.65))
-    drop-shadow(0 0 34px rgba(90, 130, 255, 0.18));
-}
-
 .mel-center-info {
   position: relative;
   z-index: 2;
@@ -3008,8 +3003,8 @@ textarea.form-control::placeholder {
     min-height: 460px;
   }
 
-  .mel-cover-img {
-    max-height: min(52vh, 480px);
+  .mel-avatar-stage {
+    width: min(100%, 52vh, 480px);
   }
 }
 
@@ -3018,8 +3013,8 @@ textarea.form-control::placeholder {
     height: 580px;
   }
 
-  .mel-cover-img {
-    max-height: min(50vh, 430px);
+  .mel-avatar-stage {
+    width: min(100%, 50vh, 430px);
   }
 }
 
@@ -3049,8 +3044,8 @@ textarea.form-control::placeholder {
     align-items: stretch;
   }
 
-  .mel-cover-img {
-    max-height: 380px;
+  .mel-avatar-stage {
+    width: min(100%, 380px);
   }
 
   .mel-portrait-halo {
@@ -3067,8 +3062,8 @@ textarea.form-control::placeholder {
     min-height: 400px;
   }
 
-  .mel-cover-img {
-    max-height: 320px;
+  .mel-avatar-stage {
+    width: min(100%, 320px);
   }
 
   .mel-name {
@@ -3101,8 +3096,8 @@ textarea.form-control::placeholder {
     padding-bottom: 8px;
   }
 
-  .mel-cover-img {
-    max-height: 270px;
+  .mel-avatar-stage {
+    width: min(100%, 270px);
   }
 
   .mel-name {

@@ -87,4 +87,30 @@ describe('AssistantAvatar', () => {
     expect(box.style.width).toBe('140px');
     expect(box.style.height).toBe('140px');
   });
+
+  it('ofrece una variante de escenario sin tamaño fijo ni marco', () => {
+    const { container } = render(
+      <AssistantAvatar variant="stage" expression="feliz" state="success" />
+    );
+    const box = container.querySelector('.mel-avatar');
+    expect(box).toHaveClass('mel-avatar-stage');
+    expect(box.style.width).toBe('');
+    expect(box.style.height).toBe('');
+    expect(topImg(container)).toHaveAttribute('src', expressionSrc('feliz'));
+  });
+
+  it('usa el fundido cruzado también en la variante de escenario', async () => {
+    const { container, rerender } = render(
+      <AssistantAvatar variant="stage" expression="normal" state="idle" />
+    );
+    rerender(<AssistantAvatar variant="stage" expression="llorando" state="quota_exhausted" />);
+
+    await waitFor(() => {
+      expect(topImg(container)).toHaveAttribute('src', expressionSrc('llorando'));
+    });
+    expect(container.querySelector('.mel-avatar')).toHaveAttribute(
+      'data-state',
+      'quota_exhausted'
+    );
+  });
 });

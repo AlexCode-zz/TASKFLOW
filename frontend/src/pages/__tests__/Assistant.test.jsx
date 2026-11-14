@@ -100,8 +100,15 @@ describe('Assistant (Mel)', () => {
       screen.getByText('Organiza materias, tareas, notas y tu semana de estudio.'),
     ).toBeInTheDocument();
 
-    const cover = container.querySelector('.mel-cover-img');
-    expect(cover).toHaveAttribute('src', '/assets/mel/05_principal.png');
+    // La Mel grande usa el avatar de expresiones, no la portada estática.
+    const stage = container.querySelector('.mel-avatar-stage');
+    expect(stage).toBeInTheDocument();
+    expect(stage.getAttribute('aria-label')).toMatch(/^Mel — /);
+    expect(stage.querySelector('img.mel-avatar-img-top')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/^\/assets\/mel\/(normal|guino)\.png$/),
+    );
+    expect(container.querySelector('.mel-cover-img')).not.toBeInTheDocument();
 
     await screen.findByText('OpenRouter');
     expect(container.querySelector('.mel-chat-provider')).toHaveAttribute(

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import AssistantAvatar from '../components/ai/AssistantAvatar';
 import MelCalendar from '../components/ai/MelCalendar';
 import MessageList from '../components/ai/MessageList';
 import MessageInput from '../components/ai/MessageInput';
@@ -287,10 +288,10 @@ const Assistant = () => {
               <div className="mel-portrait-wrap">
                 <div className="mel-portrait-halo" aria-hidden="true" />
                 <div className="mel-stage-ring" aria-hidden="true" />
-                <img
-                  src="/assets/mel/05_principal.png"
-                  alt="Ilustración de Mel"
-                  className="mel-cover-img"
+                <AssistantAvatar
+                  variant="stage"
+                  expression={expression}
+                  state={state}
                 />
               </div>
               <div className="mel-center-info">
