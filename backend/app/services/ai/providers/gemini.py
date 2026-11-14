@@ -5,7 +5,11 @@ from typing import Optional, Dict, Any, List
 
 from app.services.ai.providers.base import BaseHTTPProvider
 from app.services.ai.base import ChatMessage, ChatResponse, ProviderCapabilities
-from app.services.ai.errors import classify_http_error
+from app.services.ai.errors import (
+    AIProviderError,
+    classify_http_error,
+    friendly_message,
+)
 
 
 class GeminiProvider(BaseHTTPProvider):
@@ -14,13 +18,24 @@ class GeminiProvider(BaseHTTPProvider):
     provider_name = "gemini"
     base_url = "https://generativelanguage.googleapis.com/v1beta"
 
+    # Modelo estable actual y respaldos por si Google retira o satura uno.
+    DEFAULT_MODEL = "gemini-3.6-flash"
+    FALLBACK_MODELS = (
+        "gemini-3.6-flash",
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-flash-lite-latest",
+        "gemini-flash-latest",
+        "gemini-3.8-flash",
+    )
+
     def __init__(self, api_key: str, model: Optional[str] = None):
         super().__init__(api_key, model, self.base_url)
         self._capabilities = ProviderCapabilities(
             supports_streaming=True,
             supports_system_prompt=True,
             max_tokens=4096,
-            default_model="gemini-2.5-flash",
+            default_model=self.DEFAULT_MODEL,
             available_models=[],
         )
 
@@ -40,35 +55,29 @@ class GeminiProvider(BaseHTTPProvider):
             return False
 
     async def test_connection(self) -> dict:
+        """Prueba la clave y el modelo con una petición real y mínima.
+
+        Listar modelos no basta: Google puede seguir mostrando un modelo
+        retirado en ``/models`` y devolver 404 al generar contenido.
+        """
         try:
-            client = await self._get_client()
-            response = await client.get(
-                f"{self.base_url}/models",
-                params=self._params(),
+            response = await self.chat(
+                [ChatMessage(role="user", content="ping")]
             )
-            if response.status_code == 200:
-                return {
-                    "success": True,
-                    "status": "ok",
-                    "message": "Conexión exitosa con Google Gemini",
-                    "provider": self.provider_name,
-                }
-            elif response.status_code in (400, 403):
-                return {
-                    "success": False,
-                    "status": "error",
-                    "message": "API key inválida para Google Gemini",
-                    "provider": self.provider_name,
-                    "error_code": "invalid_api_key",
-                }
-            else:
-                return {
-                    "success": False,
-                    "status": "error",
-                    "message": f"Error de Google Gemini: {response.status_code}",
-                    "provider": self.provider_name,
-                    "error_code": "provider_error",
-                }
+            return {
+                "success": True,
+                "status": "ok",
+                "message": f"Conexión exitosa con Google Gemini ({response.model})",
+                "provider": self.provider_name,
+            }
+        except AIProviderError as exc:
+            return {
+                "success": False,
+                "status": "error",
+                "message": friendly_message(exc.error_code),
+                "provider": self.provider_name,
+                "error_code": exc.error_code,
+            }
         except httpx.ConnectError:
             return {
                 "success": False,
@@ -86,6 +95,33 @@ class GeminiProvider(BaseHTTPProvider):
                 "error_code": "unexpected_error",
             }
 
+    def _candidate_models(self, requested: str) -> List[str]:
+        """Modelo pedido primero y respaldos actuales sin duplicados."""
+        candidates = [requested]
+        for fallback in self.FALLBACK_MODELS:
+            if fallback not in candidates:
+                candidates.append(fallback)
+        return candidates
+
+    def _parse_response(self, response, model_id: str) -> ChatResponse:
+        """Normaliza una respuesta 200 de ``generateContent``."""
+        data = response.json()
+        candidates = data.get("candidates", [])
+        content = ""
+        if candidates:
+            parts = candidates[0].get("content", {}).get("parts", [])
+            for part in parts:
+                content += part.get("text", "")
+
+        return ChatResponse(
+            content=content,
+            model=model_id,
+            provider=self.provider_name,
+            tokens_used=data.get("usageMetadata", {}).get("totalTokenCount"),
+            finish_reason=candidates[0].get("finishReason") if candidates else None,
+            raw_response=data,
+        )
+
     async def chat(
         self,
         messages: List[ChatMessage],
@@ -93,7 +129,7 @@ class GeminiProvider(BaseHTTPProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> ChatResponse:
-        model_id = model or self.model or self.capabilities.default_model
+        requested_model = model or self.model or self.capabilities.default_model
 
         # Convertir mensajes al formato de Gemini
         gemini_messages = []
@@ -117,30 +153,31 @@ class GeminiProvider(BaseHTTPProvider):
         if system_instruction:
             payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
-        response = await self._post_json(
-            f"{self.base_url}/models/{model_id}:generateContent",
-            params=self._params(),
-            json=payload,
-        )
+        last_error: Optional[AIProviderError] = None
+        for model_id in self._candidate_models(requested_model):
+            response = await self._post_json(
+                f"{self.base_url}/models/{model_id}:generateContent",
+                params=self._params(),
+                json=payload,
+            )
 
-        if response.status_code != 200:
-            raise classify_http_error(self.provider_name, response.status_code, response.text)
+            if response.status_code == 200:
+                return self._parse_response(response, model_id)
 
-        data = response.json()
-        candidates = data.get("candidates", [])
-        content = ""
-        if candidates:
-            parts = candidates[0].get("content", {}).get("parts", [])
-            for part in parts:
-                content += part.get("text", "")
+            last_error = classify_http_error(
+                self.provider_name, response.status_code, response.text
+            )
 
-        return ChatResponse(
-            content=content,
-            model=model_id,
+            # Solo se cambia de modelo cuando el modelo ya no existe o
+            # Google está saturado. Los errores de clave, cuota o límite
+            # deben llegar al usuario sin reintentos.
+            if response.status_code not in (404, 503):
+                raise last_error
+
+        raise last_error or AIProviderError(
+            "No hay modelos disponibles en Google Gemini.",
+            error_code="provider_error",
             provider=self.provider_name,
-            tokens_used=data.get("usageMetadata", {}).get("totalTokenCount"),
-            finish_reason=candidates[0].get("finishReason") if candidates else None,
-            raw_response=data,
         )
 
     async def get_available_models(self) -> List[str]:
@@ -152,11 +189,14 @@ class GeminiProvider(BaseHTTPProvider):
             )
             if response.status_code == 200:
                 data = response.json()
-                return [m.get("name", "").replace("models/", "") for m in data.get("models", []) if m.get("name")]
+                models = []
+                for item in data.get("models", []):
+                    name = (item.get("name") or "").replace("models/", "")
+                    methods = item.get("supportedGenerationMethods") or []
+                    if name and "generateContent" in methods:
+                        models.append(name)
+                if models:
+                    return models
         except Exception:
             pass
-        return [
-            "gemini-2.5-flash",
-            "gemini-2.5-pro",
-            "gemini-2.5-flash-lite",
-        ]
+        return list(self.FALLBACK_MODELS)

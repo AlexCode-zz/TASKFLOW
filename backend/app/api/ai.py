@@ -92,9 +92,11 @@ def setup_provider(
     student = get_current_student(db)
 
     # Guardar la API key de forma segura (fuera de SQLite)
-    key_manager = ai_manager  # usa el key_manager interno
     from app.services.ai.key_manager import key_manager as km
     km.set_key(setup.provider_name, setup.api_key)
+    # La clave pudo cambiar: descartar el adaptador cacheado para que la
+    # siguiente conversación use la clave nueva sin reiniciar el backend.
+    ai_manager.invalidate(setup.provider_name)
 
     # Crear o actualizar configuración en SQLite (sin la API key)
     existing = ai_crud.get_ai_provider_config(db, setup.provider_name)
@@ -117,7 +119,7 @@ def setup_provider(
 
     # Si se marca como activo, activar este proveedor
     if setup.is_active:
-        ai_crud.set_active_provider(db, setup.provider_name)
+        config = ai_crud.set_active_provider(db, setup.provider_name) or config
 
     return config
 
@@ -229,6 +231,8 @@ def activate_provider(
             detail=f"No hay API key configurada para {provider_name}",
         )
 
+    # El adaptador cacheado pudo quedar con un modelo o una clave vieja.
+    ai_manager.invalidate(provider_name)
     activated = ai_crud.set_active_provider(db, provider_name)
     return activated
 
@@ -241,8 +245,9 @@ def delete_provider(
     """Elimina la configuración y API key de un proveedor."""
     from app.services.ai.key_manager import key_manager as km
 
-    # Eliminar API key del almacenamiento seguro
+    # Eliminar API key del almacenamiento seguro y el adaptador cacheado
     km.delete_key(provider_name)
+    ai_manager.invalidate(provider_name)
 
     # Eliminar configuración de SQLite
     success = ai_crud.delete_ai_provider_config(db, provider_name)

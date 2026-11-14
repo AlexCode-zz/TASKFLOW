@@ -55,6 +55,14 @@ class TestClassifyHttpError:
         err = classify_http_error("anthropic", 403, "Forbidden")
         assert err.error_code == "invalid_api_key"
 
+    def test_400_de_gemini_con_api_key_es_autenticacion(self):
+        err = classify_http_error(
+            "gemini",
+            400,
+            '{"error": {"message": "API key not valid. Please pass a valid API key."}}',
+        )
+        assert err.error_code == "invalid_api_key"
+
     def test_500_es_error_del_proveedor(self):
         err = classify_http_error("openai", 500, "Internal server error")
         assert err.error_code == "provider_error"

@@ -118,7 +118,19 @@ def classify_http_error(
             status_code=status_code,
         )
 
-    if status_code in (401, 403):
+    if status_code in (401, 403) or (
+        status_code == 400
+        and _contains_any(
+            body,
+            (
+                "api key",
+                "api_key",
+                "invalid key",
+                "key not valid",
+                "key expired",
+            ),
+        )
+    ):
         return AIProviderError(
             f"Error de autenticación con {provider} (HTTP {status_code}). "
             f"Revisa tu API key en la configuración.",

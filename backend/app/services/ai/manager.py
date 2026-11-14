@@ -55,6 +55,18 @@ class AIProviderManager:
             return adapter
         return self.create_adapter(provider_name, model)
 
+    def invalidate(self, provider_name: Optional[str] = None) -> None:
+        """Descarta adaptadores cacheados, por ejemplo al cambiar una clave.
+
+        Sin esto, un adaptador creado con una clave anterior seguiría
+        usándola hasta reiniciar el backend aunque la clave se hubiera
+        reemplazado en Proveedores IA.
+        """
+        if provider_name is None:
+            self._instances.clear()
+        else:
+            self._instances.pop(provider_name, None)
+
     async def test_provider_connection(
         self, provider_name: str, api_key: str, model: Optional[str] = None
     ) -> dict:

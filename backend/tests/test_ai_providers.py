@@ -123,9 +123,48 @@ def test_default_models_are_current():
     from app.services.ai.providers.gemini import GeminiProvider
     from app.services.ai.providers.openai import OpenAIProvider
 
-    assert GeminiProvider(api_key="k").capabilities.default_model == "gemini-2.5-flash"
+    gemini = GeminiProvider(api_key="k")
+    assert gemini.capabilities.default_model == "gemini-3.6-flash"
+    assert "gemini-2.5-flash" not in GeminiProvider.FALLBACK_MODELS
     assert OpenAIProvider(api_key="k").capabilities.default_model == "gpt-4o-mini"
     assert (
         AnthropicProvider(api_key="k").capabilities.default_model
         == "claude-3-5-haiku-latest"
     )
+
+
+def test_setup_provider_invalida_el_adaptador_cacheado(
+    student_client: TestClient, fake_keys, monkeypatch
+):
+    """Cambiar la clave debe descartar el adaptador que usaba la anterior."""
+    from app.services.ai.providers.openai import OpenAIProvider
+
+    monkeypatch.setitem(
+        ai_manager._instances,
+        "openai",
+        OpenAIProvider(api_key="clave-anterior"),
+    )
+
+    response = _setup_provider(student_client, "openai", "model-b", True)
+
+    assert response.status_code == 201
+    assert "openai" not in ai_manager._instances
+
+
+def test_delete_provider_invalida_el_adaptador_cacheado(
+    student_client: TestClient, fake_keys, monkeypatch
+):
+    """Eliminar una clave no debe dejar vivo su adaptador en memoria."""
+    from app.services.ai.providers.openai import OpenAIProvider
+
+    assert _setup_provider(student_client, "openai", "model-b", True).status_code == 201
+    monkeypatch.setitem(
+        ai_manager._instances,
+        "openai",
+        OpenAIProvider(api_key="clave-anterior"),
+    )
+
+    response = student_client.delete("/api/ai/providers/openai")
+
+    assert response.status_code == 204
+    assert "openai" not in ai_manager._instances
