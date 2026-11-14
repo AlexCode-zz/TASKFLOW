@@ -260,7 +260,7 @@ const Assistant = () => {
                 className={`mel-floating-box mb-3 state-${state} ${isLive ? 'is-live' : ''}`}
                 aria-label="Estado de Mel"
               >
-                <AssistantAvatar expression={expression} state={state} size={160} />
+                <AssistantAvatar expression={expression} state={state} size={200} />
                 <div className="mel-floating-box-info">
                   <h1 className="mel-name">MEL</h1>
                   <p className="mel-subtitle">
