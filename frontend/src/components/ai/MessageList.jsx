@@ -3,9 +3,14 @@ import { formatProse } from '../../utils/prose';
 import AssistantAvatar from './AssistantAvatar';
 
 /**
- * Historial de mensajes del asistente. Además del texto, cada turno
- * puede incluir tarjetas de resultados de herramientas, una tarjeta de
- * confirmación de acción y avisos de error diferenciados.
+ * Intercambio temporal del asistente. Muestra únicamente el último
+ * intercambio (consulta + respuesta), sin acumular historial: la clave
+ * del contenedor cambia con cada nuevo mensaje para que el intercambio
+ * anterior desaparezca y la escena se vuelva a animar.
+ *
+ * Además del texto, cada turno puede incluir tarjetas de resultados de
+ * herramientas, una tarjeta de confirmación de acción y avisos de error
+ * diferenciados.
  */
 const MessageList = ({
   messages,
@@ -16,67 +21,81 @@ const MessageList = ({
   avatarExpression = 'normal',
   avatarState = 'idle',
 }) => {
+  const exchangeKey = messages[0]?.id || 'empty';
+
   return (
-    <div className="mel-message-list p-3 overflow-y-auto flex-grow-1">
+    <div className="mel-message-list" key={exchangeKey}>
       {messages.length === 0 ? (
-        <div className="text-center text-muted-tf small py-4">
-          No hay mensajes aún. Escribe tu primera consulta.
+        <div className="mel-chat-empty">
+          <span className="mel-chat-empty-icon" aria-hidden="true">
+            <i className="bi bi-chat-square-text" />
+          </span>
+          <p className="mel-chat-empty-title">Tu conversación con Mel</p>
+          <p className="mel-chat-empty-text">
+            Pregunta por tus tareas, notas o horarios. Mel conserva el hilo
+            mientras dure esta sesión.
+          </p>
         </div>
       ) : (
-        messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`d-flex mb-3 ${msg.role === 'user' ? 'justify-content-end' : 'justify-content-start'}`}
-          >
-            {msg.role !== 'user' && (
-              <div className="mel-message-avatar">
-                <AssistantAvatar expression={avatarExpression} state={avatarState} size={36} />
-              </div>
-            )}
-            <div className="mel-message-column" style={{ maxWidth: '85%' }}>
-              <div
-                className={`p-3 rounded-4 ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-surface text-white border border-secondary'}`}
-                style={{ wordBreak: 'break-word' }}
-              >
-                <div className="d-flex justify-content-between align-items-start mb-1">
-                  <span className={`fw-semibold ${msg.role === 'user' ? 'text-white' : 'text-primary'} small`}>
-                    {msg.role === 'user' ? 'Tú' : 'Mel'}
-                  </span>
-                  <span className="text-muted-tf smaller ms-3">
-                    {msg.created_at
-                      ? new Date(msg.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-                      : ''}
-                  </span>
-                </div>
-                <div className="small" style={{ wordBreak: 'break-word' }}>
-                  {msg.role === 'assistant' ? formatProse(msg.content) : msg.content}
-                </div>
-              </div>
-
-              {msg.role !== 'user' && (
-                <div className="mel-message-meta">
-                  {msg.errorCode && (
-                    <AgentErrorBanner
-                      errorCode={msg.errorCode}
-                      message={msg.errorMessage || msg.content}
-                      manageHref={manageProvidersHref}
-                    />
-                  )}
-                  {msg.tools && msg.tools.length > 0 && <ToolResultsCard tools={msg.tools} />}
-                  {msg.confirmation && (
-                    <ConfirmationCard
-                      confirmation={msg.confirmation}
-                      busy={confirmingId === msg.confirmation.action_id}
-                      resolved={msg.confirmationResolved || null}
-                      onAccept={() => onConfirm && onConfirm(msg)}
-                      onCancel={() => onCancel && onCancel(msg)}
-                    />
-                  )}
+        messages.map((msg) => {
+          const isUser = msg.role === 'user';
+          return (
+            <div
+              key={msg.id}
+              className={`mel-exchange-row ${isUser ? 'is-user' : 'is-mel'}`}
+            >
+              {!isUser && (
+                <div className="mel-message-avatar">
+                  <AssistantAvatar
+                    expression={avatarExpression}
+                    state={avatarState}
+                    size={36}
+                  />
                 </div>
               )}
+              <div className="mel-message-column">
+                <div className={`mel-bubble ${isUser ? 'mel-bubble-user' : 'mel-bubble-mel'}`}>
+                  <div className="mel-bubble-head">
+                    <span className="mel-bubble-name">{isUser ? 'Tú' : 'Mel'}</span>
+                    <span className="mel-bubble-time">
+                      {msg.created_at
+                        ? new Date(msg.created_at).toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : ''}
+                    </span>
+                  </div>
+                  <div className="mel-bubble-content">
+                    {isUser ? msg.content : formatProse(msg.content)}
+                  </div>
+                </div>
+
+                {!isUser && (
+                  <div className="mel-message-meta">
+                    {msg.errorCode && (
+                      <AgentErrorBanner
+                        errorCode={msg.errorCode}
+                        message={msg.errorMessage || msg.content}
+                        manageHref={manageProvidersHref}
+                      />
+                    )}
+                    {msg.tools && msg.tools.length > 0 && <ToolResultsCard tools={msg.tools} />}
+                    {msg.confirmation && (
+                      <ConfirmationCard
+                        confirmation={msg.confirmation}
+                        busy={confirmingId === msg.confirmation.action_id}
+                        resolved={msg.confirmationResolved || null}
+                        onAccept={() => onConfirm && onConfirm(msg)}
+                        onCancel={() => onCancel && onCancel(msg)}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

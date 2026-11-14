@@ -1,5 +1,10 @@
 import { useState } from 'react';
 
+/**
+ * Compositor del escritorio de Mel: pastilla de cristal con el campo de
+ * escritura y un botón de envío redondo. Mantiene Enter para enviar y
+ * Shift+Enter para saltos de línea.
+ */
 const MessageInput = ({ onSend, disabled, placeholder, onActivity }) => {
   const [input, setInput] = useState('');
 
@@ -16,12 +21,14 @@ const MessageInput = ({ onSend, disabled, placeholder, onActivity }) => {
   };
 
   return (
-    <div className="card-footer bg-transparent border-secondary pt-2 pb-2 mel-composer">
-      <form onSubmit={handleSend} className="input-group">
+    <div className="mel-composer">
+      <form onSubmit={handleSend} className="mel-composer-form">
+        <i className="bi bi-chat-dots mel-composer-icon" aria-hidden="true" />
         <input
           type="text"
-          className="form-control bg-surface border-secondary text-white"
+          className="mel-composer-input"
           placeholder={placeholder || 'Escribe tu mensaje...'}
+          aria-label="Mensaje para Mel"
           value={input}
           onChange={handleChange}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
@@ -29,14 +36,15 @@ const MessageInput = ({ onSend, disabled, placeholder, onActivity }) => {
         />
         <button
           type="submit"
-          className="btn btn-primary"
+          className="mel-send-btn"
+          aria-label="Enviar"
           disabled={disabled || !input.trim()}
         >
-          Enviar
+          <i className="bi bi-arrow-up" aria-hidden="true" />
         </button>
       </form>
-      <p className="text-muted-tf small mt-2 mb-0">
-        Presiona Enter para enviar. Shift+Enter para nueva línea.
+      <p className="mel-composer-hint">
+        Enter para enviar · Shift+Enter para nueva línea
       </p>
     </div>
   );
