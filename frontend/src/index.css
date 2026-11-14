@@ -17,6 +17,28 @@
   --warning: #eab308;
   --danger: #ef4444;
 
+  /* Glassmorphism / liquid glass */
+  --glass-fill: rgba(255, 255, 255, 0.045);
+  --glass-fill-soft: rgba(255, 255, 255, 0.025);
+  --glass-fill-strong: rgba(12, 14, 24, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-soft: rgba(255, 255, 255, 0.09);
+  --glass-highlight: rgba(255, 255, 255, 0.3);
+  --glass-blur: 22px;
+  --glass-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --glass-sheen: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 38%,
+    rgba(255, 255, 255, 0.055) 100%
+  );
+
+  /* Acento azul frío para reflejos y estados */
+  --accent-blue: #7aa2ff;
+  --accent-blue-strong: #5b7cfa;
+  --accent-blue-soft: rgba(122, 162, 255, 0.16);
+  --accent-blue-glow: rgba(90, 130, 255, 0.28);
+
   /* Cielo estrellado compartido (fondo, sidebar y topbar) */
   --starfield: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'700'%20height%3D'700'%20fill%3D'%23fff'%3E%3Ccircle%20cx%3D'334'%20cy%3D'679'%20r%3D'1.03'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'353'%20cy%3D'543'%20r%3D'1.51'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'495'%20cy%3D'269'%20r%3D'1.34'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'508'%20cy%3D'413'%20r%3D'1.10'%20opacity%3D'.46'%2F%3E%3Ccircle%20cx%3D'604'%20cy%3D'584'%20r%3D'1.36'%20opacity%3D'.30'%2F%3E%3Ccircle%20cx%3D'679'%20cy%3D'256'%20r%3D'1.55'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'54'%20cy%3D'522'%20r%3D'1.03'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'553'%20cy%3D'623'%20r%3D'1.38'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'300'%20cy%3D'299'%20r%3D'.66'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'207'%20cy%3D'231'%20r%3D'1.25'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'175'%20cy%3D'638'%20r%3D'1.35'%20opacity%3D'.36'%2F%3E%3Ccircle%20cx%3D'423'%20cy%3D'31'%20r%3D'1.54'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'224'%20cy%3D'120'%20r%3D'1.07'%20opacity%3D'.25'%2F%3E%3Ccircle%20cx%3D'148'%20cy%3D'565'%20r%3D'1.16'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'365'%20cy%3D'364'%20r%3D'1.67'%20opacity%3D'.39'%2F%3E%3Ccircle%20cx%3D'552'%20cy%3D'385'%20r%3D'1.56'%20opacity%3D'.22'%2F%3E%3Ccircle%20cx%3D'401'%20cy%3D'226'%20r%3D'1.63'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'542'%20cy%3D'487'%20r%3D'1.50'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'346'%20cy%3D'479'%20r%3D'.88'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'182'%20cy%3D'58'%20r%3D'.88'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'608'%20cy%3D'98'%20r%3D'1.31'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'588'%20cy%3D'531'%20r%3D'.87'%20opacity%3D'.40'%2F%3E%3Ccircle%20cx%3D'355'%20cy%3D'450'%20r%3D'1.60'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'162'%20cy%3D'162'%20r%3D'1.51'%20opacity%3D'.34'%2F%3E%3Ccircle%20cx%3D'163'%20cy%3D'569'%20r%3D'1.30'%20opacity%3D'.45'%2F%3E%3Ccircle%20cx%3D'119'%20cy%3D'380'%20r%3D'.88'%20opacity%3D'.21'%2F%3E%3Ccircle%20cx%3D'510'%20cy%3D'447'%20r%3D'1.40'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'301'%20cy%3D'335'%20r%3D'.98'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'312'%20cy%3D'68'%20r%3D'1.30'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'278'%20cy%3D'561'%20r%3D'.63'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'571'%20cy%3D'381'%20r%3D'1.02'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'241'%20cy%3D'145'%20r%3D'1.66'%20opacity%3D'.32'%2F%3E%3Ccircle%20cx%3D'115'%20cy%3D'595'%20r%3D'.64'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'192'%20cy%3D'197'%20r%3D'1.43'%20opacity%3D'.16'%2F%3E%3Ccircle%20cx%3D'190'%20cy%3D'78'%20r%3D'.92'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'418'%20cy%3D'517'%20r%3D'1.19'%20opacity%3D'.20'%2F%3E%3Ccircle%20cx%3D'37'%20cy%3D'656'%20r%3D'.67'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'656'%20cy%3D'8'%20r%3D'.77'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'628'%20cy%3D'626'%20r%3D'1.52'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'535'%20cy%3D'474'%20r%3D'1.10'%20opacity%3D'.14'%2F%3E%3Ccircle%20cx%3D'277'%20cy%3D'131'%20r%3D'.86'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'73'%20cy%3D'362'%20r%3D'.77'%20opacity%3D'.36'%2F%3E%3Ccircle%20cx%3D'675'%20cy%3D'120'%20r%3D'.76'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'148'%20cy%3D'47'%20r%3D'1.22'%20opacity%3D'.14'%2F%3E%3Ccircle%20cx%3D'3'%20cy%3D'264'%20r%3D'1.25'%20opacity%3D'.34'%2F%3E%3Ccircle%20cx%3D'319'%20cy%3D'392'%20r%3D'.85'%20opacity%3D'.30'%2F%3E%3Ccircle%20cx%3D'16'%20cy%3D'328'%20r%3D'.70'%20opacity%3D'.20'%2F%3E%3Ccircle%20cx%3D'557'%20cy%3D'100'%20r%3D'.74'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'273'%20cy%3D'300'%20r%3D'.87'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'423'%20cy%3D'224'%20r%3D'1.46'%20opacity%3D'.42'%2F%3E%3Ccircle%20cx%3D'325'%20cy%3D'345'%20r%3D'.67'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'338'%20cy%3D'460'%20r%3D'.79'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'349'%20cy%3D'199'%20r%3D'.82'%20opacity%3D'.25'%2F%3E%3Ccircle%20cx%3D'272'%20cy%3D'104'%20r%3D'1.30'%20opacity%3D'.34'%2F%3E%3Ccircle%20cx%3D'167'%20cy%3D'387'%20r%3D'1.45'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'166'%20cy%3D'70'%20r%3D'1.08'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'359'%20cy%3D'106'%20r%3D'1.21'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'301'%20cy%3D'208'%20r%3D'1.12'%20opacity%3D'.39'%2F%3E%3Ccircle%20cx%3D'254'%20cy%3D'568'%20r%3D'.77'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'517'%20cy%3D'194'%20r%3D'1.56'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'340'%20cy%3D'58'%20r%3D'1.10'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'113'%20cy%3D'167'%20r%3D'1.34'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'88'%20cy%3D'649'%20r%3D'1.70'%20opacity%3D'.40'%2F%3E%3Ccircle%20cx%3D'536'%20cy%3D'29'%20r%3D'1.14'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'574'%20cy%3D'60'%20r%3D'1.16'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'546'%20cy%3D'346'%20r%3D'.81'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'70'%20cy%3D'652'%20r%3D'.62'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'233'%20cy%3D'130'%20r%3D'1.43'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'607'%20cy%3D'151'%20r%3D'1.14'%20opacity%3D'.44'%2F%3E%3Ccircle%20cx%3D'571'%20cy%3D'71'%20r%3D'.72'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'272'%20cy%3D'285'%20r%3D'1.06'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'617'%20cy%3D'536'%20r%3D'.75'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'104'%20cy%3D'253'%20r%3D'1.12'%20opacity%3D'.41'%2F%3E%3Ccircle%20cx%3D'209'%20cy%3D'68'%20r%3D'.80'%20opacity%3D'.45'%2F%3E%3Ccircle%20cx%3D'497'%20cy%3D'209'%20r%3D'.80'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'92'%20cy%3D'246'%20r%3D'.94'%20opacity%3D'.46'%2F%3E%3Ccircle%20cx%3D'691'%20cy%3D'468'%20r%3D'1.54'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'480'%20cy%3D'479'%20r%3D'1.09'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'172'%20cy%3D'660'%20r%3D'1.25'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'291'%20cy%3D'6'%20r%3D'.72'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'369'%20cy%3D'568'%20r%3D'1.49'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'29'%20cy%3D'664'%20r%3D'1.38'%20opacity%3D'.22'%2F%3E%3Ccircle%20cx%3D'255'%20cy%3D'92'%20r%3D'1.52'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'385'%20cy%3D'687'%20r%3D'1.05'%20opacity%3D'.22'%2F%3E%3Ccircle%20cx%3D'318'%20cy%3D'391'%20r%3D'.77'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'101'%20cy%3D'195'%20r%3D'1.28'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'442'%20cy%3D'205'%20r%3D'1.24'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'427'%20cy%3D'268'%20r%3D'.89'%20opacity%3D'.47'%2F%3E%3Ccircle%20cx%3D'626'%20cy%3D'240'%20r%3D'1.36'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'347'%20cy%3D'614'%20r%3D'.99'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'514'%20cy%3D'87'%20r%3D'1.60'%20opacity%3D'.20'%2F%3E%3Ccircle%20cx%3D'108'%20cy%3D'262'%20r%3D'.91'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'189'%20cy%3D'549'%20r%3D'1.15'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'288'%20cy%3D'3'%20r%3D'1.04'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'152'%20cy%3D'171'%20r%3D'.60'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'521'%20cy%3D'440'%20r%3D'1.51'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'96'%20cy%3D'257'%20r%3D'1.37'%20opacity%3D'.21'%2F%3E%3Ccircle%20cx%3D'470'%20cy%3D'590'%20r%3D'1.54'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'117'%20cy%3D'491'%20r%3D'1.12'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'582'%20cy%3D'50'%20r%3D'1.24'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'182'%20cy%3D'517'%20r%3D'1.43'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'293'%20cy%3D'84'%20r%3D'.82'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'168'%20cy%3D'286'%20r%3D'.87'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'238'%20cy%3D'125'%20r%3D'1.40'%20opacity%3D'.43'%2F%3E%3Ccircle%20cx%3D'302'%20cy%3D'210'%20r%3D'.88'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'177'%20cy%3D'624'%20r%3D'1.17'%20opacity%3D'.16'%2F%3E%3Ccircle%20cx%3D'468'%20cy%3D'590'%20r%3D'1.00'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'364'%20cy%3D'234'%20r%3D'1.13'%20opacity%3D'.41'%2F%3E%3Ccircle%20cx%3D'582'%20cy%3D'60'%20r%3D'1.35'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'522'%20cy%3D'84'%20r%3D'1.22'%20opacity%3D'.21'%2F%3E%3Ccircle%20cx%3D'101'%20cy%3D'403'%20r%3D'.71'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'639'%20cy%3D'23'%20r%3D'.63'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'632'%20cy%3D'74'%20r%3D'1.53'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'565'%20cy%3D'646'%20r%3D'.83'%20opacity%3D'.37'%2F%3E%3Ccircle%20cx%3D'494'%20cy%3D'329'%20r%3D'.89'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'344'%20cy%3D'644'%20r%3D'1.58'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'29'%20cy%3D'419'%20r%3D'1.42'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'429'%20cy%3D'467'%20r%3D'.77'%20opacity%3D'.31'%2F%3E%3Ccircle%20cx%3D'27'%20cy%3D'437'%20r%3D'1.31'%20opacity%3D'.25'%2F%3E%3Ccircle%20cx%3D'212'%20cy%3D'666'%20r%3D'1.01'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'418'%20cy%3D'652'%20r%3D'.70'%20opacity%3D'.44'%2F%3E%3Ccircle%20cx%3D'43'%20cy%3D'186'%20r%3D'1.59'%20opacity%3D'.33'%2F%3E%3Ccircle%20cx%3D'569'%20cy%3D'270'%20r%3D'1.64'%20opacity%3D'.14'%2F%3E%3Ccircle%20cx%3D'149'%20cy%3D'129'%20r%3D'1.31'%20opacity%3D'.14'%2F%3E%3Ccircle%20cx%3D'674'%20cy%3D'40'%20r%3D'1.57'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'655'%20cy%3D'231'%20r%3D'1.00'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'673'%20cy%3D'6'%20r%3D'1.16'%20opacity%3D'.36'%2F%3E%3Ccircle%20cx%3D'386'%20cy%3D'670'%20r%3D'1.15'%20opacity%3D'.20'%2F%3E%3Ccircle%20cx%3D'533'%20cy%3D'543'%20r%3D'1.27'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'172'%20cy%3D'55'%20r%3D'1.42'%20opacity%3D'.43'%2F%3E%3Ccircle%20cx%3D'17'%20cy%3D'558'%20r%3D'1.64'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'532'%20cy%3D'340'%20r%3D'1.58'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'270'%20cy%3D'148'%20r%3D'.62'%20opacity%3D'.34'%2F%3E%3Ccircle%20cx%3D'312'%20cy%3D'88'%20r%3D'1.04'%20opacity%3D'.32'%2F%3E%3Ccircle%20cx%3D'676'%20cy%3D'556'%20r%3D'.97'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'249'%20cy%3D'99'%20r%3D'1.54'%20opacity%3D'.38'%2F%3E%3Ccircle%20cx%3D'309'%20cy%3D'169'%20r%3D'1.31'%20opacity%3D'.25'%2F%3E%3Ccircle%20cx%3D'339'%20cy%3D'384'%20r%3D'1.47'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'70'%20cy%3D'260'%20r%3D'1.15'%20opacity%3D'.42'%2F%3E%3Ccircle%20cx%3D'556'%20cy%3D'635'%20r%3D'1.01'%20opacity%3D'.25'%2F%3E%3Ccircle%20cx%3D'567'%20cy%3D'567'%20r%3D'.97'%20opacity%3D'.42'%2F%3E%3Ccircle%20cx%3D'612'%20cy%3D'617'%20r%3D'.60'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'3'%20cy%3D'183'%20r%3D'1.38'%20opacity%3D'.22'%2F%3E%3Ccircle%20cx%3D'50'%20cy%3D'564'%20r%3D'.84'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'274'%20cy%3D'237'%20r%3D'1.27'%20opacity%3D'.12'%2F%3E%3Ccircle%20cx%3D'186'%20cy%3D'637'%20r%3D'.77'%20opacity%3D'.16'%2F%3E%3Ccircle%20cx%3D'406'%20cy%3D'622'%20r%3D'1.43'%20opacity%3D'.44'%2F%3E%3Ccircle%20cx%3D'75'%20cy%3D'203'%20r%3D'1.63'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'536'%20cy%3D'479'%20r%3D'1.16'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'134'%20cy%3D'292'%20r%3D'1.40'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'447'%20cy%3D'50'%20r%3D'.86'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'204'%20cy%3D'620'%20r%3D'1.08'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'206'%20cy%3D'247'%20r%3D'.99'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'676'%20cy%3D'194'%20r%3D'1.53'%20opacity%3D'.39'%2F%3E%3Ccircle%20cx%3D'455'%20cy%3D'295'%20r%3D'1.04'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'503'%20cy%3D'404'%20r%3D'1.65'%20opacity%3D'.21'%2F%3E%3Ccircle%20cx%3D'306'%20cy%3D'633'%20r%3D'1.22'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'642'%20cy%3D'366'%20r%3D'1.41'%20opacity%3D'.32'%2F%3E%3Ccircle%20cx%3D'392'%20cy%3D'0'%20r%3D'.69'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'684'%20cy%3D'501'%20r%3D'.79'%20opacity%3D'.17'%2F%3E%3Ccircle%20cx%3D'203'%20cy%3D'546'%20r%3D'.91'%20opacity%3D'.39'%2F%3E%3Ccircle%20cx%3D'304'%20cy%3D'200'%20r%3D'.73'%20opacity%3D'.22'%2F%3E%3Ccircle%20cx%3D'563'%20cy%3D'75'%20r%3D'1.11'%20opacity%3D'.26'%2F%3E%3Ccircle%20cx%3D'384'%20cy%3D'331'%20r%3D'1.63'%20opacity%3D'.28'%2F%3E%3Ccircle%20cx%3D'423'%20cy%3D'688'%20r%3D'1.40'%20opacity%3D'.34'%2F%3E%3Ccircle%20cx%3D'344'%20cy%3D'530'%20r%3D'.81'%20opacity%3D'.29'%2F%3E%3Ccircle%20cx%3D'638'%20cy%3D'154'%20r%3D'1.36'%20opacity%3D'.20'%2F%3E%3Ccircle%20cx%3D'110'%20cy%3D'59'%20r%3D'1.46'%20opacity%3D'.16'%2F%3E%3Ccircle%20cx%3D'579'%20cy%3D'223'%20r%3D'.92'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'454'%20cy%3D'381'%20r%3D'1.02'%20opacity%3D'.23'%2F%3E%3Ccircle%20cx%3D'239'%20cy%3D'326'%20r%3D'1.24'%20opacity%3D'.27'%2F%3E%3Ccircle%20cx%3D'449'%20cy%3D'292'%20r%3D'.76'%20opacity%3D'.21'%2F%3E%3Ccircle%20cx%3D'625'%20cy%3D'112'%20r%3D'1.64'%20opacity%3D'.16'%2F%3E%3Ccircle%20cx%3D'488'%20cy%3D'48'%20r%3D'.82'%20opacity%3D'.19'%2F%3E%3Ccircle%20cx%3D'308'%20cy%3D'114'%20r%3D'1.66'%20opacity%3D'.13'%2F%3E%3Ccircle%20cx%3D'129'%20cy%3D'432'%20r%3D'.79'%20opacity%3D'.32'%2F%3E%3Ccircle%20cx%3D'573'%20cy%3D'647'%20r%3D'1.10'%20opacity%3D'.15'%2F%3E%3Ccircle%20cx%3D'295'%20cy%3D'635'%20r%3D'1.34'%20opacity%3D'.24'%2F%3E%3Ccircle%20cx%3D'462'%20cy%3D'200'%20r%3D'1.08'%20opacity%3D'.18'%2F%3E%3Ccircle%20cx%3D'673'%20cy%3D'603'%20r%3D'.87'%20opacity%3D'.15'%2F%3E%3C%2Fsvg%3E");
 
@@ -64,11 +86,15 @@ body {
   margin: 0;
   padding: 0;
   background-color: #000000;
-  /* Cielo estrellado: tesela SVG con puntos blancos en posiciones aleatorias
-     (sin puntas, destellos ni brillos). Cubre toda la pantalla. */
-  background-image: var(--starfield);
-  background-size: 700px 700px;
-  background-repeat: repeat;
+  /* Cielo estrellado + auroras frías detrás del cristal. Los degradados
+     radiales añaden profundidad sin tapar la lectura. */
+  background-image:
+    radial-gradient(1100px 720px at 10% -12%, rgba(92, 130, 255, 0.2), transparent 62%),
+    radial-gradient(900px 640px at 92% 4%, rgba(255, 255, 255, 0.07), transparent 60%),
+    radial-gradient(1000px 760px at 58% 112%, rgba(96, 120, 255, 0.13), transparent 66%),
+    var(--starfield);
+  background-size: auto, auto, auto, 700px 700px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   background-attachment: fixed;
   color: #ffffff;
   font-family: var(--font-family);
@@ -1725,4 +1751,475 @@ textarea.form-control:focus {
   .mel-setup-card {
     flex-direction: column;
   }
+}
+
+/* ============================================================
+   Glassmorphism + liquid glass
+   Superficies translúcidas, bordes de luz y reflejos fríos.
+   ============================================================ */
+
+/* ---------- Utilidades del tema ---------- */
+.text-muted-tf {
+  color: var(--text-muted) !important;
+}
+
+.smaller {
+  font-size: 0.75rem;
+}
+
+.bg-surface {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.bg-surface-hover:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.text-primary {
+  color: var(--accent-blue) !important;
+}
+
+.bg-primary {
+  background-image: linear-gradient(135deg, var(--accent-blue-strong), #4a63d8) !important;
+  background-color: var(--accent-blue-strong) !important;
+  color: #ffffff !important;
+}
+
+.border-primary {
+  border-color: rgba(122, 162, 255, 0.7) !important;
+}
+
+.bg-secondary {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+a {
+  color: #ffffff;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+  transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-blue);
+  text-decoration-color: rgba(122, 162, 255, 0.6);
+}
+
+::selection {
+  background-color: rgba(122, 162, 255, 0.35);
+  color: #ffffff;
+}
+
+/* ---------- Estructura de la app ---------- */
+.app-content {
+  max-width: 1360px;
+}
+
+/* Barra lateral de cristal: deja ver las auroras del fondo. */
+.sidebar {
+  background-color: rgba(8, 10, 18, 0.5);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.01) 45%, rgba(10, 12, 20, 0.25)),
+    var(--starfield);
+  background-size: auto, 700px 700px;
+  background-repeat: no-repeat, repeat;
+  background-attachment: scroll, fixed;
+  backdrop-filter: blur(26px) saturate(140%);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+  border-right: 1px solid var(--glass-border-soft);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04), 18px 0 60px rgba(0, 0, 0, 0.35);
+}
+
+.sidebar-brand {
+  margin: 0 var(--space-2);
+  border-bottom: 1px solid var(--glass-border-soft);
+}
+
+.sidebar-group-title {
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 0.14em;
+}
+
+.sidebar-link {
+  position: relative;
+  border-left: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  margin-bottom: 3px;
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base),
+    transform var(--transition-fast);
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.055);
+  border-color: var(--glass-border-soft);
+  transform: translateX(2px);
+}
+
+.sidebar-link.active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.075);
+  background-image: linear-gradient(
+    100deg,
+    rgba(122, 162, 255, 0.22),
+    rgba(255, 255, 255, 0.03) 70%
+  );
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+  font-weight: 600;
+}
+
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 22%;
+  bottom: 22%;
+  width: 2px;
+  border-radius: 2px;
+  background-color: var(--accent-blue);
+  box-shadow: 0 0 12px var(--accent-blue-glow);
+}
+
+/* Barra superior flotante de cristal. */
+.topbar {
+  background-color: rgba(8, 10, 18, 0.45);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.015)
+  );
+  background-size: auto;
+  background-repeat: no-repeat;
+  border-bottom: 1px solid var(--glass-border-soft);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.topbar-title {
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Superficies de cristal ---------- */
+.card,
+.mel-glass-panel,
+.modal,
+.alert,
+.dropdown-menu,
+.academic-summary-card,
+.academic-item-card,
+.provider-card,
+.provider-empty,
+.mel-setup-card,
+.wizard-card,
+.mel-confirmation-card,
+.mel-tool-card {
+  position: relative;
+  background-color: rgba(10, 12, 20, 0.46);
+  background-image: var(--glass-sheen);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+}
+
+/* Reflejo especular superior, muy tenue. */
+.card::before,
+.mel-glass-panel::before,
+.modal::before,
+.wizard-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 8% -10%, rgba(255, 255, 255, 0.12), transparent 55%),
+    radial-gradient(90% 70% at 100% 0%, rgba(122, 162, 255, 0.1), transparent 60%);
+  z-index: 0;
+}
+
+.card > *,
+.mel-glass-panel > *,
+.modal > *,
+.wizard-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  border-radius: 18px;
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.23);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    0 28px 70px rgba(0, 0, 0, 0.6);
+}
+
+.card-header {
+  border-bottom: 1px solid var(--glass-border-soft);
+}
+
+.card-footer {
+  border-top: 1px solid var(--glass-border-soft);
+}
+
+.list-group {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.list-group-item {
+  background-color: transparent;
+  border-color: var(--glass-border-soft);
+  color: var(--text);
+}
+
+.list-group-item.bg-surface {
+  background-color: transparent !important;
+}
+
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+  background-color: rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+}
+
+.list-group-item-action.active,
+.list-group-item.bg-primary {
+  background-color: var(--accent-blue-soft) !important;
+  background-image: linear-gradient(100deg, rgba(122, 162, 255, 0.28), rgba(255, 255, 255, 0.04)) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+/* ---------- Modales ---------- */
+.modal-overlay {
+  background-color: rgba(2, 4, 10, 0.55);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+
+.modal {
+  border-radius: 22px;
+  background-color: rgba(12, 14, 24, 0.66);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--glass-border-soft);
+}
+
+/* ---------- Alertas y estados ---------- */
+.alert {
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-fill);
+  background-image: var(--glass-sheen);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  border-radius: 12px;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary {
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, #ffffff, #e8ecf5);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #05060a;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, #ffffff, #f5f7ff);
+  border-color: #ffffff;
+  color: #05060a;
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.5),
+    0 0 22px rgba(122, 162, 255, 0.22);
+}
+
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-light {
+  background-color: rgba(255, 255, 255, 0.035);
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.btn-outline-primary {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+.btn-outline-secondary,
+.btn-outline-light {
+  border-color: var(--glass-border);
+  color: #ffffff;
+}
+
+.btn-outline-primary:hover:not(:disabled),
+.btn-outline-secondary:hover:not(:disabled),
+.btn-outline-light:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+  background-color: rgba(239, 68, 68, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ---------- Formularios ---------- */
+.form-control,
+.form-select,
+textarea.form-control,
+.form-field-input,
+.form-field-select,
+.form-field-textarea {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 12px;
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea.form-control:focus,
+.form-field-input:focus,
+.form-field-select:focus,
+.form-field-textarea:focus {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(122, 162, 255, 0.75);
+  color: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(122, 162, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+
+.form-select option,
+.form-select optgroup {
+  background-color: #0b0d16;
+  color: #ffffff;
+}
+
+.form-control::placeholder,
+textarea.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.form-label {
+  color: var(--text-muted);
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.badge.bg-dark,
+.badge.bg-secondary {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+/* ---------- Tablas y progreso ---------- */
+.table {
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.04);
+}
+
+.table > :not(caption) > * > * {
+  background-color: transparent;
+}
+
+.progress {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.progress-bar {
+  border-radius: 999px;
+}
+
+/* ---------- Tarjetas específicas ---------- */
+.wizard-card {
+  background-color: rgba(10, 12, 20, 0.62);
+}
+
+.step-circle {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--glass-border);
+}
+
+.subject-preview {
+  background-color: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
