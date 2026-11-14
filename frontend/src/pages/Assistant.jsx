@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import ConversationList from '../components/ai/ConversationList';
+import Calendar from '../pages/Calendar';
 import MessageList from '../components/ai/MessageList';
 import MessageInput from '../components/ai/MessageInput';
 import ProviderSetupModal, { PROVIDER_INFO } from '../components/ai/ProviderSetupModal';
@@ -37,8 +37,6 @@ const Assistant = () => {
     greet,
   } = useAssistantState();
 
-  const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
@@ -46,26 +44,22 @@ const Assistant = () => {
   const [providerChecked, setProviderChecked] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [error, setError] = useState('');
-  const [convOpen, setConvOpen] = useState(false);
 
   useEffect(() => {
     greet();
-    loadConversations();
     checkProvider();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadConversations = async () => {
-    try {
-      const response = await api.get('/ai/conversations');
-      setConversations(response.data);
-      if (response.data.length > 0) {
-        selectConversation(response.data[0]);
-      }
-    } catch (err) {
-      console.error('Error cargando conversaciones:', err.message);
-    }
-  };
+  // La sección no guarda historial: los mensajes se descartan 5 minutos
+  // después de la última interacción si no se escribe otra cosa.
+  useEffect(() => {
+    if (messages.length === 0) return undefined;
+    const timer = setTimeout(() => {
+      setMessages([]);
+    }, 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   const checkProvider = async () => {
     try {
@@ -82,21 +76,8 @@ const Assistant = () => {
     }
   };
 
-  const selectConversation = async (conv) => {
-    notifyActivity();
-    setCurrentConversation(conv);
-    setMessages([]);
-    try {
-      const response = await api.get(`/ai/conversations/${conv.id}/messages`);
-      setMessages(response.data);
-    } catch (err) {
-      console.error('Error cargando mensajes:', err.message);
-    }
-  };
-
   const startNewConversation = () => {
     notifyActivity();
-    setCurrentConversation(null);
     setMessages([]);
     setError('');
   };
@@ -120,7 +101,9 @@ const Assistant = () => {
     try {
       const response = await api.post('/ai/agent/chat', {
         message: text,
-        conversation_id: currentConversation?.id || null,
+        // Esta sección no persiste historial: cada interacción es
+        // independiente y se descarta al cumplirse el tiempo.
+        conversation_id: null,
         provider_name: providerConfig?.provider_name || undefined,
         use_academic_context: true,
       });
@@ -142,20 +125,6 @@ const Assistant = () => {
         errorCode: data.error_code || null,
       };
       setMessages((prev) => [...prev, assistantMsg]);
-
-      if (!currentConversation) {
-        const newConv = {
-          id: data.conversation_id,
-          title: text.trim().slice(0, 60),
-          provider_name: data.provider_name,
-          model: data.model,
-        };
-        setCurrentConversation(newConv);
-        setConversations((prev) => [
-          newConv,
-          ...prev.filter((c) => c.id !== newConv.id),
-        ]);
-      }
     } catch (err) {
       const detail =
         err.response?.data?.detail || err.message || 'Error al enviar el mensaje';
@@ -178,7 +147,7 @@ const Assistant = () => {
       const response = await api.post('/ai/agent/confirm', {
         action_id: confirmation.action_id,
         decision,
-        conversation_id: currentConversation?.id || null,
+        conversation_id: null,
       });
       const data = response.data;
 
@@ -271,14 +240,20 @@ const Assistant = () => {
 
       {providerConfig && (
         <div className="row g-4 flex-grow-1">
-          {/* Área principal de conversación: ocupa todo el espacio
-              disponible de la sección, salvo cuando el menú de
-              conversaciones está abierto. */}
-          <div className={convOpen ? 'col-12 col-lg-9' : 'col-12'}>
-            <div
-              className={`d-flex flex-column ${convOpen ? 'border-start border-secondary ps-lg-4' : ''}`}
-              style={{ minHeight: 0 }}
-            >
+          {/* Calendario académico: lado izquierdo. */}
+          <div className="col-12 col-lg-4">
+            <section className="mel-calendar-panel" aria-label="Calendario académico">
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <i className="bi bi-calendar-week text-white" aria-hidden="true" />
+                <h2 className="h6 fw-semibold text-white mb-0">Calendario</h2>
+              </div>
+              <Calendar />
+            </section>
+          </div>
+
+          {/* Área de chat: lado derecho, con el cuadro flotante de Mel. */}
+          <div className="col-12 col-lg-8">
+            <div className="d-flex flex-column" style={{ minHeight: 0 }}>
               {/* Cuadro flotante de Mel: integrado al chat, no tapa los
                   mensajes ni los controles de escritura. */}
               <section
@@ -309,9 +284,7 @@ const Assistant = () => {
               </section>
 
               <div className="d-flex justify-content-between align-items-center gap-2 py-2">
-                <h5 className="fw-semibold mb-0 text-truncate">
-                  {currentConversation ? currentConversation.title : 'Conversación nueva'}
-                </h5>
+                <h5 className="fw-semibold mb-0 text-truncate">Conversación nueva</h5>
                 <div className="d-flex align-items-center gap-2">
                   <button
                     type="button"
@@ -320,15 +293,6 @@ const Assistant = () => {
                     disabled={sending}
                   >
                     Nueva
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => setConvOpen((open) => !open)}
-                    aria-expanded={convOpen}
-                  >
-                    <i className={`bi ${convOpen ? 'bi-x-lg' : 'bi-list'} me-1`} aria-hidden="true" />
-                    Conversaciones
                   </button>
                 </div>
               </div>
@@ -386,22 +350,6 @@ const Assistant = () => {
             </div>
           </div>
 
-          {convOpen && (
-            <div className="col-12 col-lg-3">
-              <ConversationList
-                conversations={conversations}
-                onSelect={selectConversation}
-                onDelete={(id) => {
-                  setConversations(conversations.filter((c) => c.id !== id));
-                  if (currentConversation?.id === id) {
-                    setCurrentConversation(null);
-                    setMessages([]);
-                  }
-                }}
-                onNew={startNewConversation}
-              />
-            </div>
-          )}
         </div>
       )}
 
