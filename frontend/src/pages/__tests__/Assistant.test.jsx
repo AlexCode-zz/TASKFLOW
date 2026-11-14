@@ -104,7 +104,7 @@ describe('Assistant (Mel)', () => {
     expect(cover).toHaveAttribute('src', '/assets/mel/05_principal.png');
 
     await screen.findByText('OpenRouter');
-    expect(container.querySelector('.mel-provider-chip')).toHaveAttribute(
+    expect(container.querySelector('.mel-chat-provider')).toHaveAttribute(
       'title',
       'OpenRouter',
     );
@@ -214,7 +214,7 @@ describe('Assistant (Mel)', () => {
     );
   });
 
-  it('compone el escritorio con rail, reloj y calendario alrededor de Mel', async () => {
+  it('deja a Mel sin marco y solo con reloj, calendario y conversación', async () => {
     const { container } = render(
       <MemoryRouter>
         <Assistant />
@@ -223,13 +223,16 @@ describe('Assistant (Mel)', () => {
 
     await screen.findByRole('heading', { name: 'MEL' });
 
-    expect(
-      screen.getByRole('navigation', { name: 'Accesos rápidos de TaskFlow' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Accesos rápidos de TaskFlow' })).toBeNull();
+    expect(container.querySelector('.mel-rail')).toBeNull();
+    expect(container.querySelector('.mel-session-panel')).toBeNull();
     expect(container.querySelector('.mel-clock-time').textContent).toMatch(/\d{1,2}:\d{2}/);
     expect(container.querySelector('.mel-calendar-panel')).toBeInTheDocument();
-    expect(container.querySelector('.mel-center-panel')).toBeInTheDocument();
     expect(container.querySelector('.mel-chat-panel')).toBeInTheDocument();
+
+    const mel = container.querySelector('.mel-center');
+    expect(mel).toBeInTheDocument();
+    expect(mel.closest('.card, .mel-glass-panel')).toBeNull();
   });
 
   it('aceptar una confirmación ejecuta la acción solo una vez', async () => {

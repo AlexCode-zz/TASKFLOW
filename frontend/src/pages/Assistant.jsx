@@ -16,15 +16,6 @@ const SUGGESTIONS = [
   '¿Cómo van mis notas?',
 ];
 
-/** Accesos rápidos del rail lateral del escritorio de Mel. */
-const RAIL_LINKS = [
-  { to: '/', label: 'Inicio', icon: 'bi-house' },
-  { to: '/semana', label: 'Mi semana', icon: 'bi-calendar-week' },
-  { to: '/materias', label: 'Materias', icon: 'bi-book' },
-  { to: '/tareas', label: 'Tareas', icon: 'bi-list-task' },
-  { to: '/informes', label: 'Informes', icon: 'bi-bar-chart' },
-];
-
 /** Clase del chip de estado según el estado de la máquina. */
 function statusChipClass(state) {
   if (state === 'thinking' || state === 'working') return 'mel-status-chip is-busy';
@@ -272,108 +263,73 @@ const Assistant = () => {
 
       {providerConfig && (
         <div className="mel-desktop">
-          <div className="mel-desktop-glow" aria-hidden="true" />
+          <div className="mel-ambient" aria-hidden="true">
+            <span className="mel-orb mel-orb-blue" />
+            <span className="mel-orb mel-orb-violet" />
+            <span className="mel-orb mel-orb-white" />
+            <span className="mel-horizon" />
+          </div>
 
-          <div className="mel-desktop-body">
-            {/* Rail de accesos rápidos: guiño al escritorio de la referencia. */}
-            <nav className="mel-rail" aria-label="Accesos rápidos de TaskFlow">
-              <Link to="/" className="mel-rail-brand" aria-label="Ir al inicio">
-                T
-              </Link>
-              <div className="mel-rail-group">
-                {RAIL_LINKS.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="mel-rail-link"
-                    aria-label={item.label}
-                    title={item.label}
-                  >
-                    <i className={`bi ${item.icon}`} aria-hidden="true" />
-                  </Link>
-                ))}
+          <div className="mel-stage">
+            {/* Solo dos cuadros junto a Mel: reloj/fecha y calendario. */}
+            <aside className="mel-side" aria-label="Fecha y calendario">
+              <section className="mel-clock-panel" aria-label="Hora actual">
+                <MelClock />
+              </section>
+
+              <section className="mel-calendar-panel" aria-label="Calendario académico">
+                <MelCalendar />
+              </section>
+            </aside>
+
+            {/* Mel flota sobre el fondo: sin tarjeta ni marco alrededor. */}
+            <section className="mel-center" aria-label="Mel">
+              <div className="mel-portrait-wrap">
+                <div className="mel-portrait-halo" aria-hidden="true" />
+                <div className="mel-stage-ring" aria-hidden="true" />
+                <img
+                  src="/assets/mel/05_principal.png"
+                  alt="Ilustración de Mel"
+                  className="mel-cover-img"
+                />
               </div>
-              <Link
-                to="/configuracion"
-                className="mel-rail-link mel-rail-bottom"
-                aria-label="Configuración"
-                title="Configuración"
-              >
-                <i className="bi bi-gear" aria-hidden="true" />
-              </Link>
-            </nav>
+              <div className="mel-center-info">
+                <h1 className="mel-name">MEL</h1>
+                <p className="mel-subtitle">
+                  Organiza materias, tareas, notas y tu semana de estudio.
+                </p>
+              </div>
+            </section>
 
-            <div className="mel-stage">
-              {/* Lado izquierdo: reloj y calendario minimalista. */}
-              <aside className="mel-side mel-side-left">
-                <section className="mel-glass-panel mel-clock-panel" aria-label="Hora actual">
-                  <MelClock />
-                </section>
-
-                <section
-                  className="mel-glass-panel mel-calendar-panel"
-                  aria-label="Calendario académico"
-                >
-                  <div className="mel-panel-head">
-                    <span className="mel-panel-eyebrow">Calendario</span>
-                    <span className="mel-panel-badge">Mes</span>
-                  </div>
-                  <MelCalendar />
-                </section>
-
-                <section className="mel-glass-panel mel-session-panel" aria-label="Sesión de Mel">
-                  <div className="mel-session-row">
+            {/* Lado derecho: interacción con Mel. */}
+            <section className="mel-chat-panel" aria-label="Conversación con Mel">
+              <div className="mel-chat-head">
+                <div className="mel-chat-heading">
+                  <span className="mel-chat-eyebrow">Conversación</span>
+                  <h2 className="mel-chat-title">Habla con Mel</h2>
+                  <div className="mel-chat-meta">
                     <span className={statusChipClass(state)}>
                       <span className="mel-status-dot" aria-hidden="true" />
                       {status}
                     </span>
-                  </div>
-                  <div className="mel-session-row mel-session-provider">
-                    <span className="mel-provider-chip" title={providerLabel}>
+                    <span className="mel-chat-provider" title={providerLabel}>
                       {providerLabel}
                     </span>
-                    <Link to="/proveedores-ia" className="mel-provider-link">
+                    <Link to="/proveedores-ia" className="mel-chat-provider-link">
                       Cambiar
                     </Link>
                   </div>
-                </section>
-              </aside>
-
-              {/* Centro: Mel como protagonista de la sección. */}
-              <section className="mel-glass-panel mel-center-panel" aria-label="Estado de Mel">
-                <div className="mel-portrait-wrap">
-                  <div className="mel-portrait-glow" aria-hidden="true" />
-                  <img
-                    src="/assets/mel/05_principal.png"
-                    alt="Ilustración de Mel"
-                    className="mel-cover-img"
-                  />
                 </div>
-                <div className="mel-center-info">
-                  <h1 className="mel-name">MEL</h1>
-                  <p className="mel-subtitle">
-                    Organiza materias, tareas, notas y tu semana de estudio.
-                  </p>
-                </div>
-              </section>
-
-              {/* Lado derecho: interacción con Mel. */}
-              <section className="mel-glass-panel mel-chat-panel" aria-label="Conversación con Mel">
-                <div className="mel-chat-head">
-                  <div className="mel-chat-heading">
-                    <span className="mel-panel-eyebrow">Conversación</span>
-                    <h2 className="mel-chat-title">Habla con Mel</h2>
-                  </div>
-                  <button
-                    type="button"
-                    className="mel-new-btn"
-                    onClick={startNewConversation}
-                    disabled={sending}
-                  >
-                    <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
-                    <span>Nueva</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="mel-new-btn"
+                  onClick={startNewConversation}
+                  disabled={sending}
+                >
+                  <i className="bi bi-arrow-counterclockwise" aria-hidden="true" />
+                  <span>Nueva</span>
+                </button>
+              </div>
 
                 <div className="mel-chat-body">
                   <MessageList
@@ -425,8 +381,7 @@ const Assistant = () => {
                   disabled={sending}
                   placeholder="Escribe tu consulta académica..."
                 />
-              </section>
-            </div>
+            </section>
           </div>
         </div>
       )}
