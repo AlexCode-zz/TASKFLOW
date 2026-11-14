@@ -2356,9 +2356,9 @@ textarea.form-control::placeholder {
   min-width: 0;
   display: grid;
   grid-template-columns:
-    minmax(228px, 0.88fr)
-    minmax(250px, 1.42fr)
-    minmax(320px, 1.2fr);
+    minmax(210px, 0.88fr)
+    minmax(240px, 1.42fr)
+    minmax(300px, 1.2fr);
   gap: 12px;
   min-height: min(74vh, 760px);
 }
@@ -2497,11 +2497,13 @@ textarea.form-control::placeholder {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-}
+}  .mel-session-provider {
+    justify-content: space-between;
+  }
 
-.mel-session-provider {
-  justify-content: space-between;
-}
+  .mel-provider-link {
+    flex-shrink: 0;
+  }
 
 /* Centro: retrato grande de Mel. */
 .mel-center-panel {
@@ -2668,7 +2670,11 @@ textarea.form-control::placeholder {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 100%;
+  min-height: 0;
+}
+
+.mel-message-list.is-empty {
+  flex: 1 1 auto;
 }
 
 .mel-chat-empty {
@@ -3033,6 +3039,17 @@ textarea.form-control::placeholder {
   }
 }
 
+/* Portátiles bajos: el retrato y los paneles no deben empujar el chat. */
+@media (min-width: 1200px) and (max-height: 800px) {
+  .mel-stage {
+    min-height: 580px;
+  }
+
+  .mel-cover-img {
+    max-height: min(46vh, 360px);
+  }
+}
+
 @media (max-width: 991.98px) {
   .mel-desktop {
     padding: 10px;
@@ -3051,7 +3068,7 @@ textarea.form-control::placeholder {
   }
 
   .mel-side-left {
-    order: 2;
+    order: 3;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     align-items: start;
@@ -3073,7 +3090,7 @@ textarea.form-control::placeholder {
   }
 
   .mel-chat-panel {
-    order: 3;
+    order: 2;
     min-height: 480px;
   }
 

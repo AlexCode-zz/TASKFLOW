@@ -24,7 +24,10 @@ const MessageList = ({
   const exchangeKey = messages[0]?.id || 'empty';
 
   return (
-    <div className="mel-message-list" key={exchangeKey}>
+    <div
+      className={`mel-message-list${messages.length === 0 ? ' is-empty' : ''}`}
+      key={exchangeKey}
+    >
       {messages.length === 0 ? (
         <div className="mel-chat-empty">
           <span className="mel-chat-empty-icon" aria-hidden="true">
