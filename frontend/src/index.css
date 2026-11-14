@@ -1264,6 +1264,24 @@ textarea.form-control:focus {
   box-shadow: var(--shadow-md);
 }
 
+/* Escena de Mel sin tarjeta: el personaje aparece a pantalla
+   completa dentro del area de chat. */
+.mel-avatar-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-5) 0 var(--space-3);
+}
+
+.mel-avatar-stage-info {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .mel-message-column {
   min-width: 0;
   animation: mel-message-in 420ms ease both;

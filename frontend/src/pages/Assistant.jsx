@@ -200,10 +200,6 @@ const Assistant = () => {
     ? PROVIDER_INFO[providerConfig.provider_name]?.name || providerConfig.provider_name
     : 'Sin proveedor configurado';
 
-  // El cuadro flotante respira solo mientras Mel está activo (no duerme
-  // ni está en cuota agotada).
-  const isLive = state !== 'sleeping' && state !== 'quota_exhausted';
-
   return (
     <div className="fade-in d-flex flex-column flex-grow-1">
       {error && (
@@ -254,14 +250,11 @@ const Assistant = () => {
           {/* Área de chat: lado derecho, con el cuadro flotante de Mel. */}
           <div className="col-12 col-lg-8">
             <div className="d-flex flex-column" style={{ minHeight: 0 }}>
-              {/* Cuadro flotante de Mel: integrado al chat, no tapa los
-                  mensajes ni los controles de escritura. */}
-              <section
-                className={`mel-floating-box mb-3 state-${state} ${isLive ? 'is-live' : ''}`}
-                aria-label="Estado de Mel"
-              >
-                <AssistantAvatar expression={expression} state={state} size={200} />
-                <div className="mel-floating-box-info">
+              {/* Mel ya no va dentro de un cuadro: el personaje aparece a
+                  pantalla completa dentro del area de chat, con su estado. */}
+              <div className="mel-avatar-stage mb-3" aria-label="Estado de Mel">
+                <AssistantAvatar expression={expression} state={state} size={240} />
+                <div className="mel-avatar-stage-info">
                   <h1 className="mel-name">MEL</h1>
                   <p className="mel-subtitle">
                     Organiza materias, tareas, notas y tu semana de estudio.
@@ -281,7 +274,7 @@ const Assistant = () => {
                     )}
                   </div>
                 </div>
-              </section>
+              </div>
 
               <div className="d-flex justify-content-between align-items-center gap-2 py-2">
                 <h5 className="fw-semibold mb-0 text-truncate">Conversación nueva</h5>
