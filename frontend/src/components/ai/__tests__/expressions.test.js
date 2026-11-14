@@ -8,6 +8,7 @@ import {
   expressionSrc,
   isValidExpression,
   AVATAR_BASE_PATH,
+  PORTRAIT_EXPRESSION,
 } from '../expressions';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -15,8 +16,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const publicMelDir = path.resolve(here, '../../../../public/assets/mel');
 
 describe('catálogo de expresiones de Mel', () => {
-  it('define las 17 expresiones del personaje', () => {
-    expect(EXPRESSION_KEYS).toHaveLength(17);
+  it('define las 7 expresiones oficiales del personaje', () => {
+    expect(EXPRESSION_KEYS).toHaveLength(7);
   });
 
   it('incluye cada expresión requerida', () => {
@@ -25,23 +26,17 @@ describe('catálogo de expresiones de Mel', () => {
       'feliz',
       'guino',
       'enojada',
-      'principal',
-      'seria',
-      'triste',
-      'sorprendida',
-      'confundida',
-      'durmiendose',
-      'pensativa',
-      'avergonzada',
-      'molesta',
-      'asustada',
       'trabajando',
-      'durmiendo',
+      'dormida',
       'llorando',
     ];
     required.forEach((name) => {
       expect(EXPRESSIONS).toHaveProperty(name);
     });
+  });
+
+  it('mantiene la ilustración de portada como recurso independiente', () => {
+    expect(PORTRAIT_EXPRESSION).toBe('05_principal.png');
   });
 
   it('apunta a un PNG real existente por cada expresión', () => {
