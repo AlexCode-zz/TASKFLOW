@@ -59,7 +59,7 @@ const useAssistantState = ({ idleTimeoutMs = IDLE_TIMEOUT_MS } = {}) => {
     clearTimer('idle');
     timers.current.idle = setTimeout(() => {
       if (stateRef.current.state !== 'idle') return;
-      // Transición visual previa: dormida -> durmiendo (dormida).
+      // Transición visual previa: dormida -> expresión dormida.
       setOccasional('dormida');
       clearTimer('sleep');
       timers.current.sleep = setTimeout(() => {
